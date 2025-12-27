@@ -2,20 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { API_BASE_URL } from './api-url.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   
-  // Configure your backend API URL here (backend Spring Boot runs on 8080)
-  public apiUrl = 'http://localhost:8080/api';
+
+  public apiUrl = API_BASE_URL;
   
   constructor(private http: HttpClient) { }
 
-  /**
-   * Handle HTTP errors
-   */
+ 
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An error occurred';
 

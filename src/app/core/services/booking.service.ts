@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Booking, BookingStatus } from '../../models/booking.model';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'https://homy-sofa-backend-production.up.railway.app/api';
 
 @Injectable({
   providedIn: 'root'

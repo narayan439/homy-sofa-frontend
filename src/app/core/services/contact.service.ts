@@ -14,7 +14,7 @@ export interface ContactPayload {
 
 @Injectable({ providedIn: 'root' })
 export class ContactService {
-  private base = 'http://localhost:8080/api/contacts';
+  private base = 'https://homy-sofa-backend-production.up.railway.app/api/contacts';
 
   constructor(private http: HttpClient) {}
 

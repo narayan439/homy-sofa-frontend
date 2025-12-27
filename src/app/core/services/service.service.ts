@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'https://homy-sofa-backend-production.up.railway.app/api';
 
 
 export interface Service {

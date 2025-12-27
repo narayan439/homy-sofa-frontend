@@ -1,4 +1,5 @@
 export * from './api.service';
+export * from './api-url.service';
 export * from './auth.service';
 export * from './booking.service';
 export * from './contact.service';
