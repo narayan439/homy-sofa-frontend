@@ -1,4 +1,4 @@
-# Homy Sofa — Frontend + Backend
+# Homy Sofa — Frontend
 
 Comprehensive repository for the Homy Sofa booking application. This repository contains an Angular 15 frontend (SPA) and a Spring Boot backend (Java 17) with file-upload support, Flyway migrations and a MySQL-compatible data layer.
 
@@ -189,12 +189,3 @@ Recommended workflow for local dev:
 - Admin guard and routing: [src/app/core/guards/admin.guard.ts](src/app/core/guards/admin.guard.ts) and [src/app/admin/admin-routing.module.ts](src/app/admin/admin-routing.module.ts)
 - Manage Services (admin UI): [src/app/admin/manage-services](src/app/admin/manage-services)
 - Service upload endpoint and resource handling: `backend/Homy-backend/src/main/java/.../ServiceController.java` and `WebMvcConfig.java`
-
----
-
-If you'd like, I can also:
-
-- Add a short checklist in this README for running an end-to-end local dev session.
-- Create example environment files for `application.properties` or a `.env` helper for frontend.
-
-Please review and tell me if you'd like any sections expanded or specific commands adapted to your local environment (e.g., Windows PowerShell examples vs Bash). 
