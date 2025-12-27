@@ -1,0 +1,112 @@
+<div class="login-container">
+  
+  <!-- Back to Home Button -->
+  <button mat-button class="back-home-btn" routerLink="/">
+    <mat-icon>arrow_back</mat-icon>
+    Back to Home
+  </button>
+
+  <!-- Login Card -->
+  <div class="login-card">
+    <mat-card>
+      
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="admin-icon">
+          <mat-icon>admin_panel_settings</mat-icon>
+        </div>
+        <mat-card-title>Admin Portal</mat-card-title>
+        <p class="card-subtitle">
+          Secure login for system administrators
+        </p>
+      </div>
+
+      <!-- Card Content -->
+      <mat-card-content>
+        
+        <!-- Error Message (if any) -->
+        <div *ngIf="showError" class="error-message">
+          <mat-icon>error</mat-icon>
+          Invalid email or password. Please try again.
+        </div>
+
+        <!-- Login Form -->
+        <form [formGroup]="loginForm" (ngSubmit)="login()">
+          
+          <!-- Email Field -->
+          <mat-form-field appearance="outline">
+            <mat-label>Admin Email</mat-label>
+            <input 
+              matInput 
+              formControlName="email"
+              placeholder="admin@homysofa.com"
+              type="email"
+            >
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+              Please enter your email address
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password Field -->
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input 
+              matInput 
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Enter your password"
+            >
+            <mat-icon matPrefix>lock</mat-icon>
+            <button 
+              type="button" 
+              mat-icon-button 
+              matSuffix
+              (click)="showPassword = !showPassword"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            >
+              <mat-icon>{{showPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+              Please enter your password
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Submit Button -->
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="login-btn"
+            [disabled]="loginForm.invalid"
+          >
+            <mat-icon>login</mat-icon>
+            Sign In to Admin Panel
+          </button>
+
+          <!-- Forgot Password -->
+          <div class="forgot-password">
+            <a href="#" (click)="forgotPassword($event)">
+              <mat-icon>help_outline</mat-icon>
+              Forgot Password?
+            </a>
+          </div>
+
+        </form>
+
+        <!-- Security Info -->
+        <div class="security-info">
+          <h4>
+            <mat-icon>security</mat-icon>
+            Security Notice
+          </h4>
+          <p>
+            This portal is restricted to authorized personnel only. 
+            All login attempts are logged and monitored for security purposes.
+          </p>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

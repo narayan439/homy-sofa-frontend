@@ -1,0 +1,76 @@
+<mat-sidenav-container class="sidenav-container">
+
+  <!-- Mobile Overlay -->
+  <div class="mobile-overlay" 
+       [class.active]="mobileSidebarOpen" 
+       (click)="closeMobileSidebar()">
+  </div>
+
+  <!-- Sidebar -->
+  <mat-sidenav #sidenav [mode]="isMobile ? 'over' : 'side'" [opened]="isMobile ? mobileSidebarOpen : true" class="sidenav">
+    
+    <!-- Brand Section -->
+    <div class="brand">
+      <h3>HomY Admin</h3>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="nav-menu">
+      <button mat-button routerLink="/admin/dashboard" routerLinkActive="router-link-active" (click)="closeMobileSidebar()">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </button>
+
+      <button mat-button routerLink="/admin/manage-bookings" routerLinkActive="router-link-active" (click)="closeMobileSidebar()">
+        <mat-icon>event_note</mat-icon>
+        Manage Bookings
+      </button>
+
+      <button mat-button routerLink="/admin/manage-services" routerLinkActive="router-link-active" (click)="closeMobileSidebar()">
+        <mat-icon>build</mat-icon>
+        Manage Services
+      </button>
+
+      <button mat-button routerLink="/admin/manage-customers" routerLinkActive="router-link-active" (click)="closeMobileSidebar()">
+        <mat-icon>people</mat-icon>
+        Customers
+      </button>
+
+      <button mat-button routerLink="/admin/settings" routerLinkActive="router-link-active" (click)="closeMobileSidebar()">
+        <mat-icon>settings</mat-icon>
+        Settings
+      </button>
+
+      <!-- Logout Button -->
+      <button mat-button color="warn" (click)="logout(); closeMobileSidebar()">
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    </div>
+
+    <!-- User Profile -->
+   
+
+  </mat-sidenav>
+
+  <!-- Main Content -->
+  <mat-sidenav-content>
+    
+    <!-- Toolbar -->
+    <mat-toolbar>
+      <!-- Mobile Toggle Button -->
+      <button class="mobile-toggle" (click)="toggleMobileSidebar()">
+        <span class="menu-icon" [class.open]="mobileSidebarOpen"></span>
+      </button>
+      
+      <!-- <span>Admin Panel</span> -->
+    </mat-toolbar>
+
+    <!-- Content Area -->
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

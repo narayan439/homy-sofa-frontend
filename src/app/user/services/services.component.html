@@ -1,0 +1,136 @@
+<section class="services-page">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>Our Premium Sofa Services</h1>
+    <p class="subtitle">
+      Transform your furniture with our professional sofa care solutions. 
+      We combine expert craftsmanship with eco-friendly products to deliver 
+      exceptional results every time.
+    </p>
+  </div>
+
+  <!-- Stats Section -->
+  <div class="stats-section">
+    <div class="stat-card">
+      <div class="stat-number">
+        <mat-icon>verified</mat-icon>
+        500+
+      </div>
+      <div class="stat-label">Happy Customers</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-number">
+        <mat-icon>engineering</mat-icon>
+        10+
+      </div>
+      <div class="stat-label">Expert Technicians</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-number">
+        <mat-icon>schedule</mat-icon>
+        24/7
+      </div>
+      <div class="stat-label">Service Support</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-number">
+        <mat-icon>thumb_up</mat-icon>
+        98%
+      </div>
+      <div class="stat-label">Satisfaction Rate</div>
+    </div>
+  </div>
+
+  <!-- Services Grid -->
+  <div class="service-grid">
+    <mat-card class="service-card" *ngFor="let svc of services">
+      <div class="service-header">
+        <img mat-card-image [src]="svc.imagePath ? imageSrc(svc.imagePath) : (svc.imageUrl || svc.image || 'assets/images/cleaning.jpg')" [alt]="svc.name || 'Service'">
+        <div class="service-badge" *ngIf="svc.isActive === false">Inactive</div>
+      </div>
+
+      <mat-card-title>
+        <mat-icon class="service-icon">{{ svc.icon || 'room_service' }}</mat-icon>
+        {{ svc.name }}
+      </mat-card-title>
+
+      <mat-card-content>
+        {{ svc.description }}
+      </mat-card-content>
+
+      <ul class="features-list" *ngIf="(svc.features || []).length">
+        <li *ngFor="let f of svc.features"><mat-icon>check_circle</mat-icon> {{ f }}</li>
+      </ul>
+
+      <mat-card-actions>
+        <button mat-raised-button class="book-btn" [routerLink]="['/booking']" [queryParams]="{ service: svc.id || svc.name }">
+          <mat-icon>event_available</mat-icon>
+          Book {{ svc.name }}
+        </button>
+        <div class="price-tag">{{ svc.price != null ? ('₹' + svc.price) : 'Contact for price' }}</div>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Animated CTA Section -->
+  <!-- <div class="animated-cta-section"> -->
+    
+    <!-- Animated Mechanic Scene -->
+    <!-- <div class="mechanic-animation">
+      <div class="sofa-wrapper"> -->
+        <!-- Sofa Base -->
+        <!-- <div class="sofa"></div> -->
+        
+        <!-- Tools Floating Around -->
+        <!-- <div class="tool tool-wrench">
+          <mat-icon>build</mat-icon>
+        </div>
+        <div class="tool tool-screwdriver">
+          <mat-icon>construction</mat-icon>
+        </div>
+        <div class="tool tool-spray">
+          <mat-icon>cleaning_services</mat-icon>
+        </div> -->
+        
+        <!-- Animated Parts -->
+    
+        <!-- Animated Parts -->
+<!-- <div class="part part-cushion"></div>
+<div class="part part-spring"></div>
+<div class="part part-fabric"></div>
+<div class="part part-button"></div>
+      </div>
+    </div> -->
+    
+    <!-- Animated CTA Content -->
+    <!-- <div class="animated-cta-content">
+      <h2>Need Immediate Service?</h2>
+      <p>
+        Our expert technicians are ready to restore your sofa's beauty and comfort. 
+        Book now for same-day service or emergency repairs.
+      </p>
+      
+      <div class="cta-buttons">
+        <button mat-raised-button class="call-btn" (click)="callCustomerService()">
+          <mat-icon>call</mat-icon>
+          Call Now: +91 9876543210
+        </button>
+        
+        <button mat-raised-button class="whatsapp-btn" (click)="openWhatsApp()">
+          <mat-icon>chat</mat-icon>
+          WhatsApp Quick Booking
+        </button>
+      </div>
+      
+      <div class="emergency-badge">
+        <mat-icon>emergency</mat-icon>
+        24/7 Emergency Service Available
+      </div>
+    </div> -->
+  <!-- </div> -->
+
+</section>

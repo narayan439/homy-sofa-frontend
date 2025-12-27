@@ -1,0 +1,191 @@
+<!-- Welcome Card -->
+<div class="welcome-card">
+  <h1>Welcome to HomY Sofa Admin</h1>
+  <p>Manage your sofa service bookings, customers, and services efficiently from one place.</p>
+</div>
+
+<!-- Quick Stats -->
+<div class="quick-stats">
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon" style="background: linear-gradient(135deg, #1a237e, #304ffe);">
+        <mat-icon>event</mat-icon>
+      </div>
+    </div>
+    <div class="stat-content">
+      <h3>{{dashboardStats.totalBookings}}</h3>
+      <p>Total Bookings</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon" style="background: linear-gradient(135deg, #f57c00, #ff9800);">
+        <mat-icon>pending</mat-icon>
+      </div>
+    </div>
+    <div class="stat-content">
+      <h3>{{dashboardStats.pendingBookings}}</h3>
+      <p>Pending Bookings</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon" style="background: linear-gradient(135deg, #388e3c, #4caf50);">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+    </div>
+    <div class="stat-content">
+      <h3>{{dashboardStats.confirmedBookings}}</h3>
+      <p>Confirmed</p>
+    </div>
+  </div>
+
+  <!-- Added Cancelled Bookings Card -->
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon" style="background: linear-gradient(135deg, #d32f2f, #f44336);">
+        <mat-icon>cancel</mat-icon>
+      </div>
+    </div>
+    <div class="stat-content">
+      <h3>{{dashboardStats.cancelledBookings}}</h3>
+      <p>Cancelled</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon" style="background: linear-gradient(135deg, #0288d1, #03a9f4);">
+        <mat-icon>today</mat-icon>
+      </div>
+    </div>
+    <div class="stat-content">
+      <h3>{{dashboardStats.todaysBookings}}</h3>
+      <p>Today's Bookings</p>
+    </div>
+  </div>
+
+  <!-- Updated Revenue Card - Only from COMPLETED bookings -->
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon" style="background: linear-gradient(135deg, #5d4037, #795548);">
+        <mat-icon>attach_money</mat-icon>
+      </div>
+    </div>
+    <div class="stat-content">
+      <h3>₹{{dashboardStats.monthlyRevenue | number:'1.0-0'}}</h3>
+      <p>Revenue (Monthly)</p>
+      <div class="stat-trend positive" *ngIf="dashboardStats.monthlyRevenue > 0">
+        <mat-icon>trending_up</mat-icon>
+        Completed Bookings Only
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Bookings -->
+<div class="recent-bookings">
+  <div class="table-actions">
+    <h2>
+      <mat-icon>receipt</mat-icon>
+      Recent Bookings
+    </h2>
+    <button mat-stroked-button class="refresh-btn" (click)="refreshRecent()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </div>
+  
+  <table mat-table [dataSource]="recentBookings" class="dashboard-bookings-table mat-elevation-z8">
+    <!-- Customer Name Column -->
+    <ng-container matColumnDef="customer">
+      <th mat-header-cell *matHeaderCellDef>Customer</th>
+      <td mat-cell *matCellDef="let booking">
+        <div class="customer-info">
+          <div class="customer-avatar">{{ getInitials(booking.name || booking.customerName || '?') }}</div>
+          <div class="customer-name">{{ booking.name || booking.customerName || 'N/A' }}</div>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Reference Column -->
+    <ng-container matColumnDef="reference">
+      <th mat-header-cell *matHeaderCellDef>Reference</th>
+      <td mat-cell *matCellDef="let booking">{{ booking.reference || booking.id?.substring(0, 8) || '-' }}</td>
+    </ng-container>
+
+    <!-- Phone Column -->
+    <ng-container matColumnDef="phone">
+      <th mat-header-cell *matHeaderCellDef>Phone</th>
+      <td mat-cell *matCellDef="let booking">{{ booking.phone || booking.customerPhone || 'N/A' }}</td>
+    </ng-container>
+
+    <!-- Service Column -->
+    <ng-container matColumnDef="service">
+      <th mat-header-cell *matHeaderCellDef>Service</th>
+      <td mat-cell *matCellDef="let booking">
+        <div class="service-cell">
+          <span class="service-name">{{ getServiceName(booking.service) }}</span>
+          <div class="service-meta">
+          </div>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Date & Time Column -->
+    <ng-container matColumnDef="date">
+      <th mat-header-cell *matHeaderCellDef>Date & Time</th>
+      <td mat-cell *matCellDef="let booking">
+        <div class="service-date">
+          <mat-icon>calendar_today</mat-icon>
+          {{ (booking.date || booking.createdAt) | date: 'dd/MM/yyyy' }}
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Status Column -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let booking">
+        <span class="status-badge" [ngClass]="getStatusClass(booking.status)">
+          {{ booking.status | titlecase }}
+        </span>
+      </td>
+    </ng-container>
+
+    <!-- Amount Column -->
+    <ng-container matColumnDef="amount">
+      <th mat-header-cell *matHeaderCellDef>Amount</th>
+      <td mat-cell *matCellDef="let booking">
+        <div *ngIf="booking.status === 'COMPLETED'">
+          ₹{{ getBookingPrice(booking) | number:'1.0-2' }}
+        </div>
+        <div *ngIf="booking.status === 'PENDING'" class="amount-pending">
+          ₹{{ getBookingPrice(booking) | number:'1.0-2' }}
+        </div>
+        <div *ngIf="booking.status === 'CANCELLED'" class="amount-cancelled">
+          ₹{{ getBookingPrice(booking) | number:'1.0-2' }}
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Header Row -->
+    <tr mat-header-row *matHeaderRowDef="['customer','reference','phone','service','date','status','amount']"></tr>
+    
+    <!-- Data Rows -->
+    <tr mat-row *matRowDef="let row; columns: ['customer','reference','phone','service','date','status','amount'];"></tr>
+    
+    <!-- Empty State -->
+    <tr *ngIf="recentBookings.length === 0">
+      <td colspan="7">
+        <div class="empty-state">
+          <mat-icon>event_busy</mat-icon>
+          <h3>No Bookings Found</h3>
+          <p>No recent bookings to display</p>
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>

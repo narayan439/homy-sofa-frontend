@@ -1,0 +1,162 @@
+<div class="manage-customers-container">
+  
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Customer Management</h1>
+      <p class="page-subtitle">Manage all customer information and booking history</p>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-container">
+    <div class="stat-card">
+      <div class="stat-icon total">
+        <mat-icon>people</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{customers.length}}</h3>
+        <p>Total Customers</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon active">
+        <mat-icon>person_check</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{customers.length}}</h3>
+        <p>Active Customers</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon booking">
+        <mat-icon>event_available</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{getTotalBookings()}}</h3>
+        <p>Total Bookings</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <!-- Table Header -->
+    <div class="table-header">
+      <h2>All Customers</h2>
+      <div class="table-controls">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search customers...</mat-label>
+          <input matInput placeholder="Search by name, phone, or email">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        
+        <button mat-stroked-button class="export-btn">
+          <mat-icon>download</mat-icon>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Customers Table -->
+    <div class="table-responsive">
+      <table mat-table [dataSource]="customers" class="customers-table">
+        
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef> Customer Name </th>
+          <td mat-cell *matCellDef="let customer">
+            <div class="customer-info">
+              <div class="avatar">{{customer.name.charAt(0)}}</div>
+              <div>
+                <div class="customer-name">{{ customer.name }}</div>
+                <div class="email-cell">{{ customer.email }}</div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Phone Column -->
+        <ng-container matColumnDef="phone">
+          <th mat-header-cell *matHeaderCellDef> Contact </th>
+          <td mat-cell *matCellDef="let customer" class="phone-cell">
+            <mat-icon>phone</mat-icon>
+            {{ customer.phone }}
+          </td>
+        </ng-container>
+
+        <!-- Email Column -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef> Email </th>
+          <td mat-cell *matCellDef="let customer" class="email-cell">
+            <div class="email-display">
+              <mat-icon>email</mat-icon>
+              {{ customer.email }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Bookings Column -->
+        <ng-container matColumnDef="bookings">
+          <th mat-header-cell *matHeaderCellDef> Bookings </th>
+          <td mat-cell *matCellDef="let customer" class="bookings-cell">
+            <div class="bookings-badge">
+              <mat-icon>event_note</mat-icon>
+              {{ customer.totalBookings }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column (Optional) -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="actions-header"> Actions </th>
+          <td mat-cell *matCellDef="let customer" class="actions-cell">
+            <button
+              mat-mini-fab
+              class="action-btn view-btn"
+              matTooltip="View Details"
+            >
+              <mat-icon>visibility</mat-icon>
+            </button>
+            
+            <button 
+              mat-mini-fab
+              class="action-btn call-btn"
+              matTooltip="Call Customer"
+            >
+              <mat-icon>call</mat-icon>
+            </button>
+            
+            <button 
+              mat-mini-fab
+              class="action-btn message-btn"
+              matTooltip="Send Message"
+            >
+              <mat-icon>message</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Header Row -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns" class="table-header-row"></tr>
+        
+        <!-- Data Rows -->
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+
+        <!-- Empty State -->
+        <tr *ngIf="customers.length === 0">
+          <td [colSpan]="displayedColumns.length">
+            <div class="empty-state">
+              <mat-icon class="empty-icon">people</mat-icon>
+              <h3>No Customers Found</h3>
+              <p>Customer information will appear here when available</p>
+            </div>
+          </td>
+        </tr>
+
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,306 @@
+<div class="manage-services-container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>Manage Services</h1>
+    <p>Add, edit, and manage all your service offerings</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-container">
+    <div class="stat-card">
+      <div class="stat-icon total">
+        <mat-icon>miscellaneous_services</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{services.length}}</h3>
+        <p>Total Services</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon active">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{getActiveServicesCount()}}</h3>
+        <p>Active Services</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon price">
+        <mat-icon>currency_rupee</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{getAveragePrice()}}</h3>
+        <p>Avg. Price</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="services-main">
+    
+    <!-- Services Grid -->
+    <div class="services-grid">
+      
+      <!-- No Services Message -->
+      <div class="no-services" *ngIf="services.length === 0">
+        <div class="no-services-icon">
+          <mat-icon>miscellaneous_services</mat-icon>
+        </div>
+        <h3>No Services Added Yet</h3>
+        <p>Add your first service using the form on the right</p>
+      </div>
+
+      <!-- Service Cards -->
+      <div class="service-card" *ngFor="let service of services">
+        
+        <!-- Service Image -->
+        <div class="service-image-wrapper">
+          <ng-container *ngIf="service.imagePath; else noServiceImage">
+            <img 
+              [src]="imageSrc(service.imagePath)" 
+              [alt]="service.name"
+              class="service-image"
+              (error)="service.imagePath = ''"
+            >
+            <div class="image-overlay"></div>
+          </ng-container>
+          
+          <ng-template #noServiceImage>
+            <div class="no-image">
+              <mat-icon>miscellaneous_services</mat-icon>
+              <span>No Image</span>
+            </div>
+          </ng-template>
+        </div>
+        
+        <!-- Service Content -->
+        <div class="service-content">
+          
+          <!-- Service Header -->
+          <div class="service-header">
+            <h3 class="service-title">{{ service.name }}</h3>
+            <div class="status-badge" [class.active]="service.isActive" [class.inactive]="!service.isActive">
+              <mat-icon>{{ service.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+              {{ service.isActive ? 'Active' : 'Inactive' }}
+            </div>
+          </div>
+
+          <!-- Service Description -->
+          <div class="service-description">
+            {{ service.description || 'No description provided' }}
+          </div>
+
+          <!-- Service Info -->
+          <div class="service-info">
+            <!-- Price Display/Edit -->
+            <div *ngIf="editingPriceId !== service.id" class="price-badge">
+              {{ service.price }}
+            </div>
+            
+            <!-- Price Edit Modal -->
+            <div class="price-edit-modal" *ngIf="editingPriceId === service.id">
+              <div class="edit-price-form">
+                <input 
+                  type="number" 
+                  [(ngModel)]="editingPriceValue"
+                  min="0"
+                  step="50"
+                  placeholder="Enter new price"
+                >
+                <div class="edit-price-buttons">
+                  <button class="primary-btn" (click)="savePrice(service)">
+                    Save
+                  </button>
+                  <button class="secondary-btn" (click)="cancelEditPrice()">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Service Actions -->
+          <div class="service-actions">
+            <button 
+              class="action-btn edit-btn"
+              (click)="editService(service)"
+            >
+              <mat-icon>edit</mat-icon>
+              Edit
+            </button>
+            
+            <button 
+              class="action-btn price-edit-btn"
+              (click)="startEditPrice(service)"
+            >
+              <mat-icon>currency_rupee</mat-icon>
+              Price
+            </button>
+            
+            <button 
+              class="action-btn delete-btn"
+              (click)="deleteService(service.id)"
+            >
+              <mat-icon>delete</mat-icon>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Sidebar -->
+    <div class="form-sidebar">
+      <mat-card class="form-card">
+        
+        <!-- Form Header -->
+        <div class="form-header">
+          <h3>
+            <mat-icon>{{ isEdit ? 'edit' : 'add_circle' }}</mat-icon>
+            {{ isEdit ? 'Edit Service' : 'Add New Service' }}
+          </h3>
+        </div>
+
+        <!-- Form Content -->
+        <form class="form-content" (ngSubmit)="saveService()" #serviceForm="ngForm">
+          
+          <!-- Service Name -->
+          <mat-form-field appearance="outline">
+            <mat-label>Service Name</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="newService.name"
+              name="name"
+              placeholder="Enter service name"
+              required
+            >
+            <mat-icon matPrefix>design_services</mat-icon>
+            <mat-error *ngIf="serviceForm.controls['name']?.invalid">
+              Service name is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Description -->
+          <mat-form-field appearance="outline">
+            <mat-label>Description</mat-label>
+            <textarea 
+              matInput 
+              rows="3" 
+              [(ngModel)]="newService.description"
+              name="description"
+              placeholder="Describe the service in detail"
+            ></textarea>
+            <mat-icon matPrefix>description</mat-icon>
+          </mat-form-field>
+
+          <!-- Price -->
+          <mat-form-field appearance="outline">
+            <mat-label>Price (₹)</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="newService.price" 
+              name="price"
+              type="number"
+              min="0"
+              step="50"
+              placeholder="Enter service price"
+              required
+            >
+            <mat-icon matPrefix>currency_rupee</mat-icon>
+            <mat-error *ngIf="serviceForm.controls['price']?.invalid">
+              Valid price is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Image Upload -->
+          <div class="image-upload-section" *ngIf="!newService.imagePath && !previewDataUrl">
+            <div class="upload-label">
+              <div class="upload-icon">
+                <mat-icon>image</mat-icon>
+              </div>
+              <span>Upload Service Image</span>
+              <p>Click to browse or drag and drop</p>
+            </div>
+            <input 
+              type="file" 
+              class="hidden-input"
+              (change)="onImageSelected($event)" 
+              accept="image/*"
+            >
+          </div>
+
+          <!-- Image Preview -->
+          <div class="image-preview-container" *ngIf="newService.imagePath || previewDataUrl">
+            <ng-container *ngIf="previewDataUrl; else existingImageTemplate">
+              <img 
+                [src]="previewDataUrl" 
+                alt="Service image preview" 
+                class="image-preview"
+                (error)="onImageLoadError()"
+              >
+              <div class="uploading-overlay" *ngIf="isUploading">
+                <div class="uploading-spinner"></div>
+                <span>Uploading...</span>
+              </div>
+            </ng-container>
+
+            <ng-template #existingImageTemplate>
+              <img 
+                [src]="imageSrc(newService.imagePath)" 
+                alt="Service image preview" 
+                class="image-preview"
+                (error)="onImageLoadError()"
+              >
+            </ng-template>
+            
+            <button 
+              type="button" 
+              class="remove-btn"
+              (click)="removeImage()"
+              matTooltip="Remove Image"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <!-- Active Toggle -->
+          <mat-slide-toggle 
+            [(ngModel)]="newService.isActive"
+            name="isActive"
+            color="primary"
+          >
+            <span class="toggle-label">
+              {{ newService.isActive ? 'Service is Active' : 'Service is Inactive' }}
+            </span>
+          </mat-slide-toggle>
+
+          <!-- Form Buttons -->
+          <div class="form-buttons">
+            <button 
+              class="primary-btn"
+              type="submit"
+              [disabled]="serviceForm.invalid || isUploading"
+            >
+              <mat-icon>{{ isEdit ? 'save' : 'add' }}</mat-icon>
+              {{ isEdit ? 'Update Service' : 'Add Service' }}
+            </button>
+
+            <button 
+              class="secondary-btn"
+              type="button"
+              (click)="resetForm()" 
+              *ngIf="isEdit"
+            >
+              <mat-icon>close</mat-icon>
+              Cancel Edit
+            </button>
+          </div>
+        </form>
+      </mat-card>
+    </div>
+  </div>
+</div>

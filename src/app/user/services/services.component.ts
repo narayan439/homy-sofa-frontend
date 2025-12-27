@@ -1,0 +1,48 @@
+import { Component, OnInit } from '@angular/core';
+import { ServiceService as BackendService, Service as Svc } from '../../core/services/service.service';
+
+@Component({
+  selector: 'app-services',
+  templateUrl: './services.component.html',
+  styleUrls: ['./services.component.css']
+})
+export class ServicesComponent implements OnInit {
+
+  services: Svc[] = [];
+
+  constructor(private backend: BackendService) { }
+
+  ngOnInit(): void {
+    this.backend.services$.subscribe(list => {
+      this.services = list || [];
+    });
+    this.backend.loadServices();
+  }
+
+  imageSrc(path?: string | null): string {
+    if (!path) return '';
+    const p = path.trim();
+    if (p.startsWith('http://') || p.startsWith('https://')) return p;
+    return p.startsWith('/') ? p : '/' + p;
+  }
+
+  scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // callCustomerService(): void {
+  //   const phoneNumber = '+919876543210';
+  //   window.open(`tel:${phoneNumber}`, '_self');
+  // }
+
+  // openWhatsApp(): void {
+  //   const message = 'Hello, I would like to book a sofa service from your website.';
+  //   const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(message)}`;
+  //   window.open(whatsappUrl, '_blank');
+  // }
+
+  // bookService(serviceType: string): void {
+  //   // This will be handled by the router link with query params
+  // }
+
+}

@@ -1,0 +1,112 @@
+<footer class="footer">
+  <!-- Footer Content -->
+  <div class="footer-content">
+    
+    <!-- Brand Section -->
+    <div class="brand">
+      <h3>HomY Sofa</h3>
+      <p>
+        Transforming your living spaces with professional sofa care solutions. 
+        Expert cleaning, repair, and renovation services with guaranteed quality.
+      </p>
+      
+      <!-- Social Links -->
+      <!-- <div class="social-links">
+        <a [href]="socialLinks.facebook" target="_blank" class="social-link" aria-label="Facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a [href]="socialLinks.instagram" target="_blank" class="social-link" aria-label="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a [href]="socialLinks.twitter" target="_blank" class="social-link" aria-label="Twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a [href]="socialLinks.whatsapp" target="_blank" class="social-link" aria-label="WhatsApp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </div> -->
+    </div>
+
+    <!-- Quick Links -->
+    <div class="links">
+      <h4>Quick Links</h4>
+      <a routerLink="/" routerLinkActive="active" (click)="scrollToTop()">Home</a>
+      <a routerLink="/services" routerLinkActive="active">Services</a>
+      <a routerLink="/booking" routerLinkActive="active">Book Service</a>
+      <a routerLink="/about" routerLinkActive="active">About Us</a>
+      <a routerLink="/contact" routerLinkActive="active">Contact Us</a>
+
+      <!-- Admin Login Button -->
+      <button
+        mat-stroked-button
+        class="admin-btn"
+        routerLink="/admin/login"
+      >
+        <mat-icon>admin_panel_settings</mat-icon>
+        Admin Login
+      </button>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="contact">
+      <h4>Contact Info</h4>
+      <div class="contact-info">
+        <div class="contact-item">
+          
+          <mat-icon class="pulse">location_on</mat-icon>
+          <div>
+            <strong>Office Address</strong><br>
+            Plot No. 123, Saheed Nagar<br>
+            Bhubaneswar, Odisha - 751024
+          </div>
+        </div>
+        
+        <div class="contact-item">
+          <mat-icon>phone</mat-icon>
+          <div>
+            <strong>Phone Number</strong><br>
+            +91 9876543210<br>
+            +91 9876543211
+          </div>
+        </div>
+        
+        <!-- <div class="contact-item">
+          <mat-icon>email</mat-icon>
+          <div>
+            <strong>Email Address</strong><br>
+            info@homysofa.com<br>
+            support@homysofa.com
+          </div>
+        </div> -->
+        
+        <!-- <div class="contact-item">
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <strong>Working Hours</strong><br>
+            Mon - Sat: 9:00 AM - 8:00 PM<br>
+            Sunday: 10:00 AM - 6:00 PM
+          </div>
+        </div> -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer Bottom -->
+  <div class="footer-bottom">
+    © 2025 <strong>HomY Sofa</strong>. All rights reserved. | 
+    <a routerLink="/privacy">Privacy Policy</a> • 
+    <a routerLink="/terms">Terms of Service</a> • 
+    <!-- <a routerLink="/sitemap">Sitemap</a> • 
+    <a routerLink="/careers">Careers</a> -->
+    <br>
+    <!-- <small style="opacity: 0.7; margin-top: 10px; display: block;">
+      Made with ❤️ for happy homes across India
+    </small> -->
+  </div>
+</footer>
+
+<!-- Back to Top Button -->
+<!-- <button *ngIf="showBackToTop" class="back-to-top" (click)="scrollToTop()">
+  <mat-icon>arrow_upward</mat-icon>
+</button> -->

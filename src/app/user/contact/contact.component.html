@@ -1,0 +1,263 @@
+<section class="contact-page">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>Get In Touch With Us</h1>
+    <p class="subtitle">
+      Have questions about our sofa services? We're here to help! 
+      Reach out to us for bookings, inquiries, or support.
+    </p>
+  </div>
+
+  <!-- Contact Container -->
+  <div class="contact-container">
+    
+    <!-- Contact Info Card -->
+    <div class="contact-info-card">
+      <h2>
+        <mat-icon>contact_support</mat-icon>
+        Contact Information
+      </h2>
+      
+      <div class="contact-items">
+        <!-- Phone -->
+        <div class="contact-item">
+          <div class="contact-icon">
+            <mat-icon>call</mat-icon>
+          </div>
+          <div class="contact-content">
+            <h3>Call Us</h3>
+            <p>
+              <a href="tel:+919876543210">+91 98765 43210</a><br>
+              <small>Available 24/7 for urgent bookings</small>
+            </p>
+          </div>
+        </div>
+        
+        <!-- Email -->
+        <div class="contact-item">
+          <div class="contact-icon">
+            <mat-icon>email</mat-icon>
+          </div>
+          <div class="contact-content">
+            <h3>Email Us</h3>
+            <p>
+              <a href="mailto:support@homysofa.com">support@homysofa.com</a><br>
+              <small>Response within 2 business hours</small>
+            </p>
+          </div>
+        </div>
+        
+        <!-- Address -->
+        <div class="contact-item">
+          <div class="contact-icon">
+            <mat-icon>location_on</mat-icon>
+          </div>
+          <div class="contact-content">
+            <h3>Visit Us</h3>
+            <p>
+              123 Service Street, Bhubaneswar<br>
+              Odisha - 751024, India
+            </p>
+          </div>
+        </div>
+        
+        <!-- WhatsApp -->
+        <div class="contact-item">
+          <div class="contact-icon">
+            <mat-icon>whatsapp</mat-icon>
+          </div>
+          <div class="contact-content">
+            <h3>WhatsApp</h3>
+            <p>
+              <a href="https://wa.me/919876543210">+91 98765 43210</a><br>
+              <small>Quick queries & instant support</small>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Social Links -->
+      <!-- <div class="social-section">
+        <h3>Follow Us</h3>
+        <div class="social-links">
+          <a href="#" class="social-link" aria-label="Facebook">
+            <mat-icon>facebook</mat-icon>
+          </a>
+          <a href="#" class="social-link" aria-label="Instagram">
+            <mat-icon>instagram</mat-icon>
+          </a>
+          <a href="#" class="social-link" aria-label="Twitter">
+            <mat-icon>twitter</mat-icon>
+          </a>
+          <a href="#" class="social-link" aria-label="LinkedIn">
+            <mat-icon>linkedin</mat-icon>
+          </a>
+        </div>
+      </div> -->
+    </div>
+
+    <!-- Contact Form Card -->
+    <div class="contact-form-card">
+      <h2>
+        <mat-icon>send</mat-icon>
+        Send Us a Message
+      </h2>
+      
+      <form class="contact-form" [formGroup]="contactForm" (ngSubmit)="submitForm()">
+        <!-- Name -->
+        <mat-form-field appearance="outline">
+          <mat-label>Your Full Name</mat-label>
+          <input 
+            matInput 
+            formControlName="name"
+            placeholder="Enter your name"
+            required
+          >
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-error *ngIf="contactForm.get('name')?.invalid && contactForm.get('name')?.touched">
+            Please enter your name
+          </mat-error>
+        </mat-form-field>
+        
+        <!-- Email -->
+        <mat-form-field appearance="outline">
+          <mat-label>Email Address</mat-label>
+          <input 
+            matInput 
+            formControlName="email"
+            type="email"
+            placeholder="your.email@example.com"
+            required
+          >
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="contactForm.get('email')?.invalid && contactForm.get('email')?.touched">
+            Please enter a valid email address
+          </mat-error>
+        </mat-form-field>
+        
+        <!-- Phone -->
+        <mat-form-field appearance="outline">
+          <mat-label>Phone Number</mat-label>
+          <input 
+            matInput 
+            formControlName="phone"
+            placeholder="+91 9876543210"
+            required
+          >
+          <mat-icon matPrefix>phone</mat-icon>
+          <mat-error *ngIf="contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched">
+            Please enter your phone number
+          </mat-error>
+        </mat-form-field>
+        
+        <!-- Subject -->
+        <mat-form-field appearance="outline">
+          <mat-label>Subject</mat-label>
+          <mat-select formControlName="subject">
+            <mat-option value="booking">Booking Inquiry</mat-option>
+            <mat-option value="service">Service Information</mat-option>
+            <mat-option value="support">Customer Support</mat-option>
+            <mat-option value="feedback">Feedback/Suggestion</mat-option>
+            <mat-option value="other">Other</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>subject</mat-icon>
+        </mat-form-field>
+        
+        <!-- Message -->
+        <mat-form-field appearance="outline">
+          <mat-label>Your Message</mat-label>
+          <textarea 
+            matInput 
+            formControlName="message"
+            rows="5"
+            placeholder="Tell us about your sofa service needs, questions, or concerns..."
+            required
+          ></textarea>
+          <mat-icon matPrefix>message</mat-icon>
+          <mat-error *ngIf="contactForm.get('message')?.hasError('required') && contactForm.get('message')?.touched">
+            Please enter your message
+          </mat-error>
+          <mat-error *ngIf="contactForm.get('message')?.hasError('minlength') && contactForm.get('message')?.touched">
+            Message must be at least 10 characters
+          </mat-error>
+          <mat-error *ngIf="contactForm.get('message')?.hasError('maxlength') && contactForm.get('message')?.touched">
+            Message cannot be above 100 characters
+          </mat-error>
+        </mat-form-field>
+        
+        <!-- Submit Button -->
+        <button 
+          mat-raised-button 
+          color="primary" 
+          type="submit"
+          class="submit-btn"
+          [disabled]="contactForm.invalid"
+        >
+          <mat-icon>send</mat-icon>
+          Send Message
+        </button>
+      </form>
+    </div>
+
+    <!-- Map Section -->
+    <div class="map-section">
+      <div class="map-card">
+        <div class="map-header">
+          <h2>
+            <mat-icon>location_on</mat-icon>
+            Our Location
+          </h2>
+          <a 
+            href="https://maps.google.com/?q=Bhubaneswar,Odisha" 
+            target="_blank" 
+            class="directions-btn"
+          >
+            <mat-icon>directions</mat-icon>
+            Get Directions
+          </a>
+        </div>
+        
+        <div class="map-container">
+          <!-- Google Maps Embed -->
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3740.7158595588413!2d85.82255047588278!3d20.349268381102303!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a19092189d46b03%3A0x94f1c61f7455bae0!2sBhubaneswar%2C%20Odisha!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+            width="100%" 
+            height="100%" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+      </div>
+      
+      <!-- Business Hours -->
+      <!-- <div class="business-hours">
+        <h3>
+          <mat-icon>schedule</mat-icon>
+          Business Hours
+        </h3>
+        <div class="hours-grid">
+          <div class="hour-item">
+            <span class="day">Monday - Friday</span>
+            <span class="time">9:00 AM - 8:00 PM</span>
+          </div>
+          <div class="hour-item">
+            <span class="day">Saturday</span>
+            <span class="time">9:00 AM - 6:00 PM</span>
+          </div>
+          <div class="hour-item">
+            <span class="day">Sunday</span>
+            <span class="time">10:00 AM - 4:00 PM</span>
+          </div>
+          <div class="hour-item">
+            <span class="day">Emergency Service</span>
+            <span class="time">24/7 Available</span>
+          </div>
+        </div>
+      </div> -->
+    </div>
+
+  </div>
+</section>

@@ -1,0 +1,89 @@
+<mat-toolbar class="navbar" [class.shrink]="isScrolled">
+  
+  <!-- Logo -->
+  <a routerLink="/" class="logo">
+    HomY
+  </a>
+
+  <span class="spacer"></span>
+
+  <!-- Desktop Menu -->
+  <nav class="desktop-menu">
+    <a mat-button routerLink="/" routerLinkActive="active">
+      Home
+    </a>
+    <a mat-button routerLink="/services" routerLinkActive="active">
+      Services
+    </a>
+    <a mat-button routerLink="/contact" routerLinkActive="active">
+      Contact
+    </a>
+    
+    <!-- Book Now Button -->
+    <a mat-raised-button routerLink="/booking" class="desktop-book-btn" routerLinkActive="active">
+      Book Now
+    </a>
+  </nav>
+
+  <!-- Mobile Menu Button -->
+  <button class="mobile-menu-btn" (click)="toggleMobileSidebar()">
+    <span class="menu-icon" [class.open]="mobileSidebarOpen"></span>
+  </button>
+
+</mat-toolbar>
+
+<!-- Mobile Sidebar Overlay -->
+<div class="mobile-sidebar-overlay" 
+     [class.active]="mobileSidebarOpen" 
+     (click)="closeMobileSidebar()">
+</div>
+
+<!-- Mobile Sidebar -->
+<div class="mobile-sidebar" [class.active]="mobileSidebarOpen">
+  
+  <!-- Sidebar Header -->
+  <div class="mobile-sidebar-header">
+    <div class="mobile-logo">
+    
+    </div>
+    
+    <button class="close-sidebar" (click)="closeMobileSidebar()">
+      <span class="close-icon"></span>
+    </button>
+  </div>
+
+  <!-- Sidebar Menu -->
+  <ul class="mobile-sidebar-menu">
+    <li>
+      <a routerLink="/" routerLinkActive="active" (click)="closeMobileSidebar()">
+        Home
+      </a>
+    </li>
+    
+    <li>
+      <a routerLink="/services" routerLinkActive="active" (click)="closeMobileSidebar()">
+        Services
+      </a>
+    </li>
+    
+    <li>
+      <a routerLink="/booking" routerLinkActive="active" (click)="closeMobileSidebar()">
+        Book Service
+      </a>
+    </li>
+    
+    <li>
+      <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileSidebar()">
+        Contact Us
+      </a>
+    </li>
+  </ul>
+
+  <!-- Sidebar Footer -->
+  <div class="mobile-sidebar-footer">
+    <a routerLink="/booking" class="book-now-btn" (click)="closeMobileSidebar()">
+      Book Now
+    </a>
+  </div>
+  
+</div>

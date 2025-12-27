@@ -1,0 +1,215 @@
+<div class="settings-container">
+  
+  <!-- Page Header -->
+  <!-- <div class="page-header">
+    <h1>Settings</h1>
+    <p>Manage your business information and account settings</p>
+  </div> -->
+
+  <!-- Settings Content -->
+  <!-- <div class="settings-content"> -->
+
+    <!-- BUSINESS SETTINGS CARD -->
+    <!-- <mat-card class="settings-card"> -->
+      <!-- Card Header -->
+      <!-- <div class="card-header">
+        <h3>
+          <mat-icon>business</mat-icon>
+          Business Information
+        </h3>
+      </div> -->
+
+      <!-- Card Content -->
+      <!-- <div class="card-content"> -->
+        <!-- Form Grid -->
+        <!-- <div class="form-grid"> -->
+          <!-- Business Name -->
+          <!-- <mat-form-field appearance="outline">
+            <mat-label>Business Name</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="settings.businessName"
+              placeholder="Enter your business name"
+            >
+            <mat-icon matPrefix>store</mat-icon>
+          </mat-form-field> -->
+
+          <!-- Phone Number -->
+          <!-- <mat-form-field appearance="outline">
+            <mat-label>Phone Number</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="settings.phone"
+              placeholder="Enter phone number"
+            >
+            <mat-icon matPrefix>phone</mat-icon>
+          </mat-form-field> -->
+
+          <!-- WhatsApp Number -->
+          <!-- <mat-form-field appearance="outline">
+            <mat-label>WhatsApp Number</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="settings.whatsapp"
+              placeholder="Enter WhatsApp number"
+            >
+            <mat-icon matPrefix>whatsapp</mat-icon>
+          </mat-form-field> -->
+
+          <!-- Email -->
+          <!-- <mat-form-field appearance="outline">
+            <mat-label>Email Address</mat-label>
+            <input 
+              matInput 
+              type="email" 
+              [(ngModel)]="settings.email"
+              placeholder="Enter business email"
+            >
+            <mat-icon matPrefix>email</mat-icon>
+          </mat-form-field> -->
+
+          <!-- Service Area -->
+          <!-- <mat-form-field appearance="outline">
+            <mat-label>Service Area</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="settings.city"
+              placeholder="Enter service area/city"
+            >
+            <mat-icon matPrefix>location_on</mat-icon>
+          </mat-form-field> -->
+
+          <!-- Working Hours -->
+          <!-- <mat-form-field appearance="outline">
+            <mat-label>Working Hours</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="settings.workingHours"
+              placeholder="e.g., 9 AM - 7 PM"
+            >
+            <mat-icon matPrefix>schedule</mat-icon>
+          </mat-form-field>
+        </div> -->
+
+        <!-- Business Info Section -->
+        <!-- <div class="business-info">
+          <h4>
+            <mat-icon>info</mat-icon>
+            Business Details Preview
+          </h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <mat-icon>store</mat-icon>
+              <span>{{settings.businessName}}</span>
+            </div>
+            <div class="info-item">
+              <mat-icon>phone</mat-icon>
+              <span>{{settings.phone}}</span>
+            </div>
+            <div class="info-item">
+              <mat-icon>email</mat-icon>
+              <span>{{settings.email}}</span>
+            </div>
+            <div class="info-item">
+              <mat-icon>location_on</mat-icon>
+              <span>{{settings.city}}</span>
+            </div>
+            <div class="info-item">
+              <mat-icon>schedule</mat-icon>
+              <span>{{settings.workingHours}}</span>
+            </div>
+          </div>
+        </div> -->
+
+        <!-- Save Button -->
+        <!-- <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="saveSettings()"
+          class="save-btn"
+        >
+          <mat-icon>save</mat-icon>
+          Save Business Settings
+        </button>
+      </div>
+    </mat-card> -->
+
+    <!-- PASSWORD SETTINGS CARD -->
+    <mat-card class="settings-card">
+      <!-- Card Header -->
+      <div class="card-header">
+        <h3>
+          <mat-icon>lock</mat-icon>
+          Change Admin Password
+        </h3>
+      </div>
+
+      <!-- Card Content -->
+      <div class="card-content">
+        <!-- Form Grid -->
+        <div class="form-grid">
+          <!-- Current Password -->
+          <mat-form-field appearance="outline">
+            <mat-label>Current Password</mat-label>
+            <input 
+              matInput 
+              type="password" 
+              [(ngModel)]="password.current"
+              placeholder="Enter current password"
+            >
+            <mat-icon matPrefix>lock</mat-icon>
+          </mat-form-field>
+
+          <!-- New Password -->
+          <mat-form-field appearance="outline">
+            <mat-label>New Password</mat-label>
+            <input 
+              matInput 
+              type="password" 
+              [(ngModel)]="password.new"
+              placeholder="Enter new password"
+            >
+            <mat-icon matPrefix>vpn_key</mat-icon>
+          </mat-form-field>
+
+          <!-- Confirm New Password -->
+          <mat-form-field appearance="outline">
+            <mat-label>Confirm New Password</mat-label>
+            <input 
+              matInput 
+              type="password" 
+              [(ngModel)]="password.confirm"
+              placeholder="Confirm new password"
+            >
+            <mat-icon matPrefix>lock_reset</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Password Strength Tips -->
+        <div class="password-strength">
+          <h4>
+            <mat-icon>security</mat-icon>
+            Password Requirements
+          </h4>
+          <ul class="strength-list">
+            <li>At least 8 characters long</li>
+            <li>Include uppercase and lowercase letters</li>
+            <li>Include at least one number</li>
+            <li>Include at least one special character</li>
+            <li>Don't use common words or patterns</li>
+          </ul>
+        </div>
+
+        <!-- Change Password Button -->
+        <button 
+          mat-raised-button 
+          color="accent" 
+          (click)="changePassword()"
+          class="change-password-btn"
+        >
+          <mat-icon>password</mat-icon>
+          Change Password
+        </button>
+      </div>
+    </mat-card>
+</div>

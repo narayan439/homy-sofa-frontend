@@ -1,0 +1,165 @@
+<div class="booking-container">
+  <div class="booking-card">
+    
+    <!-- Card Header -->
+    <div class="card-header">
+      <div class="header-icon">
+        <mat-icon>event_available</mat-icon>
+      </div>
+      <h1>Book Your Service</h1>
+      <p>Schedule a professional sofa service at your convenience</p>
+    </div>
+
+    <!-- Card Content -->
+    <div class="card-content">
+      <form [formGroup]="bookingForm" (ngSubmit)="submit()" class="booking-form">
+        
+        <!-- Full Name -->
+        <mat-form-field appearance="outline">
+          <mat-label>Full Name</mat-label>
+          <input 
+            matInput 
+            formControlName="fullName"
+            placeholder="Enter your full name"
+          >
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-error *ngIf="bookingForm.get('fullName')?.hasError('required') && bookingForm.get('fullName')?.touched">
+            Please enter your name
+          </mat-error>
+          <mat-error *ngIf="bookingForm.get('fullName')?.hasError('minlength') && bookingForm.get('fullName')?.touched">
+            Name must be at least 3 characters
+          </mat-error>
+          <mat-error *ngIf="bookingForm.get('fullName')?.hasError('pattern') && bookingForm.get('fullName')?.touched">
+            Name cannot contain numbers or special characters
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Email Address -->
+        <mat-form-field appearance="outline">
+          <mat-label>Email Address</mat-label>
+          <input 
+            matInput 
+            formControlName="email"
+            type="email"
+            placeholder="your.email@example.com"
+          >
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="bookingForm.get('email')?.hasError('required') && bookingForm.get('email')?.touched">
+            Email is required
+          </mat-error>
+          <mat-error *ngIf="bookingForm.get('email')?.hasError('email') && bookingForm.get('email')?.touched">
+            Please enter a valid email address
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Phone Number -->
+        <mat-form-field appearance="outline">
+          <mat-label>Phone Number</mat-label>
+          <input 
+            matInput 
+            formControlName="phone"
+            placeholder="9876543210"
+          >
+          <mat-icon matPrefix>phone</mat-icon>
+          <mat-error *ngIf="bookingForm.get('phone')?.hasError('required') && bookingForm.get('phone')?.touched">
+            Phone number is required
+          </mat-error>
+          <mat-error *ngIf="bookingForm.get('phone')?.hasError('pattern') && bookingForm.get('phone')?.touched">
+            Please enter a valid 10-digit phone number
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Service Type Selection -->
+        <mat-form-field appearance="outline">
+          <mat-label>Select Service Type</mat-label>
+          <mat-select formControlName="serviceType">
+            <mat-option *ngFor="let svc of services" [value]="svc.id || svc.name">
+              {{ svc.name }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>build</mat-icon>
+          <mat-error *ngIf="bookingForm.get('serviceType')?.hasError('required') && bookingForm.get('serviceType')?.touched">
+            Please select a service type
+          </mat-error>
+        </mat-form-field>
+        <div *ngIf="selectedServicePrice !== null" class="service-price-info">
+          <mat-icon>currency_rupee</mat-icon>
+          <span>Price: ₹{{ selectedServicePrice }}</span>
+        </div>
+
+        <!-- Service Date -->
+        <mat-form-field appearance="outline">
+          <mat-label>Preferred Service Date</mat-label>
+          <input 
+            matInput 
+            [matDatepicker]="picker" 
+            formControlName="serviceDate"
+            [min]="minDate"
+            placeholder="Select a date"
+          >
+          <mat-icon matPrefix>calendar_today</mat-icon>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          <mat-error *ngIf="bookingForm.get('serviceDate')?.hasError('required') && bookingForm.get('serviceDate')?.touched">
+            Please select a service date
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Time Slot -->
+        <mat-form-field appearance="outline">
+          <mat-label>Preferred Time Slot</mat-label>
+          <mat-select formControlName="timeSlot">
+            <mat-option value="morning">Morning (9 AM - 12 PM)</mat-option>
+            <mat-option value="afternoon">Afternoon (12 PM - 4 PM)</mat-option>
+            <mat-option value="evening">Evening (4 PM - 8 PM)</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>schedule</mat-icon>
+          <mat-error *ngIf="bookingForm.get('timeSlot')?.hasError('required') && bookingForm.get('timeSlot')?.touched">
+            Please select a time slot
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Service Details -->
+        <mat-form-field appearance="outline">
+          <mat-label>Service Details</mat-label>
+          <textarea 
+            matInput 
+            rows="4" 
+            formControlName="details"
+            placeholder="Please provide any specific details about your sofa, type of service needed, or special instructions..."
+          ></textarea>
+          <mat-icon matPrefix>description</mat-icon>
+          <mat-error *ngIf="bookingForm.get('details')?.hasError('maxlength') && bookingForm.get('details')?.touched">
+            Instructions cannot be above 100 characters
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Contact Info -->
+        <div class="contact-info">
+          <h4>
+            <mat-icon>info</mat-icon>
+            What happens next?
+          </h4>
+          <p>
+            • We'll confirm your booking within 2 hours<br>
+            • Our technician will call you for address verification<br>
+            • Service will be provided at your scheduled time
+          </p>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="bookingForm.invalid"
+          class="submit-btn"
+        >
+          <mat-icon>send</mat-icon>
+          Submit Booking Request
+        </button>
+
+      </form>
+    </div>
+  </div>
+</div>

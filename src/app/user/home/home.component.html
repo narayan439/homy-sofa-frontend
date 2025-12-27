@@ -1,0 +1,95 @@
+<!-- HERO CAROUSEL SECTION -->
+<section class="hero-carousel">
+  <!-- Dynamic Slides -->
+  <div *ngFor="let slide of slides; let i = index" 
+       class="carousel-slide" 
+       [class.active]="i === currentSlide"
+       [style.background-image]="'url(' + slide.image + ')'">
+    
+    <div class="carousel-content">
+      <h1>{{ slide.title }}</h1>
+      <p>{{ slide.description }}</p>
+      <button mat-raised-button routerLink="/booking">
+        {{ slide.buttonText }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Carousel Navigation Dots -->
+  <div class="carousel-nav">
+    <div *ngFor="let slide of slides; let i = index" 
+         class="carousel-dot" 
+         [class.active]="i === currentSlide"
+         (click)="goToSlide(i)">
+    </div>
+  </div>
+
+</section>
+
+<!-- SERVICES SECTION -->
+
+<app-services></app-services>
+
+
+<!-- WHY CHOOSE US -->
+<section #whyUsSection 
+         class="why-us-section" 
+         [@fadeSlideIn]
+         [class.visible]="whyUsInView">
+  
+  <div class="section-header">
+    <h2>Why Choose HomY Sofa?</h2>
+    <div class="section-divider"></div>
+    <p>Experience the difference with our commitment to excellence and customer satisfaction</p>
+  </div>
+
+  <div class="why-grid">
+    <div class="feature-card" [class.visible]="whyUsInView" @slideIn>
+      <div class="feature-icon">
+        <mat-icon>verified</mat-icon>
+      </div>
+      <h4>Certified Experts</h4>
+      <p>Our technicians are certified professionals with extensive training and years of hands-on experience.</p>
+    </div>
+
+    <div class="feature-card" [class.visible]="whyUsInView" @slideIn>
+      <div class="feature-icon">
+        <mat-icon>schedule</mat-icon>
+      </div>
+      <h4>Timely Service</h4>
+      <p>We respect your time with punctual arrivals and efficient completion of all services.</p>
+    </div>
+
+    <div class="feature-card" [class.visible]="whyUsInView" @slideIn>
+      <div class="feature-icon">
+        <mat-icon>local_offer</mat-icon>
+      </div>
+      <h4>Best Value</h4>
+      <p>Transparent pricing with no hidden costs - premium quality at competitive prices.</p>
+    </div>
+
+    <div class="feature-card" [class.visible]="whyUsInView" @slideIn>
+      <div class="feature-icon">
+        <mat-icon>eco</mat-icon>
+      </div>
+      <h4>Eco-Friendly</h4>
+      <p>We use environmentally safe, non-toxic products that are gentle on your family and pets.</p>
+    </div>
+
+    <div class="feature-card" [class.visible]="whyUsInView" @slideIn>
+      <div class="feature-icon">
+        <mat-icon>security</mat-icon>
+      </div>
+      <h4>Service Warranty</h4>
+      <p>All our services come with a comprehensive satisfaction guarantee and warranty period.</p>
+    </div>
+
+    <div class="feature-card" [class.visible]="whyUsInView" @slideIn>
+      <div class="feature-icon">
+        <mat-icon>support_agent</mat-icon>
+      </div>
+      <h4>24/7 Support</h4>
+      <p>Round-the-clock customer support for all your queries, concerns, and emergency services.</p>
+    </div>
+  </div>
+</section>
