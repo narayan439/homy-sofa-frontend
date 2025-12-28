@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from './api-url.service';
 
 export interface ContactPayload {
   id?: number;
@@ -14,7 +15,7 @@ export interface ContactPayload {
 
 @Injectable({ providedIn: 'root' })
 export class ContactService {
-  private base = 'https://homy-sofa-backend-production.up.railway.app/api/contacts';
+  private base = `${API_BASE_URL}/contacts`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,217 +1,391 @@
-<div class="manage-bookings-container">
+<div class="booking-management-container">
   
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loading-spinner"></div>
+  </div>
+
   <!-- Page Header -->
-  <div class="page-header">
-    <h2>Service Bookings</h2>
-    <button mat-raised-button color="primary" routerLink="/admin/add-booking">
+  <div class="page-header-section">
+    <div class="header-content">
+      <h1>Service Bookings</h1>
+      <p>Manage and track all customer service bookings</p>
+    </div>
+    
+    <button 
+      class="new-booking-btn" 
+      mat-raised-button 
+      color="primary" 
+      routerLink="/admin/add-booking"
+    >
       <mat-icon>add</mat-icon>
-      Add New Booking
+      New Booking
     </button>
   </div>
 
   <!-- Stats Overview -->
-  <div class="stats-overview">
+  <div class="stats-grid">
     <div 
-      class="stat-card" 
+      class="stat-item" 
       [class.active]="currentFilterStatus === 'PENDING'"
       (click)="filterByStatus('PENDING')"
     >
       <div class="stat-icon pending">
         <mat-icon>schedule</mat-icon>
       </div>
-      <div class="stat-content">
+      <div class="stat-details">
         <h3>{{getBookingCountByStatus('PENDING')}}</h3>
         <p>Pending Bookings</p>
       </div>
     </div>
     
     <div 
-      class="stat-card" 
+      class="stat-item" 
       [class.active]="currentFilterStatus === 'APPROVED'"
       (click)="filterByStatus('APPROVED')"
     >
       <div class="stat-icon approved">
         <mat-icon>check_circle</mat-icon>
       </div>
-      <div class="stat-content">
+      <div class="stat-details">
         <h3>{{getBookingCountByStatus('APPROVED')}}</h3>
         <p>Approved Bookings</p>
       </div>
     </div>
     
     <div 
-      class="stat-card" 
+      class="stat-item" 
       [class.active]="currentFilterStatus === 'COMPLETED'"
       (click)="filterByStatus('COMPLETED')"
     >
       <div class="stat-icon completed">
         <mat-icon>done_all</mat-icon>
       </div>
-      <div class="stat-content">
+      <div class="stat-details">
         <h3>{{getBookingCountByStatus('COMPLETED')}}</h3>
-        <p>Completed Bookings</p>
+        <p>Completed</p>
       </div>
     </div>
 
     <div 
-      class="stat-card" 
+      class="stat-item" 
       [class.active]="currentFilterStatus === 'CANCELLED'"
       (click)="filterByStatus('CANCELLED')"
     >
-      <div class="stat-icon completed">
+      <div class="stat-icon cancelled">
         <mat-icon>cancel</mat-icon>
       </div>
-      <div class="stat-content">
+      <div class="stat-details">
         <h3>{{getBookingCountByStatus('CANCELLED')}}</h3>
-        <p>Cancelled Bookings</p>
+        <p>Cancelled</p>
       </div>
     </div>
     
     <div 
-      class="stat-card" 
+      class="stat-item" 
       [class.active]="currentFilterStatus === ''"
       (click)="filterByStatus('')"
     >
       <div class="stat-icon total">
-        <mat-icon>event</mat-icon>
+        <mat-icon>event_note</mat-icon>
       </div>
-      <div class="stat-content">
+      <div class="stat-details">
         <h3>{{dataSource.data.length}}</h3>
         <p>Total Bookings</p>
       </div>
     </div>
   </div>
 
-  <!-- Filters Section -->
-  <div class="filters-section">
-    <div class="filters">
-      <mat-form-field appearance="outline">
-        <mat-label>Search Bookings</mat-label>
+  <!-- Controls Section -->
+  <div class="controls-section">
+    <div class="controls-grid">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search bookings...</mat-label>
         <input 
           matInput 
-          (keyup)="applySearch($event)" 
-          placeholder="Search by name, email, or details"
+          [(ngModel)]="searchQuery" 
+          (keyup)="applySearch()" 
+          placeholder="Search by name, email, phone, or service..."
+          [disabled]="isLoading"
         >
-        <mat-icon matPrefix>search</mat-icon>
+        <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Filter by Status</mat-label>
-        <mat-select (selectionChange)="filterByStatus($event.value)" [value]="currentFilterStatus">
-          <mat-option value="">All Status</mat-option>
-          <mat-option value="PENDING">Pending</mat-option>
-          <mat-option value="APPROVED">Approved</mat-option>
-          <mat-option value="COMPLETED">Completed</mat-option>
-          <mat-option value="CANCELLED">Cancelled</mat-option>
-        </mat-select>
-        <mat-icon matPrefix>filter_list</mat-icon>
-      </mat-form-field>
-
-      <div class="filter-actions">
-        <button mat-stroked-button (click)="exportToExcel()">
-          <mat-icon>download</mat-icon>
-          Export
+      
+      <div class="control-buttons">
+        <button 
+          mat-stroked-button 
+          class="control-btn"
+          (click)="clearFilters()"
+          [disabled]="isLoading"
+        >
+          <mat-icon>filter_alt_off</mat-icon>
+          Clear
         </button>
-        <button mat-stroked-button (click)="refreshBookings()">
+        
+        <button 
+          mat-stroked-button 
+          class="control-btn"
+          (click)="refreshBookings()"
+          [disabled]="isLoading"
+        >
           <mat-icon>refresh</mat-icon>
           Refresh
         </button>
+        
+        <button 
+          mat-stroked-button 
+          class="control-btn"
+          (click)="exportToExcel()"
+          [disabled]="isLoading"
+        >
+          <mat-icon>download</mat-icon>
+          Export
+        </button>
       </div>
+    </div>
+    
+    <!-- Status Filter Chips -->
+    <div class="status-filters" *ngIf="!isMobileView">
+      <button 
+        class="filter-chip" 
+        [class.active]="currentFilterStatus === ''"
+        (click)="filterByStatus('')"
+      >
+        All
+      </button>
+      <button 
+        class="filter-chip" 
+        [class.active]="currentFilterStatus === 'PENDING'"
+        (click)="filterByStatus('PENDING')"
+      >
+        Pending
+      </button>
+      <button 
+        class="filter-chip" 
+        [class.active]="currentFilterStatus === 'APPROVED'"
+        (click)="filterByStatus('APPROVED')"
+      >
+        Approved
+      </button>
+      <button 
+        class="filter-chip" 
+        [class.active]="currentFilterStatus === 'COMPLETED'"
+        (click)="filterByStatus('COMPLETED')"
+      >
+        Completed
+      </button>
+      <button 
+        class="filter-chip" 
+        [class.active]="currentFilterStatus === 'CANCELLED'"
+        (click)="filterByStatus('CANCELLED')"
+      >
+        Cancelled
+      </button>
     </div>
   </div>
 
-  <!-- Table Container -->
-  <div class="table-container">
-    <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-      
-      <!-- Customer Name Column -->
-      <ng-container matColumnDef="customer">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer</th>
-        <td mat-cell *matCellDef="let booking">
-          <div class="customer-info">
-            <div class="customer-avatar">
-              {{getInitials(booking.name)}}
+  <!-- Desktop Table View -->
+  <div class="table-container" *ngIf="!isMobileView">
+    <!-- Table Header -->
+    <div class="table-header">
+      <h2>All Bookings</h2>
+    </div>
+
+    <!-- Table Content -->
+    <div class="table-content">
+      <table class="booking-table" mat-table [dataSource]="dataSource" matSort>
+        
+        <!-- Customer Column -->
+        <ng-container matColumnDef="customer">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer</th>
+          <td mat-cell *matCellDef="let booking">
+            <div class="customer-info">
+              <div class="customer-avatar">
+                {{getInitials(booking.name)}}
+              </div>
+              <div class="customer-details">
+                <h4>{{ booking.name }}</h4>
+                <p>{{ booking.email }}</p>
+              </div>
             </div>
-            <div>
-              <div class="customer-name">{{ booking.name }}</div>
-              <div class="customer-email">{{ booking.email }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Phone Column -->
+        <ng-container matColumnDef="phone">
+          <th mat-header-cell *matHeaderCellDef>Phone</th>
+          <td mat-cell *matCellDef="let booking">
+            {{ booking.phone || 'Not provided' }}
+          </td>
+        </ng-container>
+
+        <!-- Service Date Column -->
+        <ng-container matColumnDef="serviceDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Service Date</th>
+          <td mat-cell *matCellDef="let booking">
+            <div class="service-date">
+              <mat-icon>calendar_today</mat-icon>
+              {{ booking.date | date: 'MMM dd, yyyy' }}
             </div>
-          </div>
-        </td>
-      </ng-container>
+          </td>
+        </ng-container>
 
-      <!-- Phone Column -->
-      <ng-container matColumnDef="phone">
-        <th mat-header-cell *matHeaderCellDef>Phone</th>
-        <td mat-cell *matCellDef="let booking">
-          {{ booking.phone || 'N/A' }}
-        </td>
-      </ng-container>
-
-      <!-- Service Date Column -->
-      <ng-container matColumnDef="serviceDate">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Service Date</th>
-        <td mat-cell *matCellDef="let booking">
-          <div class="service-date">
-            <mat-icon>calendar_today</mat-icon>
-            {{ booking.date | date: 'dd/MM/yyyy' }}
-          </div>
-        </td>
-      </ng-container>
-
-      <!-- Service Type Column -->
-      <ng-container matColumnDef="service">
-        <th mat-header-cell *matHeaderCellDef>Service Type</th>
-        <td mat-cell *matCellDef="let booking">
-          <span class="status-badge" [ngClass]="getServiceTypeClass(booking.service)">
-            {{ getServiceName(booking.service) }}
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Status Column -->
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let booking">
-          <mat-form-field appearance="outline" class="status-select" [ngClass]="booking.status.toLowerCase()">
-            <mat-select
-              [value]="booking.status"
-              (selectionChange)="updateStatus(booking, $event.value)"
+        <!-- Service Column -->
+        <ng-container matColumnDef="service">
+          <th mat-header-cell *matHeaderCellDef>Service Type</th>
+          <td mat-cell *matCellDef="let booking">
+            <span 
+              class="service-badge" 
+              [ngClass]="getServiceBadgeClass(booking.service)"
             >
-              <mat-option value="PENDING">Pending</mat-option>
-              <mat-option value="APPROVED">Approved</mat-option>
-              <mat-option value="COMPLETED">Completed</mat-option>
-              <mat-option value="CANCELLED">Cancelled</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </td>
-      </ng-container>
+              {{ getServiceName(booking.service) }}
+            </span>
+          </td>
+        </ng-container>
 
-      <!-- Header Row -->
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      
-      <!-- Data Rows -->
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let booking" class="status-cell">
+            <mat-form-field appearance="outline" class="status-select" [ngClass]="booking.status.toLowerCase()">
+              <mat-select
+                [value]="booking.status"
+                (selectionChange)="updateStatus(booking, $event.value)"
+                [disabled]="isLoading"
+              >
+                <mat-option value="PENDING">Pending</mat-option>
+                <mat-option value="APPROVED">Approved</mat-option>
+                <mat-option value="COMPLETED">Completed</mat-option>
+                <mat-option value="CANCELLED">Cancelled</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </td>
+        </ng-container>
 
-      <!-- Empty State -->
-      <tr *ngIf="dataSource.data.length === 0">
-        <td [colSpan]="displayedColumns.length">
-          <div class="empty-state">
-            <mat-icon>event_busy</mat-icon>
-            <h3>No Bookings Found</h3>
-            <p>No bookings match your current filters</p>
-          </div>
-        </td>
-      </tr>
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let booking" class="actions-cell">
+            <div class="action-buttons">
+              <button 
+                class="action-btn view-btn" 
+                matTooltip="View Details"
+                (click)="viewBookingDetails(booking)"
+              >
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button 
+                class="action-btn edit-btn" 
+                matTooltip="Edit Booking"
+                (click)="editBooking(booking)"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
 
-    </table>
+        <!-- Header Row -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        
+        <!-- Data Rows -->
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="dataSource.filteredData.length === 0">
+      <mat-icon class="empty-state-icon">event_busy</mat-icon>
+      <h3>No Bookings Found</h3>
+      <p *ngIf="searchQuery || currentFilterStatus">
+        No bookings match your current search criteria. Try adjusting your filters.
+      </p>
+      <p *ngIf="!searchQuery && !currentFilterStatus">
+        No bookings available. Create your first booking to get started.
+      </p>
+      <button 
+        mat-stroked-button 
+        (click)="clearFilters()"
+        *ngIf="searchQuery || currentFilterStatus"
+      >
+        <mat-icon>clear_all</mat-icon>
+        Clear Filters
+      </button>
+    </div>
   </div>
 
-  <!-- Pagination -->
-  <mat-paginator
-    [pageSizeOptions]="[5, 10, 25, 50]"
-    showFirstLastButtons
-    aria-label="Select page of bookings">
-  </mat-paginator>
+  <!-- Mobile Card View -->
+  <div class="mobile-cards" *ngIf="isMobileView">
+    <div class="mobile-card" *ngFor="let booking of dataSource.filteredData">
+      <div class="mobile-card-header">
+        <div class="mobile-avatar">
+          {{getInitials(booking.name)}}
+        </div>
+        <div class="mobile-customer-info">
+          <h4>{{ booking.name }}</h4>
+          <p>{{ booking.email }}</p>
+        </div>
+        <span 
+          class="service-badge" 
+          [ngClass]="getServiceBadgeClass(booking.service)"
+        >
+          {{ getServiceName(booking.service) }}
+        </span>
+      </div>
+      
+      <div class="mobile-card-content">
+        <div class="mobile-row">
+          <span class="mobile-label">Phone</span>
+          <span class="mobile-value">{{ booking.phone || 'Not provided' }}</span>
+        </div>
+        <div class="mobile-row">
+          <span class="mobile-label">Service Date</span>
+          <span class="mobile-value">{{ booking.date | date: 'MMM dd, yyyy' }}</span>
+        </div>
+        <div class="mobile-row">
+          <span class="mobile-label">Status</span>
+          <span class="mobile-value">
+            <mat-form-field appearance="outline" class="status-select" [ngClass]="booking.status.toLowerCase()">
+              <mat-select
+                [value]="booking.status"
+                (selectionChange)="updateStatus(booking, $event.value)"
+                [disabled]="isLoading"
+              >
+                <mat-option value="PENDING">Pending</mat-option>
+                <mat-option value="APPROVED">Approved</mat-option>
+                <mat-option value="COMPLETED">Completed</mat-option>
+                <mat-option value="CANCELLED">Cancelled</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </span>
+        </div>
+      </div>
+      
+      <div class="mobile-actions">
+        <button 
+          class="mobile-action-btn mobile-view-btn" 
+          (click)="viewBookingDetails(booking)"
+        >
+          <mat-icon>visibility</mat-icon>
+          View
+        </button>
+        <button 
+          class="mobile-action-btn mobile-edit-btn" 
+          (click)="editBooking(booking)"
+        >
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+      </div>
+    </div>
+    
+    <!-- Mobile Empty State -->
+    <div class="empty-state" *ngIf="dataSource.filteredData.length === 0">
+      <mat-icon class="empty-state-icon">event_busy</mat-icon>
+      <h3>No Bookings Found</h3>
+      <p>No bookings match your current filters</p>
+    </div>
+  </div>
 
 </div>

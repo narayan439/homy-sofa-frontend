@@ -3,8 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Booking, BookingStatus } from '../../models/booking.model';
+import { API_BASE_URL } from './api-url.service';
 
-const API_URL = 'https://homy-sofa-backend-production.up.railway.app/api';
+const API_URL = API_BASE_URL;
 
 @Injectable({
   providedIn: 'root'

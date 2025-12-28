@@ -21,6 +21,7 @@ export class DashboardHomeComponent implements OnInit {
     monthlyRevenue: 0
   };
 
+  
   recentBookings: Booking[] = [];
   private serviceMap: { [id: string]: Service } = {};
 
@@ -36,6 +37,7 @@ export class DashboardHomeComponent implements OnInit {
         if (s && s.id) this.serviceMap[s.id] = s; 
       });
     });
+    
     
     this.serviceService.loadServices();
     this.loadDashboardData();

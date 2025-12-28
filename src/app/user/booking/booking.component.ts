@@ -81,8 +81,10 @@ export class BookingComponent implements OnInit {
         service: this.bookingForm.get('serviceType')?.value,
         date: formattedDate,
         message: this.bookingForm.get('details')?.value,
+        timeSlot: this.bookingForm.get('timeSlot')?.value,
         status: 'PENDING' as 'PENDING',
-        price: this.selectedServicePrice ?? undefined
+        price: this.selectedServicePrice ?? undefined,
+        totalBookings: 1
       };
 
       this.bookingService.addBooking(bookingData).subscribe({
