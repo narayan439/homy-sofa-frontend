@@ -21,10 +21,10 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
   displayedColumns: string[] = [
     'customer',
     'phone',
+    'address',
     'serviceDate',
     'service',
-    'status',
-    'actions'
+    'status'
   ];
 
   dataSource = new MatTableDataSource<Booking>();
@@ -44,6 +44,16 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     private snackBar: MatSnackBar,
     private serviceService: ServiceService
   ) {}
+
+  // Open Google Maps with given latLong (format: "lat,lon")
+  openMap(latLong: string) {
+    try {
+      const url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(latLong);
+      window.open(url, '_blank');
+    } catch (e) {
+      console.error('Failed to open map', e);
+    }
+  }
 
   ngOnInit() {
     this.checkMobileView();
@@ -68,6 +78,47 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    
+    // Custom sorting for service date
+    if (this.dataSource.sort) {
+      this.dataSource.sortingDataAccessor = (booking: Booking, sortHeaderId: string) => {
+        if (sortHeaderId === 'serviceDate') {
+          // Convert date string to timestamp for proper sorting
+          const dateStr = booking.date as any;
+          if (typeof dateStr === 'string') {
+            // Handle different date formats
+            let date: Date;
+            
+            if (dateStr.includes('/')) {
+              // Handle dd/MM/yyyy format
+              const parts = dateStr.split('/');
+              if (parts.length === 3) {
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                date = new Date(year, month, day);
+              } else {
+                date = new Date(dateStr);
+              }
+            } else {
+              date = new Date(dateStr);
+            }
+            
+            // Return timestamp - sort direction will handle ascending/descending
+            return date.getTime();
+          }
+          return 0;
+        }
+        return (booking as any)[sortHeaderId];
+      };
+      
+      // Set default sort to show oldest bookings first (serviceDate ascending)
+      this.sort.sort({ 
+        id: 'serviceDate', 
+        start: 'asc', 
+        disableClear: false 
+      });
+    }
   }
 
   ngOnDestroy() {
@@ -79,9 +130,9 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
   checkMobileView() {
     this.isMobileView = window.innerWidth < 768;
     if (this.isMobileView) {
-      this.displayedColumns = ['customer', 'service', 'status', 'actions'];
+      this.displayedColumns = ['customer', 'service', 'status'];
     } else {
-      this.displayedColumns = ['customer', 'phone', 'serviceDate', 'service', 'status', 'actions'];
+      this.displayedColumns = ['customer', 'phone', 'address', 'serviceDate', 'service', 'status'];
     }
   }
 
@@ -340,7 +391,113 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     this.dataSource.filter = status;
   }
 
+  /**
+   * Check if a status transition is allowed
+   * PENDING → APPROVED, CANCELLED
+   * APPROVED → COMPLETED
+   * COMPLETED → LOCKED (final state)
+   * CANCELLED → LOCKED (final state)
+   */
+  isStatusTransitionAllowed(currentStatus: Booking['status'], newStatus: Booking['status']): boolean {
+    const current = String(currentStatus).toUpperCase();
+    const next = String(newStatus).toUpperCase();
+
+    if (current === next) return true; // No change
+
+    // COMPLETED and CANCELLED are final states
+    if (current === 'COMPLETED' || current === 'CANCELLED') {
+      return false;
+    }
+
+    // From PENDING
+    if (current === 'PENDING') {
+      return next === 'APPROVED' || next === 'CANCELLED';
+    }
+
+    // From APPROVED
+    if (current === 'APPROVED') {
+      return next === 'COMPLETED';
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if a status is locked (final state)
+   */
+  isStatusLocked(status: Booking['status']): boolean {
+    const s = String(status).toUpperCase();
+    return s === 'COMPLETED' || s === 'CANCELLED';
+  }
+
+  /**
+   * Get reason why status is locked
+   */
+  getStatusLockReason(status: Booking['status']): string {
+    const s = String(status).toUpperCase();
+    if (s === 'COMPLETED') return 'Booking is completed - cannot change status';
+    if (s === 'CANCELLED') return 'Booking is cancelled - cannot change status';
+    return '';
+  }
+
+  /**
+   * Determine which status options to show based on current status
+   */
+  canShowStatus(optionStatus: Booking['status'], currentStatus: Booking['status']): boolean {
+    const current = String(currentStatus).toUpperCase();
+    const option = String(optionStatus).toUpperCase();
+
+    // Always show current status
+    if (current === option) return true;
+
+    // From PENDING: show APPROVED and CANCELLED
+    if (current === 'PENDING') {
+      return option === 'APPROVED' || option === 'CANCELLED';
+    }
+
+    // From APPROVED: show COMPLETED
+    if (current === 'APPROVED') {
+      return option === 'COMPLETED';
+    }
+
+    // COMPLETED and CANCELLED are locked - don't show other options
+    return false;
+  }
+
+  /**
+   * Get reason why a status transition is blocked
+   */
+  getTransitionBlockReason(currentStatus: Booking['status'], newStatus: Booking['status']): string {
+    const current = String(currentStatus).toUpperCase();
+    const next = String(newStatus).toUpperCase();
+
+    if (current === 'COMPLETED') {
+      return 'Completed bookings cannot change status';
+    }
+    if (current === 'CANCELLED') {
+      return 'Cancelled bookings cannot change status';
+    }
+    if (current === 'PENDING' && !(next === 'APPROVED' || next === 'CANCELLED')) {
+      return 'Pending bookings can only be approved or cancelled';
+    }
+    if (current === 'APPROVED' && next !== 'COMPLETED') {
+      return 'Approved bookings can only be marked as completed';
+    }
+
+    return 'Invalid status transition';
+  }
+
   updateStatus(booking: Booking, status: Booking['status']) {
+    // Validate transition
+    if (!this.isStatusTransitionAllowed(booking.status, status)) {
+      const reason = this.getTransitionBlockReason(booking.status, status);
+      this.snackBar.open(`⚠️ Cannot change: ${reason}`, 'Close', { 
+        duration: 3000,
+        panelClass: ['warning-snackbar']
+      });
+      return;
+    }
+
     const oldStatus = booking.status;
     booking.status = status;
     

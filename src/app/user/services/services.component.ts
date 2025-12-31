@@ -14,7 +14,8 @@ export class ServicesComponent implements OnInit {
 
   ngOnInit(): void {
     this.backend.services$.subscribe(list => {
-      this.services = list || [];
+      // Filter to only active services
+      this.services = (list || []).filter(s => s.isActive !== false);
     });
     this.backend.loadServices();
   }

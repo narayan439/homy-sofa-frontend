@@ -21,7 +21,7 @@ export class ManageServicesComponent implements OnInit {
     id: '',
     name: '',
     description: '',
-    price: 0,
+    price: null as any,
     imageUrl: '',
     isActive: true
   } as any;
@@ -41,7 +41,7 @@ export class ManageServicesComponent implements OnInit {
         id: s.id,
         name: s.name,
         description: s.description || '',
-        price: s.price ?? 0,
+        price: s.price ?? null,
         imageUrl: s.imageUrl || (s as any).imagePath || '',
         icon: (s as any).icon,
         image: (s as any).image,
@@ -53,13 +53,13 @@ export class ManageServicesComponent implements OnInit {
         updatedAt: (s as any).updatedAt
       } as Service));
     });
+
     this.serviceService.loadServices();
   }
 
   onImageUrlInput(event: any): void {
-    const url = event.target.value;
+    const url = event?.target?.value;
     if (url && this.isValidImageUrl(url)) {
-      // Clear file upload if URL is entered and show preview
       this.selectedImageFile = null;
       this.previewDataUrl = url;
       this.newService.imageUrl = url;
@@ -69,17 +69,18 @@ export class ManageServicesComponent implements OnInit {
   onImageSelected(event?: Event): void {
     const input = event?.target as HTMLInputElement | undefined;
     if (input && input.files && input.files.length > 0) {
-      this.selectedImageFile = input.files[0];
-      
+      const file = input.files[0];
+      this.selectedImageFile = file;
+
       // Clear URL input when file is selected
       this.newService.imageUrl = '';
-      
+
       // Preview image locally
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.previewDataUrl = e.target.result;
       };
-      reader.readAsDataURL(this.selectedImageFile);
+      reader.readAsDataURL(file);
 
       // Upload to backend
       this.isUploading = true;
@@ -141,7 +142,7 @@ export class ManageServicesComponent implements OnInit {
     this.previewDataUrl = null;
   }
 
-  getSafeImageUrl(url: string): string {
+  getSafeImageUrl(url?: string): string {
     if (!url) return '';
     
     // If it's already a valid URL, return as is
@@ -158,7 +159,7 @@ export class ManageServicesComponent implements OnInit {
     return url.startsWith('/') ? url : `/${url}`;
   }
 
-  isValidImageUrl(url: string): boolean {
+  isValidImageUrl(url?: string): boolean {
     if (!url) return false;
     
     // Check for common image file extensions
@@ -182,13 +183,19 @@ export class ManageServicesComponent implements OnInit {
   }
 
   saveService(): void {
+    // Prepare payload and remove price if null/empty
     if (this.isEdit && this.newService.id) {
-      this.serviceService.updateService(this.newService.id!, this.newService).subscribe({
+      const payload: any = { ...this.newService };
+      if (payload.price === null || payload.price === '' || payload.price === undefined) {
+        delete payload.price;
+      }
+
+      this.serviceService.updateService(this.newService.id!, payload).subscribe({
         next: () => {
           this.snack('Service updated successfully');
           this.resetForm();
         },
-        error: (err) => { 
+        error: (err) => {
           console.error('Failed to update service', err);
           this.snack('Failed to update service');
           this.resetForm();
@@ -196,12 +203,17 @@ export class ManageServicesComponent implements OnInit {
       });
       this.isEdit = false;
     } else {
-      this.serviceService.createService(this.newService).subscribe({
+      const payload: any = { ...this.newService };
+      if (payload.price === null || payload.price === '' || payload.price === undefined) {
+        delete payload.price;
+      }
+
+      this.serviceService.createService(payload).subscribe({
         next: () => {
           this.snack('Service created successfully');
           this.resetForm();
         },
-        error: (err) => { 
+        error: (err) => {
           console.error('Failed to create service', err);
           this.snack('Failed to create service');
           this.resetForm();
@@ -227,11 +239,32 @@ export class ManageServicesComponent implements OnInit {
     this.editingPriceValue = 0;
   }
 
-  savePrice(service: Service): void {
+  toggleActive(service: Service): void {
     if (!service.id) return;
-    const updated = { price: this.editingPriceValue } as Partial<Service>;
+    const newStatus = !service.isActive;
+    const updated = { isActive: newStatus } as Partial<Service>;
     this.serviceService.updateService(service.id!, updated).subscribe({
       next: () => {
+        // Immediately update the local service object
+        service.isActive = newStatus;
+        this.snack(`Service ${newStatus ? 'activated' : 'deactivated'} successfully`);
+      },
+      error: (err) => {
+        console.error('Failed to update service status', err);
+        this.snack('Failed to update service status');
+      }
+    });
+  }
+
+  savePrice(service: Service): void {
+    if (!service.id) return;
+    // If price is 0 or empty, send undefined to remove it
+    const priceValue = this.editingPriceValue && this.editingPriceValue > 0 ? this.editingPriceValue : undefined;
+    const updated = { price: priceValue } as Partial<Service>;
+    this.serviceService.updateService(service.id!, updated).subscribe({
+      next: () => {
+        // Immediately update the local service object
+        service.price = priceValue as any;
         this.snack('Price updated successfully');
         this.cancelEditPrice();
       },
@@ -262,7 +295,7 @@ export class ManageServicesComponent implements OnInit {
       id: '',
       name: '',
       description: '',
-      price: 0,
+      price: null as any,
       imageUrl: '',
       isActive: true
     } as any;
@@ -289,9 +322,10 @@ export class ManageServicesComponent implements OnInit {
   }
 
   getAveragePrice(): string {
-    if (this.services.length === 0) return '₹0';
-    const total = this.services.reduce((sum, service) => sum + (service.price || 0), 0);
-    const average = Math.round(total / this.services.length);
+    const priced = this.services.filter(s => s.price !== null && s.price !== undefined && s.price > 0);
+    if (priced.length === 0) return '—';
+    const total = priced.reduce((sum, service) => sum + (service.price || 0), 0);
+    const average = Math.round(total / priced.length);
     return `₹${average}`;
   }
 

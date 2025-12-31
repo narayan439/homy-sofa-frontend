@@ -98,7 +98,7 @@
           <div class="service-info">
             <!-- Price Display/Edit -->
             <div *ngIf="editingPriceId !== service.id" class="price-badge">
-              {{ service.price }}
+              <span *ngIf="service.price !== null && service.price !== undefined && service.price !== 0">Starting ₹{{ service.price }}</span>
             </div>
             
             <!-- Price Edit Modal -->
@@ -132,13 +132,15 @@
               <mat-icon>edit</mat-icon>
               Edit
             </button>
-            
             <button 
-              class="action-btn price-edit-btn"
-              (click)="startEditPrice(service)"
+              class="action-btn" 
+              [class.active-btn]="service.isActive"
+              [class.inactive-btn]="!service.isActive"
+              (click)="toggleActive(service)"
+              [matTooltip]="service.isActive ? 'Deactivate Service' : 'Activate Service'"
             >
-              <mat-icon>currency_rupee</mat-icon>
-              Price
+              <mat-icon>{{ service.isActive ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+              {{ service.isActive ? 'Active' : 'Inactive' }}
             </button>
             
             <button 
@@ -197,9 +199,9 @@
             <mat-icon matPrefix>description</mat-icon>
           </mat-form-field>
 
-          <!-- Price -->
+          <!-- Price (optional) -->
           <mat-form-field appearance="outline">
-            <mat-label>Price (₹)</mat-label>
+            <mat-label>Price (₹) — optional</mat-label>
             <input 
               matInput 
               [(ngModel)]="newService.price" 
@@ -207,13 +209,10 @@
               type="number"
               min="0"
               step="50"
-              placeholder="Enter service price"
-              required
+              placeholder="Enter service price (leave empty if not applicable)"
             >
             <mat-icon matPrefix>currency_rupee</mat-icon>
-            <mat-error *ngIf="serviceForm.controls['price']?.invalid">
-              Valid price is required
-            </mat-error>
+            <mat-hint>Leave blank to make price optional</mat-hint>
           </mat-form-field>
 
           <!-- Image URL Input -->

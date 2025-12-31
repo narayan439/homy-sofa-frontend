@@ -19,6 +19,8 @@ export interface Booking {
   reference?: string;
   createdAt?: string;
   updatedAt?: string;
+  address?: string;
+  latLong?: string; // "lat,lon"
 }
 
 export interface BookingFilter {

@@ -100,6 +100,9 @@
                 Please select a service date
               </mat-error>
             </mat-form-field>
+
+            <!-- Time Slot -->
+          
           </div>
               <!-- Location Actions -->
               <div class="location-actions" *ngIf="locationPermission !== 'denied'">
@@ -265,11 +268,13 @@
             mat-raised-button
             color="primary"
             type="submit"
-            [disabled]="bookingForm.invalid"
+            [disabled]="bookingForm.invalid || isSubmitting || !isServiceable"
             class="submit-btn"
           >
-            <mat-icon>send</mat-icon>
-            Submit Booking Request
+            <mat-icon *ngIf="!isSubmitting">send</mat-icon>
+            <mat-icon *ngIf="isSubmitting">autorenew</mat-icon>
+            <span *ngIf="!isSubmitting">Submit Booking Request</span>
+            <span *ngIf="isSubmitting">Submitting...</span>
           </button>
 
         </form>

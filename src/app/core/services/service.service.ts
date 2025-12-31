@@ -11,7 +11,7 @@ export interface Service {
   id?: string;
   name: string;
   description?: string;
-  price?: number;
+  price?: number | null;
   imageUrl?: string;
   imagePath?: string;
   isActive?: boolean;

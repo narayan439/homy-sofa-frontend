@@ -11,7 +11,7 @@ import { ServiceService, Service } from '../../core/services/service.service';
 })
 export class BookingComponent implements OnInit, OnDestroy {
   bookingForm: FormGroup;
-  selectedService: string = 'cleaning';
+  selectedService: string | null = null;
   minDate: Date;
   services: Service[] = [];
   selectedServicePrice: number | null = null;
@@ -23,6 +23,7 @@ export class BookingComponent implements OnInit, OnDestroy {
   locationError: string = '';
   isServiceable: boolean = true;
   private watchId: number | null = null;
+  isSubmitting: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -42,9 +43,9 @@ export class BookingComponent implements OnInit, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       serviceDate: ['', Validators.required],
-      timeSlot: ['morning', Validators.required],
+      timeSlot: [''],
       details: ['', [Validators.maxLength(500)]],
-      serviceType: ['cleaning', Validators.required],
+      serviceType: ['', Validators.required],
       // Address fields
       house: ['', Validators.required],
       area: ['', Validators.required],
@@ -65,7 +66,8 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.serviceService.services$.subscribe(list => {
-      this.services = list || [];
+      // Filter to only active services for booking
+      this.services = (list || []).filter(s => s.isActive !== false);
       const selected = this.services.find(s => 
         s.id === this.bookingForm.get('serviceType')?.value || 
         s.name === this.bookingForm.get('serviceType')?.value
@@ -77,6 +79,33 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.bookingForm.get('serviceType')?.valueChanges.subscribe(val => {
       const svc = this.services.find(s => s.id === val || s.name === val);
       this.selectedServicePrice = svc?.price ?? null;
+    });
+
+    // When pincode entered, try to detect city (India postal API)
+    this.bookingForm.get('pincode')?.valueChanges.subscribe(async (val: string) => {
+      if (!val) return;
+      const cleaned = (val || '').toString().trim();
+      if (/^[0-9]{6}$/.test(cleaned)) {
+        try {
+          const resp = await fetch(`https://api.postalpincode.in/pincode/${cleaned}`);
+          if (resp.ok) {
+            const data = await resp.json();
+            if (Array.isArray(data) && data.length > 0 && data[0].Status === 'Success') {
+              const postOffices = data[0].PostOffice || [];
+              if (postOffices.length > 0) {
+                // Prefer District or Division as city
+                const po = postOffices[0];
+                const cityName = po.District || po.Division || po.Block || po.State || '';
+                if (cityName) {
+                  this.bookingForm.patchValue({ city: cityName });
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Pincode lookup failed', e);
+        }
+      }
     });
 
     // Try to get location on page load
@@ -353,6 +382,10 @@ export class BookingComponent implements OnInit, OnDestroy {
     if (this.watchId !== null && navigator.geolocation) {
       navigator.geolocation.clearWatch(this.watchId);
       this.watchId = null;
+
+
+
+      
     }
   }
 
@@ -441,6 +474,10 @@ export class BookingComponent implements OnInit, OnDestroy {
         address: fullAddress,
         latitude: this.bookingForm.get('latitude')?.value || null,
         longitude: this.bookingForm.get('longitude')?.value || null,
+        // combine lat/long into a single field expected by backend (format: "lat,lon")
+        latLong: (this.bookingForm.get('latitude')?.value && this.bookingForm.get('longitude')?.value)
+          ? `${this.bookingForm.get('latitude')?.value},${this.bookingForm.get('longitude')?.value}`
+          : null,
         mapLink: mapLink || null,
         status: 'PENDING',
         price: this.selectedServicePrice ?? undefined,
@@ -448,6 +485,7 @@ export class BookingComponent implements OnInit, OnDestroy {
       };
 
       // Call the booking service
+      this.isSubmitting = true;
       this.bookingService.addBooking(bookingData).subscribe({
         next: (response: any) => {
           const bookingId = response.id || response.bookingId;
@@ -463,28 +501,34 @@ export class BookingComponent implements OnInit, OnDestroy {
           );
 
           // Reset form
-          this.bookingForm.reset({
-            timeSlot: 'morning',
-            serviceType: 'cleaning'
-          });
-          this.selectedService = 'cleaning';
+          this.bookingForm.reset({});
+          this.selectedService = null;
           this.stopLocationTracking();
           this.userLocation = null;
           this.selectedServicePrice = null;
+          this.isSubmitting = false;
         },
         error: (err) => {
           console.error('Failed to submit booking', err);
           if (err && err.status === 409) {
-            this.snackBar.open('You already have an active booking for this service.', 'Close', { 
-              duration: 6000, 
-              panelClass: ['warning-snackbar'] 
-            });
+            // 409 Conflict: Customer already has an active booking
+            const existingBooking = err.error;
+            const refNum = existingBooking?.reference || 'N/A';
+            this.snackBar.open(
+              `You already have an active booking (Reference: ${refNum}). Please complete or cancel it first.`, 
+              'Close', 
+              { 
+                duration: 6000, 
+                panelClass: ['warning-snackbar'] 
+              }
+            );
           } else {
             this.snackBar.open('Failed to submit booking. Please try again.', 'Close', { 
               duration: 4000, 
               panelClass: ['error-snackbar'] 
             });
           }
+          this.isSubmitting = false;
         }
       });
     } else {
@@ -504,7 +548,7 @@ export class BookingComponent implements OnInit, OnDestroy {
         num = Math.max(0, Math.floor(parsed));
       }
     }
-    const serial = String(num).padStart(2, '0');
+    const serial = String(num).padStart(6, '0');
     return `HOMY${year}${serial}`;
   }
 

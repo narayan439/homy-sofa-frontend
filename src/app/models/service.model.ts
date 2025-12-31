@@ -2,10 +2,10 @@ export interface Service {
   id?: string;
   name: string;
   description: string;
-  price: number;
+  price?: number | null;
   icon?: string;
   image?: string;
-  imageUrl: string;
+  imageUrl?: string;
   imagePath?: string;
   features?: string[];
   duration?: number; // in minutes

@@ -204,6 +204,28 @@ export class DashboardHomeComponent implements OnInit {
     }
   }
 
+  getAmountColorClass(booking: Booking): string {
+    const status = String(booking.status || '').toUpperCase();
+    
+    if (status === 'COMPLETED') {
+      return 'amount-completed';
+    }
+    
+    if (status === 'CONFIRMED' || status === 'APPROVED') {
+      return 'amount-approved';
+    }
+    
+    if (status === 'PENDING') {
+      return 'amount-pending';
+    }
+    
+    if (status === 'CANCELLED') {
+      return 'amount-cancelled';
+    }
+    
+    return 'amount-default';
+  }
+
   getInitials(name: string): string {
     if (!name) return '?';
     const parts = name.split(' ');

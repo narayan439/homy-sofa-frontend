@@ -71,7 +71,12 @@
           <mat-icon>event_available</mat-icon>
           Book {{ svc.name }}
         </button>
-        <div class="price-tag">{{ svc.price != null ? ('₹' + svc.price) : 'Contact for price' }}</div>
+        <div class="price-tag" [ngClass]="{ 'no-price': svc.price == null || svc.price === 0 }" *ngIf="svc.price != null && svc.price > 0">
+          Starting ₹{{ svc.price }}
+        </div>
+        <div class="price-tag no-price" *ngIf="svc.price == null || svc.price === 0">
+         
+        </div>
       </mat-card-actions>
     </mat-card>
   </div>
