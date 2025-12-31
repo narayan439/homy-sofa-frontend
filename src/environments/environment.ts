@@ -3,6 +3,6 @@
 
 export const environment = {
   production: false,
-  apiBaseUrl: 'https://homy-sofa-backend-production.up.railway.app',
+  apiBaseUrl: 'http://localhost:8080',
   apiPrefix: '/api'
 };

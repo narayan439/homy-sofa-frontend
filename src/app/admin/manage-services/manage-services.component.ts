@@ -59,9 +59,10 @@ export class ManageServicesComponent implements OnInit {
   onImageUrlInput(event: any): void {
     const url = event.target.value;
     if (url && this.isValidImageUrl(url)) {
-      // Clear file upload if URL is entered
+      // Clear file upload if URL is entered and show preview
       this.selectedImageFile = null;
-      this.previewDataUrl = null;
+      this.previewDataUrl = url;
+      this.newService.imageUrl = url;
     }
   }
 
