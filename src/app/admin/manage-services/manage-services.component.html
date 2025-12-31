@@ -59,12 +59,12 @@
         
         <!-- Service Image -->
         <div class="service-image-wrapper">
-          <ng-container *ngIf="service.imagePath; else noServiceImage">
+          <ng-container *ngIf="service.imageUrl; else noServiceImage">
             <img 
-              [src]="imageSrc(service.imagePath)" 
+              [src]="getSafeImageUrl(service.imageUrl)" 
               [alt]="service.name"
               class="service-image"
-              (error)="service.imagePath = ''"
+              (error)="handleImageError(service)"
             >
             <div class="image-overlay"></div>
           </ng-container>
@@ -216,11 +216,49 @@
             </mat-error>
           </mat-form-field>
 
-          <!-- Image Upload -->
-          <div class="image-upload-section" *ngIf="!newService.imagePath && !previewDataUrl">
+          <!-- Image URL Input -->
+          <mat-form-field appearance="outline">
+            <mat-label>Image URL</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="newService.imageUrl"
+              name="imageUrl"
+              placeholder="Enter image URL or upload file below"
+              (input)="onImageUrlInput($event)"
+            >
+            <mat-icon matPrefix>link</mat-icon>
+            <mat-hint>Enter a valid image URL or upload a file</mat-hint>
+            <button 
+              mat-icon-button 
+              matSuffix 
+              type="button"
+              (click)="clearImage()"
+              *ngIf="newService.imageUrl || previewDataUrl"
+              matTooltip="Clear Image"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <!-- OR Separator -->
+          <div class="separator" *ngIf="!newService.imageUrl">
+            <span class="separator-line"></span>
+            <span class="separator-text">OR</span>
+            <span class="separator-line"></span>
+          </div>
+
+          <!-- Image Upload (Only show if no URL is entered) -->
+          <div 
+            class="image-upload-section" 
+            *ngIf="!newService.imageUrl && !previewDataUrl"
+            [class.dragover]="isDragOver"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+          >
             <div class="upload-label">
               <div class="upload-icon">
-                <mat-icon>image</mat-icon>
+                <mat-icon>cloud_upload</mat-icon>
               </div>
               <span>Upload Service Image</span>
               <p>Click to browse or drag and drop</p>
@@ -234,8 +272,8 @@
           </div>
 
           <!-- Image Preview -->
-          <div class="image-preview-container" *ngIf="newService.imagePath || previewDataUrl">
-            <ng-container *ngIf="previewDataUrl; else existingImageTemplate">
+          <div class="image-preview-container" *ngIf="newService.imageUrl || previewDataUrl">
+            <ng-container *ngIf="previewDataUrl; else urlImageTemplate">
               <img 
                 [src]="previewDataUrl" 
                 alt="Service image preview" 
@@ -248,9 +286,9 @@
               </div>
             </ng-container>
 
-            <ng-template #existingImageTemplate>
+            <ng-template #urlImageTemplate>
               <img 
-                [src]="imageSrc(newService.imagePath)" 
+                [src]="getSafeImageUrl(newService.imageUrl)" 
                 alt="Service image preview" 
                 class="image-preview"
                 (error)="onImageLoadError()"
@@ -260,11 +298,17 @@
             <button 
               type="button" 
               class="remove-btn"
-              (click)="removeImage()"
+              (click)="clearImage()"
               matTooltip="Remove Image"
             >
-              <mat-icon>close</mat-icon>
+              <mat-icon>delete</mat-icon>
             </button>
+          </div>
+
+          <!-- URL Validation Status -->
+          <div class="url-validation" *ngIf="newService.imageUrl && !isValidImageUrl(newService.imageUrl)">
+            <mat-icon color="warn">warning</mat-icon>
+            <span>Please enter a valid image URL</span>
           </div>
 
           <!-- Active Toggle -->
@@ -283,7 +327,7 @@
             <button 
               class="primary-btn"
               type="submit"
-              [disabled]="serviceForm.invalid || isUploading"
+              [disabled]="serviceForm.invalid || isUploading || (newService.imageUrl && !isValidImageUrl(newService.imageUrl))"
             >
               <mat-icon>{{ isEdit ? 'save' : 'add' }}</mat-icon>
               {{ isEdit ? 'Update Service' : 'Add Service' }}

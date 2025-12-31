@@ -30,19 +30,4 @@ export class ServicesComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // callCustomerService(): void {
-  //   const phoneNumber = '+919876543210';
-  //   window.open(`tel:${phoneNumber}`, '_self');
-  // }
-
-  // openWhatsApp(): void {
-  //   const message = 'Hello, I would like to book a sofa service from your website.';
-  //   const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(message)}`;
-  //   window.open(whatsappUrl, '_blank');
-  // }
-
-  // bookService(serviceType: string): void {
-  //   // This will be handled by the router link with query params
-  // }
-
 }

@@ -7,30 +7,33 @@ import { Component, HostListener } from '@angular/core';
 })
 export class NavbarComponent {
 
-  // Controls mobile sidebar state
-  mobileSidebarOpen: boolean = false;
+  mobileSidebarOpen = false;
   isScrolled = false;
 
-  @HostListener('window:scroll', [])
+  @HostListener('window:scroll')
   onWindowScroll() {
-    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop || 0;
-    this.isScrolled = scrollPosition > 50;
+    this.isScrolled = window.pageYOffset > 50;
   }
 
-  // Toggle sidebar (hamburger button)
-  toggleMobileSidebar(): void {
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const menuBtn = (event.target as HTMLElement).closest('.mobile-menu-btn');
+    const mobileSidebar = (event.target as HTMLElement).closest('.mobile-sidebar');
+    const overlay = (event.target as HTMLElement).closest('.mobile-sidebar-overlay');
+    
+    if (!menuBtn && !mobileSidebar && !overlay && this.mobileSidebarOpen) {
+      this.closeMobileSidebar();
+    }
+  }
+
+  toggleMobileSidebar() {
     this.mobileSidebarOpen = !this.mobileSidebarOpen;
-    this.updateBodyScroll();
-  }
-
-  // Close sidebar (overlay / menu click)
-  closeMobileSidebar(): void {
-    this.mobileSidebarOpen = false;
-    this.updateBodyScroll();
-  }
-
-  // Handle body scroll when sidebar is open
-  private updateBodyScroll(): void {
     document.body.style.overflow = this.mobileSidebarOpen ? 'hidden' : '';
   }
+
+  closeMobileSidebar() {
+    this.mobileSidebarOpen = false;
+    document.body.style.overflow = '';
+  }
+
 }

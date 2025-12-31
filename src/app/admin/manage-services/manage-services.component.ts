@@ -13,6 +13,7 @@ export class ManageServicesComponent implements OnInit {
   selectedImageFile: File | null = null;
   previewDataUrl: string | null = null;
   isUploading = false;
+  isDragOver = false;
 
   services: Service[] = [];
 
@@ -21,7 +22,7 @@ export class ManageServicesComponent implements OnInit {
     name: '',
     description: '',
     price: 0,
-    imagePath: '',
+    imageUrl: '',
     isActive: true
   } as any;
 
@@ -41,7 +42,7 @@ export class ManageServicesComponent implements OnInit {
         name: s.name,
         description: s.description || '',
         price: s.price ?? 0,
-        imagePath: (s as any).imagePath || '',
+        imageUrl: s.imageUrl || (s as any).imagePath || '',
         icon: (s as any).icon,
         image: (s as any).image,
         features: (s as any).features,
@@ -55,23 +56,36 @@ export class ManageServicesComponent implements OnInit {
     this.serviceService.loadServices();
   }
 
-  onImageSelected(event?: Event) {
+  onImageUrlInput(event: any): void {
+    const url = event.target.value;
+    if (url && this.isValidImageUrl(url)) {
+      // Clear file upload if URL is entered
+      this.selectedImageFile = null;
+      this.previewDataUrl = null;
+    }
+  }
+
+  onImageSelected(event?: Event): void {
     const input = event?.target as HTMLInputElement | undefined;
     if (input && input.files && input.files.length > 0) {
       this.selectedImageFile = input.files[0];
-      // Preview image locally immediately
+      
+      // Clear URL input when file is selected
+      this.newService.imageUrl = '';
+      
+      // Preview image locally
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.previewDataUrl = e.target.result;
       };
       reader.readAsDataURL(this.selectedImageFile);
 
-      // Upload to backend and set imagePath only after upload completes
+      // Upload to backend
       this.isUploading = true;
       if (this.selectedImageFile) {
         this.serviceService.uploadServiceImage(this.selectedImageFile).subscribe({
-          next: (path: string) => {
-            this.newService.imagePath = path;
+          next: (url: string) => {
+            this.newService.imageUrl = url;
             this.isUploading = false;
             this.snack('Image uploaded successfully');
           },
@@ -79,21 +93,94 @@ export class ManageServicesComponent implements OnInit {
             console.error('Image upload failed', err);
             this.isUploading = false;
             this.snack('Failed to upload image');
-            // keep preview but clear server path
-            this.newService.imagePath = '';
+            this.newService.imageUrl = '';
           }
         });
       }
     }
   }
 
-  removeImage() {
-    this.newService.imagePath = '';
-    this.previewDataUrl = null;
-    this.selectedImageFile = null;
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
   }
 
-  saveService() {
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+    
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      const file = event.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        // Create a fake change event
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.files = dataTransfer.files;
+        
+        this.onImageSelected({ target: input } as any);
+      } else {
+        this.snack('Please drop only image files');
+      }
+    }
+  }
+
+  clearImage(): void {
+    this.newService.imageUrl = '';
+    this.selectedImageFile = null;
+    this.previewDataUrl = null;
+  }
+
+  getSafeImageUrl(url: string): string {
+    if (!url) return '';
+    
+    // If it's already a valid URL, return as is
+    if (this.isValidImageUrl(url)) {
+      return url;
+    }
+    
+    // If it's a data URL, return as is
+    if (url.startsWith('data:')) {
+      return url;
+    }
+    
+    // For relative paths, add base URL
+    return url.startsWith('/') ? url : `/${url}`;
+  }
+
+  isValidImageUrl(url: string): boolean {
+    if (!url) return false;
+    
+    // Check for common image file extensions
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    const urlLower = url.toLowerCase();
+    
+    // Check if it's a data URL
+    if (url.startsWith('data:image/')) {
+      return true;
+    }
+    
+    // Check if it's a valid URL with image extension
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname.toLowerCase();
+      return imageExtensions.some(ext => pathname.endsWith(ext));
+    } catch {
+      // If not a valid URL, check if it's a relative path with image extension
+      return imageExtensions.some(ext => urlLower.endsWith(ext));
+    }
+  }
+
+  saveService(): void {
     if (this.isEdit && this.newService.id) {
       this.serviceService.updateService(this.newService.id!, this.newService).subscribe({
         next: () => {
@@ -122,24 +209,24 @@ export class ManageServicesComponent implements OnInit {
     }
   }
 
-  editService(service: Service) {
+  editService(service: Service): void {
     this.newService = { ...service };
     this.isEdit = true;
     // Scroll to form
     document.querySelector('.form-card')?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  startEditPrice(service: Service) {
+  startEditPrice(service: Service): void {
     this.editingPriceId = service.id || null;
     this.editingPriceValue = service.price ?? 0;
   }
 
-  cancelEditPrice() {
+  cancelEditPrice(): void {
     this.editingPriceId = null;
     this.editingPriceValue = 0;
   }
 
-  savePrice(service: Service) {
+  savePrice(service: Service): void {
     if (!service.id) return;
     const updated = { price: this.editingPriceValue } as Partial<Service>;
     this.serviceService.updateService(service.id!, updated).subscribe({
@@ -154,14 +241,7 @@ export class ManageServicesComponent implements OnInit {
     });
   }
 
-  private snack(msg: string) {
-    this.snackBar.open(msg, 'Close', {
-      duration: 3000,
-      panelClass: ['snackbar-success']
-    });
-  }
-
-  deleteService(id: string | undefined) {
+  deleteService(id: string | undefined): void {
     if (!id) return;
     if (confirm('Are you sure you want to delete this service?')) {
       this.serviceService.deleteService(id).subscribe({
@@ -176,51 +256,48 @@ export class ManageServicesComponent implements OnInit {
     }
   }
 
-  resetForm() {
+  resetForm(): void {
     this.newService = {
       id: '',
       name: '',
       description: '',
       price: 0,
-      imagePath: '',
+      imageUrl: '',
       isActive: true
     } as any;
     this.selectedImageFile = null;
     this.previewDataUrl = null;
     this.isUploading = false;
     this.isEdit = false;
+    this.isDragOver = false;
   }
 
-  // Ensure image path is absolute from web root so browser can load it
-  imageSrc(path?: string | null): string {
-    if (!path) return '';
-    const p = path.trim();
-    if (p.startsWith('http://') || p.startsWith('https://')) return p;
-    return p.startsWith('/') ? p : '/' + p;
+  handleImageError(service: Service): void {
+    console.warn('Failed to load image for service:', service.name);
+    service.imageUrl = '';
   }
 
+  onImageLoadError(): void {
+    console.warn('Failed to load image from URL:', this.newService.imageUrl);
+    this.newService.imageUrl = '';
+    this.snack('Failed to load image. Please check the URL or upload a new image.');
+  }
 
-  // Add these methods to your existing ManageServicesComponent class
+  getActiveServicesCount(): number {
+    return this.services.filter(service => service.isActive).length;
+  }
 
-getActiveServicesCount(): number {
-  return this.services.filter(service => service.isActive).length;
-}
+  getAveragePrice(): string {
+    if (this.services.length === 0) return '₹0';
+    const total = this.services.reduce((sum, service) => sum + (service.price || 0), 0);
+    const average = Math.round(total / this.services.length);
+    return `₹${average}`;
+  }
 
-getAveragePrice(): string {
-  if (this.services.length === 0) return '₹0';
-  const total = this.services.reduce((sum, service) => sum + (service.price || 0), 0);
-  const average = Math.round(total / this.services.length);
-  return `₹${average}`;
-}
-
-  onImageLoadError() {
-    console.warn('Failed to load image from path:', this.newService.imagePath || this.previewDataUrl);
-    // If preview exists, clear preview; otherwise clear saved path
-    if (this.previewDataUrl) {
-      this.previewDataUrl = null;
-    } else {
-      this.newService.imagePath = '';
-    }
-    this.snack('Failed to load image');
+  private snack(msg: string): void {
+    this.snackBar.open(msg, 'Close', {
+      duration: 3000,
+      panelClass: ['snackbar-success']
+    });
   }
 }

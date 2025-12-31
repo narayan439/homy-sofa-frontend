@@ -1,165 +1,280 @@
-<div class="booking-container">
-  <div class="booking-card">
+<section class="booking-page">
+  <div class="booking-container">
     
-    <!-- Card Header -->
-    <div class="card-header">
-      <div class="header-icon">
-        <mat-icon>event_available</mat-icon>
-      </div>
-      <h1>Book Your Service</h1>
-      <p>Schedule a professional sofa service at your convenience</p>
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>Book Your Sofa Service</h1>
+      <p class="subtitle">
+        Schedule a professional sofa service with our expert technicians. 
+        Fill in your details and we'll take care of the rest!
+      </p>
     </div>
 
-    <!-- Card Content -->
-    <div class="card-content">
-      <form [formGroup]="bookingForm" (ngSubmit)="submit()" class="booking-form">
+    <div class="booking-layout">
+      
+      <!-- Left Column - Booking Form -->
+      <div class="booking-form-section">
+        <div class="form-header">
+          <h2><mat-icon>edit_calendar</mat-icon> Booking Details</h2>
+          <p>Fill in your details to schedule a professional sofa service</p>
+        </div>
         
-        <!-- Full Name -->
-        <mat-form-field appearance="outline">
-          <mat-label>Full Name</mat-label>
-          <input 
-            matInput 
-            formControlName="fullName"
-            placeholder="Enter your full name"
+        <form [formGroup]="bookingForm" (ngSubmit)="submit()" class="booking-form">
+          
+          <!-- Personal Details Row -->
+          <div class="form-row">
+            <!-- Full Name -->
+            <mat-form-field appearance="outline">
+              <mat-label>Full Name</mat-label>
+              <input 
+                matInput 
+                formControlName="fullName"
+                placeholder="Enter your full name"
+              >
+              <mat-icon matPrefix>person</mat-icon>
+              <mat-error *ngIf="bookingForm.get('fullName')?.hasError('required') && bookingForm.get('fullName')?.touched">
+                Please enter your name
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Phone Number -->
+            <mat-form-field appearance="outline">
+              <mat-label>Phone Number</mat-label>
+              <input 
+                matInput 
+                formControlName="phone"
+                placeholder="9876543210"
+              >
+              <mat-icon matPrefix>phone</mat-icon>
+              <mat-error *ngIf="bookingForm.get('phone')?.hasError('required') && bookingForm.get('phone')?.touched">
+                Phone number is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Email -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email Address</mat-label>
+            <input 
+              matInput 
+              formControlName="email"
+              type="email"
+              placeholder="your.email@example.com"
+            >
+            <mat-icon matPrefix>email</mat-icon>
+            <mat-error *ngIf="bookingForm.get('email')?.hasError('required') && bookingForm.get('email')?.touched">
+              Email is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Service Selection Row -->
+          <div class="form-row">
+            <!-- Service Type -->
+            <mat-form-field appearance="outline">
+              <mat-label>Service Type</mat-label>
+              <mat-select formControlName="serviceType">
+                <mat-option *ngFor="let svc of services" [value]="svc.id || svc.name">
+                  {{ svc.name }}
+                </mat-option>
+              </mat-select>
+              <mat-icon matPrefix>build</mat-icon>
+              <mat-error *ngIf="bookingForm.get('serviceType')?.hasError('required') && bookingForm.get('serviceType')?.touched">
+                Please select a service type
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Service Date -->
+            <mat-form-field appearance="outline">
+              <mat-label>Service Date</mat-label>
+              <input 
+                matInput 
+                [matDatepicker]="picker" 
+                formControlName="serviceDate"
+                [min]="minDate"
+                placeholder="Select a date"
+              >
+              <mat-icon matPrefix>calendar_today</mat-icon>
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="bookingForm.get('serviceDate')?.hasError('required') && bookingForm.get('serviceDate')?.touched">
+                Please select a service date
+              </mat-error>
+            </mat-form-field>
+          </div>
+              <!-- Location Actions -->
+              <div class="location-actions" *ngIf="locationPermission !== 'denied'">
+                <button 
+                  type="button" 
+                  mat-stroked-button 
+                  color="primary"
+                  (click)="onUseCurrentLocation()"
+                  [disabled]="isGettingLocation"
+                  class="location-btn"
+                >
+                  <mat-icon>my_location</mat-icon>
+                  {{ isGettingLocation ? 'Detecting Location...' : 'Use Current Location' }}
+                </button>
+                
+                <button 
+                  type="button" 
+                  mat-button 
+                  (click)="onManualAddress()"
+                  class="manual-btn"
+                >
+                  Enter Address Manually
+                </button>
+              </div>
+            <!-- </div> -->
+
+            <!-- Location Status -->
+            <div *ngIf="isGettingLocation" class="location-status">
+              <svg width="20" height="20" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="vertical-align:middle">
+                <circle cx="25" cy="25" r="20" fill="none" stroke="#e0e0e0" stroke-width="5"/>
+                <path d="M45 25a20 20 0 0 1-20 20" fill="none" stroke="#3f51b5" stroke-width="5" stroke-linecap="round">
+                  <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
+                </path>
+              </svg>
+              <span>Detecting your location...</span>
+            </div>
+
+            <div *ngIf="locationError" class="location-error">
+              <mat-icon>error</mat-icon>
+              <span>{{ locationError }}</span>
+            </div>
+
+            <div *ngIf="userLocation" class="location-success">
+              <mat-icon>check_circle</mat-icon>
+              <span>Location detected successfully!</span>
+              <small>Lat: {{ userLocation.lat.toFixed(6) }}, Lng: {{ userLocation.lng.toFixed(6) }}</small>
+            </div>
+
+            <!-- Auto-filled Address Preview -->
+            <div *ngIf="bookingForm.get('fullAddress')?.value" class="address-preview">
+              <div class="preview-header">
+                <mat-icon>location_searching</mat-icon>
+                <span>Detected Address:</span>
+              </div>
+              <p class="preview-address">{{ bookingForm.get('fullAddress')?.value }}</p>
+            </div>
+
+            <!-- ADDRESS FORM -->
+            <div class="address-form">
+                <!-- House / Area / Locality Detect Button (aligned like City/Pincode) -->
+                <div class="form-row">
+                  <!-- House / Flat / Building -->
+                  <mat-form-field appearance="outline">
+                    <mat-label>House / Flat / Building</mat-label>
+                    <input 
+                      matInput 
+                      formControlName="house"
+                      placeholder="House number, building name"
+                    >
+                    <mat-icon matPrefix>home</mat-icon>
+                    <mat-error *ngIf="bookingForm.get('house')?.hasError('required') && bookingForm.get('house')?.touched">
+                      Please enter house/flat/building details
+                    </mat-error>
+                  </mat-form-field>
+
+                  <!-- Area / Locality -->
+                  <mat-form-field appearance="outline">
+                    <mat-label>Area / Locality</mat-label>
+                    <input 
+                      matInput 
+                      formControlName="area"
+                      placeholder="Locality, area name"
+                    >
+                    <mat-icon matPrefix>place</mat-icon>
+                    <mat-error *ngIf="bookingForm.get('area')?.hasError('required') && bookingForm.get('area')?.touched">
+                      Please enter your area/locality
+                    </mat-error>
+                  </mat-form-field>
+
+                  <!-- Locality / Detect Location Button -->
+              
+                </div>
+
+              <div class="form-row">
+                <!-- City -->
+                <mat-form-field appearance="outline">
+                  <mat-label>City</mat-label>
+                  <input 
+                    matInput 
+                    formControlName="city"
+                    placeholder="City name"
+                  >
+                  <mat-icon matPrefix>location_city</mat-icon>
+                  <mat-error *ngIf="bookingForm.get('city')?.hasError('required') && bookingForm.get('city')?.touched">
+                    Please enter your city
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Pincode -->
+                <mat-form-field appearance="outline">
+                  <mat-label>Pincode</mat-label>
+                  <input 
+                    matInput 
+                    formControlName="pincode"
+                    placeholder="6-digit pincode"
+                    maxlength="6"
+                  >
+                  <mat-icon matPrefix>pin</mat-icon>
+                  <mat-error *ngIf="bookingForm.get('pincode')?.hasError('required') && bookingForm.get('pincode')?.touched">
+                    Pincode is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <!-- Nearby Landmark -->
+              <mat-form-field appearance="outline" class="form-row">
+                <mat-label>Nearby Landmark</mat-label>
+                <input 
+                  matInput 
+                  formControlName="landmark"
+                  placeholder="Near metro station"
+                >
+                <mat-icon matPrefix>flag</mat-icon>
+              </mat-form-field>
+
+              <!-- Hidden location fields -->
+              <input type="hidden" formControlName="latitude">
+              <input type="hidden" formControlName="longitude">
+              <input type="hidden" formControlName="fullAddress">
+            </div>
+
+            <!-- Service area check -->
+            <div *ngIf="!isServiceable" class="location-error" style="margin-top:12px">
+              <mat-icon>error</mat-icon>
+              <span>Sorry — we currently only service Bhubaneswar and Cuttack. Your address appears outside our service area.</span>
+            </div>
+
+            <!-- Location Permission Info -->
+            <div *ngIf="locationPermission === 'denied'" class="permission-info">
+              <mat-icon>info</mat-icon>
+              <div>
+                <p><strong>Location access is denied.</strong> To use auto-location detection:</p>
+                <ol>
+                  <li>Click the lock icon in your browser's address bar</li>
+                  <li>Enable location permissions for this site</li>
+                  <li>Refresh the page</li>
+                </ol>
+              </div>
+            </div>
+          <!-- </div> -->
+          <!-- Submit Button -->
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="bookingForm.invalid"
+            class="submit-btn"
           >
-          <mat-icon matPrefix>person</mat-icon>
-          <mat-error *ngIf="bookingForm.get('fullName')?.hasError('required') && bookingForm.get('fullName')?.touched">
-            Please enter your name
-          </mat-error>
-          <mat-error *ngIf="bookingForm.get('fullName')?.hasError('minlength') && bookingForm.get('fullName')?.touched">
-            Name must be at least 3 characters
-          </mat-error>
-          <mat-error *ngIf="bookingForm.get('fullName')?.hasError('pattern') && bookingForm.get('fullName')?.touched">
-            Name cannot contain numbers or special characters
-          </mat-error>
-        </mat-form-field>
+            <mat-icon>send</mat-icon>
+            Submit Booking Request
+          </button>
 
-        <!-- Email Address -->
-        <mat-form-field appearance="outline">
-          <mat-label>Email Address</mat-label>
-          <input 
-            matInput 
-            formControlName="email"
-            type="email"
-            placeholder="your.email@example.com"
-          >
-          <mat-icon matPrefix>email</mat-icon>
-          <mat-error *ngIf="bookingForm.get('email')?.hasError('required') && bookingForm.get('email')?.touched">
-            Email is required
-          </mat-error>
-          <mat-error *ngIf="bookingForm.get('email')?.hasError('email') && bookingForm.get('email')?.touched">
-            Please enter a valid email address
-          </mat-error>
-        </mat-form-field>
+        </form>
+      </div>
 
-        <!-- Phone Number -->
-        <mat-form-field appearance="outline">
-          <mat-label>Phone Number</mat-label>
-          <input 
-            matInput 
-            formControlName="phone"
-            placeholder="9876543210"
-          >
-          <mat-icon matPrefix>phone</mat-icon>
-          <mat-error *ngIf="bookingForm.get('phone')?.hasError('required') && bookingForm.get('phone')?.touched">
-            Phone number is required
-          </mat-error>
-          <mat-error *ngIf="bookingForm.get('phone')?.hasError('pattern') && bookingForm.get('phone')?.touched">
-            Please enter a valid 10-digit phone number
-          </mat-error>
-        </mat-form-field>
-
-        <!-- Service Type Selection -->
-        <mat-form-field appearance="outline">
-          <mat-label>Select Service Type</mat-label>
-          <mat-select formControlName="serviceType">
-            <mat-option *ngFor="let svc of services" [value]="svc.id || svc.name">
-              {{ svc.name }}
-            </mat-option>
-          </mat-select>
-          <mat-icon matPrefix>build</mat-icon>
-          <mat-error *ngIf="bookingForm.get('serviceType')?.hasError('required') && bookingForm.get('serviceType')?.touched">
-            Please select a service type
-          </mat-error>
-        </mat-form-field>
-        <div *ngIf="selectedServicePrice !== null" class="service-price-info">
-          <mat-icon>currency_rupee</mat-icon>
-          <span>Price: ₹{{ selectedServicePrice }}</span>
-        </div>
-
-        <!-- Service Date -->
-        <mat-form-field appearance="outline">
-          <mat-label>Preferred Service Date</mat-label>
-          <input 
-            matInput 
-            [matDatepicker]="picker" 
-            formControlName="serviceDate"
-            [min]="minDate"
-            placeholder="Select a date"
-          >
-          <mat-icon matPrefix>calendar_today</mat-icon>
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
-          <mat-error *ngIf="bookingForm.get('serviceDate')?.hasError('required') && bookingForm.get('serviceDate')?.touched">
-            Please select a service date
-          </mat-error>
-        </mat-form-field>
-
-        <!-- Time Slot -->
-        <mat-form-field appearance="outline">
-          <mat-label>Preferred Time Slot</mat-label>
-          <mat-select formControlName="timeSlot">
-            <mat-option value="morning">Morning (9 AM - 12 PM)</mat-option>
-            <mat-option value="afternoon">Afternoon (12 PM - 4 PM)</mat-option>
-            <mat-option value="evening">Evening (4 PM - 8 PM)</mat-option>
-          </mat-select>
-          <mat-icon matPrefix>schedule</mat-icon>
-          <mat-error *ngIf="bookingForm.get('timeSlot')?.hasError('required') && bookingForm.get('timeSlot')?.touched">
-            Please select a time slot
-          </mat-error>
-        </mat-form-field>
-
-        <!-- Service Details -->
-        <mat-form-field appearance="outline">
-          <mat-label>Service Details</mat-label>
-          <textarea 
-            matInput 
-            rows="4" 
-            formControlName="details"
-            placeholder="Please provide any specific details about your sofa, type of service needed, or special instructions..."
-          ></textarea>
-          <mat-icon matPrefix>description</mat-icon>
-          <mat-error *ngIf="bookingForm.get('details')?.hasError('maxlength') && bookingForm.get('details')?.touched">
-            Instructions cannot be above 100 characters
-          </mat-error>
-        </mat-form-field>
-
-        <!-- Contact Info -->
-        <div class="contact-info">
-          <h4>
-            <mat-icon>info</mat-icon>
-            What happens next?
-          </h4>
-          <p>
-            • We'll confirm your booking within 2 hours<br>
-            • Our technician will call you for address verification<br>
-            • Service will be provided at your scheduled time
-          </p>
-        </div>
-
-        <!-- Submit Button -->
-        <button
-          mat-raised-button
-          color="primary"
-          type="submit"
-          [disabled]="bookingForm.invalid"
-          class="submit-btn"
-        >
-          <mat-icon>send</mat-icon>
-          Submit Booking Request
-        </button>
-
-      </form>
     </div>
   </div>
-</div>
+</section>

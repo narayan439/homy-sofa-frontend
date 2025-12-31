@@ -760,3 +760,122 @@
     padding: 20px;
   }
 }
+
+/* URL Input Styling */
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-suffix {
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-suffix:hover {
+  opacity: 1;
+}
+
+/* Separator */
+.separator {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.separator-line {
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.separator-text {
+  padding: 0 15px;
+  color: #a0aec0;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Image Upload Section - Dragover State */
+.image-upload-section.dragover {
+  border-color: #1a237e;
+  background: rgba(26, 35, 126, 0.05);
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(26, 35, 126, 0.1);
+}
+
+.image-upload-section.dragover .upload-icon {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  animation: pulse 1.5s infinite;
+}
+
+/* URL Validation */
+.url-validation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  background: #fff3e0;
+  border-radius: 8px;
+  border-left: 4px solid #f57c00;
+  margin-top: -10px;
+}
+
+.url-validation mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.url-validation span {
+  color: #f57c00;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Toggle Label */
+.toggle-label {
+  color: #4a5568;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Service Card Image Error Handling */
+.service-image-wrapper img {
+  transition: opacity 0.3s ease;
+}
+
+.service-image-wrapper img[src=""] {
+  opacity: 0;
+}
+
+/* Enhanced Image Preview */
+.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.image-preview-container:hover .image-preview {
+  transform: scale(1.05);
+}
+
+/* Service Card Hover Effects */
+.service-card:hover .service-image-wrapper .image-preview {
+  transform: scale(1.1);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .image-upload-section {
+    padding: 20px;
+  }
+  
+  .separator-text {
+    padding: 0 10px;
+    font-size: 11px;
+  }
+  
+  .url-validation {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}

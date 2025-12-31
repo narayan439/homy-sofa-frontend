@@ -1,26 +1,26 @@
-<mat-toolbar class="navbar" [class.shrink]="isScrolled">
+<mat-toolbar class="navbar">
   
-  <!-- Logo -->
+  <!-- Logo on left -->
   <a routerLink="/" class="logo">
     HomY
   </a>
 
   <span class="spacer"></span>
 
-  <!-- Desktop Menu -->
+  <!-- Desktop Menu: Services, About, Contact in middle -->
   <nav class="desktop-menu">
-    <a mat-button routerLink="/" routerLinkActive="active">
-      Home
-    </a>
     <a mat-button routerLink="/services" routerLinkActive="active">
       Services
+    </a>
+    <a mat-button routerLink="/about" routerLinkActive="active">
+      About
     </a>
     <a mat-button routerLink="/contact" routerLinkActive="active">
       Contact
     </a>
     
-    <!-- Book Now Button -->
-    <a mat-raised-button routerLink="/booking" class="desktop-book-btn" routerLinkActive="active">
+    <!-- Book Now Button on right -->
+    <a mat-raised-button routerLink="/booking" class="desktop-book-btn">
       Book Now
     </a>
   </nav>
@@ -44,7 +44,7 @@
   <!-- Sidebar Header -->
   <div class="mobile-sidebar-header">
     <div class="mobile-logo">
-    
+      HomY
     </div>
     
     <button class="close-sidebar" (click)="closeMobileSidebar()">
@@ -67,14 +67,14 @@
     </li>
     
     <li>
-      <a routerLink="/booking" routerLinkActive="active" (click)="closeMobileSidebar()">
-        Book Service
+      <a routerLink="/about" routerLinkActive="active" (click)="closeMobileSidebar()">
+        About
       </a>
     </li>
     
     <li>
       <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileSidebar()">
-        Contact Us
+        Contact
       </a>
     </li>
   </ul>

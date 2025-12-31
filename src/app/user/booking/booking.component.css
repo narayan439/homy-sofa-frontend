@@ -1,73 +1,135 @@
-/* Booking Container */
-.booking-container {
-  min-height: calc(100vh - 140px);
+/* Booking Page */
+.booking-page {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  padding: 40px 20px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  min-height: 100vh;
+  padding: 80px 20px;
+  animation: fadeIn 0.8s ease;
 }
 
-/* Booking Card */
-.booking-card {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
-  width: 100%;
-  max-width: 500px;
-  animation: slideUp 0.6s ease;
-}
-
-/* Card Header */
-.card-header {
-  background: linear-gradient(135deg, #1a237e, #304ffe);
-  color: white;
-  padding: 40px 30px;
-  text-align: center;
-}
-
-.header-icon {
-  background: rgba(255, 255, 255, 0.2);
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px;
-}
-
-.header-icon mat-icon {
-  font-size: 36px;
-  width: 36px;
-  height: 36px;
-}
-
-.card-header h1 {
-  font-size: 32px;
-  font-weight: 700;
-  margin: 0 0 10px 0;
-}
-
-.card-header p {
-  font-size: 16px;
-  opacity: 0.9;
-  margin: 0;
-  max-width: 400px;
+.booking-container {
+  max-width: 1300px;
   margin: 0 auto;
 }
 
-/* Card Content */
-.card-content {
-  padding: 40px 30px;
+/* Page Header */
+.page-header {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 60px;
+  animation: slideInDown 1s ease;
+}
+
+.page-header h1 {
+  font-size: 48px;
+  font-weight: 800;
+  color: #1a237e;
+  margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.page-header h1::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 5px;
+  background: linear-gradient(135deg, #ff5252, #e53935);
+  border-radius: 3px;
+  animation: expandWidth 1.5s ease-out;
+}
+
+.page-header .subtitle {
+  font-size: 18px;
+  color: #666;
+  margin-top: 30px;
+  line-height: 1.6;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  animation: fadeInUp 1.2s ease;
+}
+
+/* Booking Layout */
+.booking-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  animation: fadeInUp 1.4s ease;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Left Column - Form */
+.booking-form-section {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  padding: 40px;
+  animation: slideInUp 1.6s ease;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.form-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a237e;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.form-header p {
+  color: #666;
+  font-size: 16px;
+  margin: 0;
 }
 
 /* Form Styling */
 .booking-form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+}
+
+/* Form Grid for Two Columns */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Three-column row used for house / area / detect-button */
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 64px;
+  gap: 20px;
+  align-items: center;
+}
+
+.locality-btn-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.locality-btn-wrap button {
+  width: 100%;
+  height: 44px;
+}
+
+/* Full Width Field */
+.full-width {
+  grid-column: 1 / -1;
+  
 }
 
 /* Form Fields */
@@ -98,93 +160,32 @@
   margin-right: 10px;
 }
 
-/* Service Selection */
-.service-selection {
-  margin-bottom: 10px;
-}
-
-.service-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
-  margin-top: 15px;
-}
-
-.service-option {
-  background: #f8fafc;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 15px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
+/* Price Info */
+.service-price-info {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 8px;
-}
-
-.service-option:hover {
-  border-color: #1a237e;
-  background: #e8eaf6;
-  transform: translateY(-2px);
-}
-
-.service-option.selected {
-  background: #e8eaf6;
-  border-color: #1a237e;
-  box-shadow: 0 4px 12px rgba(26, 35, 126, 0.15);
-}
-
-.service-icon {
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
-  color: #1a237e;
-}
-
-.service-option span {
-  font-weight: 500;
-  font-size: 14px;
-  color: #2d3748;
-}
-
-/* Contact Info */
-.contact-info {
-  background: #f7fafc;
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 10px;
+  color: #388e3c;
+  font-weight: 600;
+  font-size: 18px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  padding: 10px 0;
+  background: #e8f5e9;
+  border-radius: 10px;
+  padding: 15px;
   border-left: 4px solid #4caf50;
 }
 
-.contact-info h4 {
-  color: #2d3748;
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 10px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.contact-info h4 mat-icon {
-  color: #4caf50;
+.service-price-info mat-icon {
+  color: #388e3c;
   font-size: 20px;
   width: 20px;
   height: 20px;
 }
 
-.contact-info p {
-  color: #718096;
-  font-size: 14px;
-  margin: 0;
-  line-height: 1.5;
-}
-
 /* Submit Button */
 .submit-btn {
-  margin-top: 20px;
   height: 56px;
   border-radius: 12px;
   font-weight: 600;
@@ -197,6 +198,25 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.5s;
+}
+
+.submit-btn:hover::before {
+  left: 100%;
 }
 
 .submit-btn:hover:not([disabled]) {
@@ -212,8 +232,373 @@
   box-shadow: none;
 }
 
-/* Animation */
-@keyframes slideUp {
+/* Right Column - Info Sections */
+
+/* Why Choose Us Card */
+.why-choose-card .card-header mat-icon {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+}
+
+/* What's Included Card */
+.included-card .card-header mat-icon {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+}
+
+.card-content {
+  padding: 25px;
+}
+
+/* Feature Item */
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 10px;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  background: #edf2f7;
+  transform: translateX(5px);
+}
+
+.feature-item:last-child {
+  margin-bottom: 0;
+}
+
+.feature-item mat-icon {
+  color: #304ffe;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.feature-item h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 5px 0;
+}
+
+.feature-item p {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Included Item */
+.included-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.included-item:hover {
+  background: #f0f7ff;
+  transform: translateX(5px);
+}
+
+.included-item:last-child {
+  margin-bottom: 0;
+}
+
+.included-item mat-icon {
+  color: #4caf50;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.included-item span {
+  color: #4a5568;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Location Section */
+.location-section {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.section-title {
+  color: #1a237e;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.location-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.location-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.location-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.manual-btn {
+  color: #666;
+  font-size: 14px;
+}
+
+/* Location Status */
+.location-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.location-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffebee;
+  color: #d32f2f;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.location-error mat-icon {
+  color: #d32f2f;
+}
+
+.location-success {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: #e8f5e9;
+  color: #388e3c;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.location-success mat-icon {
+  color: #388e3c;
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.location-success small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Address Preview */
+.address-preview {
+  background: white;
+  border: 1px solid #4caf50;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: #388e3c;
+  font-weight: 600;
+}
+
+.preview-address {
+  margin: 0;
+  color: #4a5568;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* Permission Info */
+.permission-info {
+  background: #fff3e0;
+  color: #f57c00;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  display: flex;
+  gap: 15px;
+}
+
+.permission-info mat-icon {
+  color: #f57c00;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.permission-info div {
+  flex: 1;
+}
+
+.permission-info p {
+  margin: 0 0 10px 0;
+}
+
+.permission-info ol {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+}
+
+.permission-info li {
+  margin-bottom: 5px;
+}
+
+/* Map Link Section */
+.map-link-section {
+  background: #f0f4ff;
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.map-link-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: #1976d2;
+}
+
+.map-link-info mat-icon {
+  color: #1976d2;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.map-link-info p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* How-to Steps */
+.how-to-steps {
+  margin-top: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.how-to-steps h4 {
+  color: #1a237e;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+}
+
+.how-to-steps ol {
+  margin: 0 0 15px 0;
+  padding-left: 20px;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.how-to-steps li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.map-example {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #666;
+  border-left: 3px solid #4caf50;
+}
+
+.map-example mat-icon {
+  color: #4caf50;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(30px);
@@ -224,83 +609,125 @@
   }
 }
 
-@keyframes pulse {
+@keyframes expandWidth {
   0% {
-    box-shadow: 0 0 0 0 rgba(26, 35, 126, 0.2);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(26, 35, 126, 0);
+    width: 0;
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(26, 35, 126, 0);
+    width: 100px;
   }
-}
-
-.pulse {
-  animation: pulse 2s infinite;
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  .booking-container {
-    padding: 20px 15px;
+@media (max-width: 1024px) {
+  .booking-layout {
+    grid-template-columns: 1fr;
+    max-width: 700px;
+    margin: 0 auto;
   }
   
-  .booking-card {
-    max-width: 100%;
+  .booking-info-section {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .booking-page {
+    padding: 60px 15px;
+  }
+  
+  .page-header h1 {
+    font-size: 36px;
+  }
+  
+  .page-header .subtitle {
+    font-size: 16px;
+  }
+  
+  .booking-form-section {
+    padding: 30px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .info-card {
+    padding: 0;
   }
   
   .card-header {
-    padding: 30px 20px;
-  }
-  
-  .header-icon {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .header-icon mat-icon {
-    font-size: 30px;
-    width: 30px;
-    height: 30px;
-  }
-  
-  .card-header h1 {
-    font-size: 26px;
+    padding: 20px;
   }
   
   .card-content {
-    padding: 30px 20px;
+    padding: 20px;
   }
   
-  .service-options {
-    grid-template-columns: repeat(2, 1fr);
+  .form-header h2 {
+    font-size: 24px;
+  }
+  
+  .location-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .location-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .location-btn,
+  .manual-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .card-header {
-    padding: 25px 15px;
+  .booking-page {
+    padding: 40px 15px;
   }
   
-  .card-header h1 {
+  .page-header h1 {
+    font-size: 28px;
+  }
+  
+  .booking-form-section {
+    padding: 25px 20px;
+  }
+  
+  .form-header h2 {
     font-size: 22px;
   }
   
-  .card-content {
-    padding: 25px 15px;
-  }
-  
-  .booking-form {
-    gap: 16px;
-  }
-  
-  .service-options {
-    grid-template-columns: 1fr;
+  .section-title {
+    font-size: 16px;
   }
   
   .submit-btn {
     height: 50px;
     font-size: 15px;
+  }
+  
+  .card-header mat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+  }
+  
+  .card-header h3 {
+    font-size: 20px;
+  }
+  
+  .feature-item,
+  .included-item {
+    padding: 12px;
+  }
+  
+  .how-to-steps ol {
+    font-size: 13px;
   }
 }
