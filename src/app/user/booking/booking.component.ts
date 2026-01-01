@@ -548,7 +548,7 @@ export class BookingComponent implements OnInit, OnDestroy {
         num = Math.max(0, Math.floor(parsed));
       }
     }
-    const serial = String(num).padStart(6, '0');
+      const serial = String(num); // no zero-padding: e.g. 38 -> "38"
     return `HOMY${year}${serial}`;
   }
 

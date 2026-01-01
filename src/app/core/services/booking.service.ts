@@ -80,8 +80,19 @@ export class BookingService {
       );
   }
 
-  updateBookingStatus(id: string | number, status: BookingStatus | string): Observable<Booking> {
-    return this.updateBooking(id, { status: status as BookingStatus });
+  updateBookingStatus(id: string | number, status: BookingStatus | string, sendEmail: boolean = true): Observable<Booking> {
+    const idStr = String(id);
+    const url = `${API_URL}/bookings/${idStr}?sendEmail=${sendEmail}`;
+    return this.http.put<Booking>(url, { status: status as BookingStatus })
+      .pipe(
+        tap(updatedBooking => {
+          const current = this.bookingsSubject.value;
+          const normalized = this.normalizeBooking(updatedBooking as any);
+          const updated = current.map(b => String(b.id) === idStr ? normalized : b);
+          this.bookingsSubject.next(updated);
+          this.saveToLocalStorage();
+        })
+      );
   }
 
   deleteBooking(id: string | number): Observable<void> {

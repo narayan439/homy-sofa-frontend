@@ -503,7 +503,7 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     
     if (!booking.id) return;
 
-    this.bookingService.updateBookingStatus(booking.id, status).subscribe({
+    this.bookingService.updateBookingStatus(booking.id, status, true).subscribe({
       next: () => {
         this.snackBar.open(`✅ Booking status changed to ${status}`, 'Close', { 
           duration: 3000,
