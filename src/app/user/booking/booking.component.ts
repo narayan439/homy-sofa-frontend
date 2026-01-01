@@ -560,7 +560,7 @@ export class BookingComponent implements OnInit, OnDestroy {
     if (!city && !fullAddress) return false;
     const c = (city || '').toString().toLowerCase();
     const f = (fullAddress || '').toString().toLowerCase();
-    const allowed = ['bhubaneswar', 'bbsr', 'cuttack'];
+    const allowed = [ 'khorda','bhubaneswar', 'bbsr', 'cuttack'];
     for (const a of allowed) {
       if (c.includes(a) || f.includes(a)) return true;
     }
