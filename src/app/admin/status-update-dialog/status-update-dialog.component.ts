@@ -6,7 +6,7 @@ export interface StatusDialogData {
   bookingId: string | number;
   currentStatus: string;
   newStatus: string;
-  currentBookingService?: string; // Current service name to exclude from dropdown
+  currentBookingService?: string;
 }
 
 @Component({
@@ -26,7 +26,6 @@ export class StatusUpdateDialogComponent implements OnInit {
   selectedServiceId: string | null = null;
   selectedService: Service | null = null;
   
-  // Support multiple services
   addedServices: Array<{ id: string; name: string; price: number }> = [];
 
   constructor(
@@ -36,7 +35,6 @@ export class StatusUpdateDialogComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Load services for the dropdown
     this.serviceService.loadServices();
     this.serviceService.services$.subscribe(services => {
       this.services = services || [];
@@ -51,12 +49,10 @@ export class StatusUpdateDialogComponent implements OnInit {
     }
   }
 
-  // Filter services to exclude current booking's service
   getAvailableServices(): Service[] {
     if (!this.data.currentBookingService) {
       return this.services;
     }
-    // Hide services that match the current booking service name or already added services
     const addedNames = this.addedServices.map(s => s.name.toLowerCase());
     return this.services.filter(s => 
       s.name && 
@@ -65,63 +61,94 @@ export class StatusUpdateDialogComponent implements OnInit {
     );
   }
 
-  // Add service to the list of additional services
   addServiceToList() {
-    if (this.selectedService && this.extraAmount != null && this.instruments.trim()) {
+    if (this.selectedService && this.extraAmount != null && this.extraAmount > 0 && this.instruments.trim()) {
       const alreadyAdded = this.addedServices.some(s => s.id === this.selectedService!.id);
       if (alreadyAdded) {
         alert('This service is already added.');
         return;
       }
-      // Use extraAmount as the price (admin enters the actual amount needed, not service default price)
-      const serviceId = this.selectedService.id || '';
-      const adminEnteredPrice = this.extraAmount; // Use the amount admin entered
       
       this.addedServices.push({
-        id: serviceId,
+        id: this.selectedService.id || '',
         name: this.selectedService.name,
-        price: adminEnteredPrice // Store admin-entered price, not service default price
+        price: this.extraAmount
       });
-      // Reset form for next service
+      
       this.selectedServiceId = null;
       this.selectedService = null;
       this.extraAmount = null;
       this.instruments = '';
     } else {
-      alert('Please fill in all required fields: Service, Amount, and Instruments.');
+      alert('Please fill in all required fields correctly.');
     }
   }
 
-  // Remove a service from the list
   removeService(index: number) {
     this.addedServices.splice(index, 1);
   }
 
+  getTodayDate(): string {
+    const today = new Date();
+    return today.getFullYear() + '-' + 
+      String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+      String(today.getDate()).padStart(2, '0');
+  }
+
+  isFormInvalid(): boolean {
+    if (this.data.newStatus === 'APPROVED') {
+      // For APPROVED: Notes are always required
+      if (!this.notes.trim()) return true;
+      
+      // If additional service is checked, validate service fields
+      if (this.additionalService) {
+        // Check if any service is added
+        if (this.addedServices.length === 0) {
+          return true;
+        }
+      }
+    }
+    
+    if (this.data.newStatus === 'CANCELLED') {
+      return !this.cancelReason.trim();
+    }
+    
+    if (this.data.newStatus === 'COMPLETED') {
+      return !this.notes.trim() || !this.completedTotal || this.completedTotal < 0;
+    }
+    
+    return false;
+  }
+
   submit() {
+    // Final validation
+    if (this.isFormInvalid()) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
     const payload: any = { status: this.data.newStatus };
     
     if (this.data.newStatus === 'APPROVED') {
-      // For APPROVED, send array of additional services
       if (this.addedServices.length > 0) {
         payload.addedServices = this.addedServices;
       }
-      payload.adminNotes = this.notes;
+      payload.adminNotes = this.notes.trim();
+      
+      if (this.additionalService && this.addedServices.length > 0) {
+        payload.extraAmount = this.addedServices.reduce((sum, svc) => sum + svc.price, 0);
+      }
     }
 
     if (this.data.newStatus === 'CANCELLED') {
-      payload.cancelReason = this.cancelReason;
-      payload.adminNotes = this.cancelReason;
+      payload.cancelReason = this.cancelReason.trim();
+      payload.adminNotes = this.cancelReason.trim();
     }
 
     if (this.data.newStatus === 'COMPLETED') {
       payload.totalAmount = this.completedTotal;
-      // Auto-set completion date to today
-      const today = new Date();
-      const formattedDate = today.getFullYear() + '-' + 
-        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(today.getDate()).padStart(2, '0');
-      payload.completionDate = formattedDate;
-      payload.adminNotes = this.notes;
+      payload.completionDate = this.getTodayDate();
+      payload.adminNotes = this.notes.trim();
     }
 
     this.dialogRef.close(payload);

@@ -458,89 +458,6 @@
   letter-spacing: 0.5px;
 }
 
-/* NEW: Address Column Design */
-.address-cell {
-  max-width: 300px;
-  min-width: 250px;
-}
-
-.address-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.3s ease;
-}
-
-.address-info:hover {
-  background: #f0f4f8;
-  border-color: #cbd5e0;
-  transform: translateY(-2px);
-}
-
-.address-line {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  line-height: 1.5;
-}
-
-.address-line mat-icon {
-  color: #718096;
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.address-text {
-  color: #4a5568;
-  font-size: 13px;
-  flex: 1;
-  word-break: break-word;
-}
-
-.address-map-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  color: #4a5568;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 8px;
-  align-self: flex-start;
-}
-
-.address-map-btn:hover {
-  background: #f7fafc;
-  border-color: #cbd5e0;
-  transform: translateY(-1px);
-}
-
-.address-map-btn mat-icon {
-  font-size: 14px;
-  width: 14px;
-  height: 14px;
-  color: #2196f3;
-}
-
-.no-address {
-  color: #a0aec0;
-  font-size: 13px;
-  font-style: italic;
-  padding: 8px 0;
-}
-
 /* Service Date Cell */
 .service-date-cell {
   display: flex;
@@ -620,6 +537,25 @@
   font-size: 16px;
   width: 16px;
   height: 16px;
+}
+
+/* Additional Services */
+.additional-service-badge {
+  background-color: #fff3cd;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: inline-block;
+  margin: 2px;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+  font-weight: 500;
+}
+
+.no-additional-services {
+  color: #a0aec0;
+  font-size: 13px;
+  font-style: italic;
 }
 
 /* Status Select */
@@ -721,6 +657,8 @@
   box-shadow: 0 4px 15px rgba(48, 79, 254, 0.3);
 }
 
+/* ============ MOBILE SPECIFIC STYLES ============ */
+
 /* Mobile Cards */
 .mobile-cards {
   display: none;
@@ -743,6 +681,7 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
+/* Mobile Card Header */
 .mobile-card-header {
   display: flex;
   align-items: flex-start;
@@ -789,6 +728,13 @@
   gap: 6px;
 }
 
+.mobile-customer-info mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #a0aec0;
+}
+
 .mobile-reference {
   display: flex;
   align-items: center;
@@ -801,6 +747,7 @@
   margin: 8px 0;
   cursor: pointer;
   transition: all 0.2s ease;
+  border: 1px solid rgba(25, 118, 210, 0.2);
 }
 
 .mobile-reference:hover {
@@ -812,35 +759,79 @@
   font-size: 14px;
   width: 14px;
   height: 14px;
+  color: #1976d2;
 }
 
-/* Mobile Address Section */
-.mobile-address-section {
+/* Mobile Service Badge */
+.mobile-service-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* Mobile Card Content */
+.mobile-card-content {
+  margin-bottom: 20px;
+}
+
+.mobile-section {
+  margin-bottom: 20px;
+  padding: 16px;
   background: #f8fafc;
   border-radius: 12px;
-  padding: 16px;
-  margin: 16px 0;
   border: 1px solid #e2e8f0;
+}
+
+.mobile-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-section-title mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #718096;
+}
+
+/* Mobile Address Grid */
+.mobile-address-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .mobile-address-row {
   display: flex;
   align-items: flex-start;
-  margin-bottom: 8px;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #edf2f7;
 }
 
 .mobile-address-row:last-child {
-  margin-bottom: 0;
+  border-bottom: none;
 }
 
 .mobile-address-label {
   color: #718096;
   font-size: 12px;
   font-weight: 500;
-  min-width: 80px;
+  min-width: 70px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .mobile-address-value {
@@ -857,6 +848,129 @@
   width: 14px;
   height: 14px;
   color: #718096;
+}
+
+/* Mobile Row Layout */
+.mobile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mobile-row:last-child {
+  border-bottom: none;
+}
+
+.mobile-label {
+  color: #718096;
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.mobile-value {
+  color: #4a5568;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  flex: 1;
+}
+
+.date-diff {
+  color: #718096;
+  font-size: 11px;
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+/* Mobile Additional Services */
+.mobile-additional-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.mobile-additional-service-badge {
+  background-color: #fff3cd;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+/* Mobile Status Select */
+::ng-deep .mobile-cards .status-select {
+  width: 100%;
+  max-width: 200px;
+}
+
+::ng-deep .mobile-cards .status-select .mat-form-field-wrapper {
+  padding-bottom: 0;
+}
+
+::ng-deep .mobile-cards .status-select .mat-form-field-outline {
+  border-radius: 8px !important;
+}
+
+::ng-deep .mobile-cards .status-select .mat-select-value {
+  font-size: 13px;
+}
+
+/* Mobile Actions */
+.mobile-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.mobile-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  min-width: 120px;
+}
+
+.mobile-map-btn {
+  background: linear-gradient(135deg, #34a853, #2e7d32);
+  color: white;
+  border: 1px solid rgba(46, 125, 50, 0.3);
+}
+
+.mobile-map-btn:hover {
+  background: linear-gradient(135deg, #2e7d32, #1b5e20);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+}
+
+.mobile-view-btn {
+  background: linear-gradient(135deg, #1976d2, #1565c0);
+  color: white;
+  border: 1px solid rgba(21, 101, 192, 0.3);
+}
+
+.mobile-view-btn:hover {
+  background: linear-gradient(135deg, #1565c0, #0d47a1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3);
+}
+
+.google-maps-icon {
+  width: 16px;
+  height: 16px;
 }
 
 /* Scrollbar Styling */
@@ -879,25 +993,70 @@
   background: #a8a8a8;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .stats-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
+/* ============ RESPONSIVE DESIGN ============ */
 
-@media (max-width: 992px) {
+/* Tablet (768px and below) */
+@media (max-width: 768px) {
   .booking-management-container {
-    padding: 20px;
+    padding: 16px;
   }
   
+  /* Hide desktop table, show mobile cards */
+  .main-table-container {
+    display: none;
+  }
+  
+  .mobile-cards {
+    display: flex;
+  }
+  
+  /* Page header adjustments */
+  .page-header-section {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .new-booking-btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 16px;
+  }
+  
+  .header-content h1 {
+    font-size: 28px;
+  }
+  
+  .header-content p {
+    font-size: 15px;
+  }
+  
+  /* Stats grid adjustments */
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .stat-item {
+    padding: 20px;
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .stat-details h3 {
+    font-size: 28px;
+  }
+  
+  /* Controls section adjustments */
+  .controls-section {
+    padding: 20px;
   }
   
   .controls-grid {
     flex-direction: column;
     align-items: stretch;
+    gap: 16px;
   }
   
   .search-field {
@@ -909,51 +1068,10 @@
     justify-content: center;
   }
   
-  .booking-table th,
-  .booking-table td {
-    padding: 16px 20px;
-  }
-}
-
-@media (max-width: 768px) {
-  .booking-management-container {
-    padding: 16px;
-  }
-  
-  .page-header-section {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-  }
-  
-  .new-booking-btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .header-content h1 {
-    font-size: 28px;
-  }
-  
-  .header-content p {
-    font-size: 15px;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  
-  .stat-item {
-    padding: 20px;
-  }
-  
-  .controls-section {
-    padding: 20px;
-  }
-  
+  /* Status filters mobile */
   .status-filters {
     justify-content: center;
+    gap: 8px;
   }
   
   .filter-chip {
@@ -961,63 +1079,7 @@
     font-size: 13px;
   }
   
-  .table-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-    text-align: center;
-  }
-  
-  .booking-table {
-    display: none;
-  }
-  
-  .mobile-cards {
-    display: flex;
-  }
-  
-  .main-table-container {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .booking-management-container {
-    padding: 12px;
-  }
-  
-  .header-content h1 {
-    font-size: 24px;
-  }
-  
-  .stat-item {
-    flex-direction: column;
-    text-align: center;
-    gap: 16px;
-  }
-  
-  .stat-details h3 {
-    font-size: 28px;
-  }
-  
-  .stat-icon {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .stat-icon mat-icon {
-    font-size: 24px;
-  }
-  
-  .controls-grid {
-    gap: 12px;
-  }
-  
-  .control-btn {
-    padding: 8px 16px;
-    font-size: 13px;
-  }
-  
+  /* Mobile card adjustments */
   .mobile-card {
     padding: 20px;
   }
@@ -1035,6 +1097,12 @@
     gap: 4px;
   }
   
+  .mobile-address-label {
+    min-width: auto;
+    justify-content: flex-start;
+  }
+  
+  /* Empty state adjustments */
   .empty-state-icon {
     font-size: 60px;
     width: 60px;
@@ -1047,5 +1115,213 @@
   
   .empty-state p {
     font-size: 14px;
+  }
+}
+
+/* Mobile Phone (480px and below) */
+@media (max-width: 480px) {
+  .booking-management-container {
+    padding: 12px;
+  }
+  
+  /* Header adjustments for very small screens */
+  .header-content h1 {
+    font-size: 24px;
+  }
+  
+  .header-content p {
+    font-size: 14px;
+  }
+  
+  /* Single column stats */
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-item {
+    padding: 18px;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .stat-icon mat-icon {
+    font-size: 24px;
+  }
+  
+  .stat-details h3 {
+    font-size: 24px;
+  }
+  
+  /* Controls adjustments */
+  .controls-grid {
+    gap: 12px;
+  }
+  
+  .control-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Status filter chips - horizontal scroll for very small screens */
+  .status-filters {
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .status-filters::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .filter-chip {
+    white-space: nowrap;
+  }
+  
+  /* Mobile card tighter padding */
+  .mobile-card {
+    padding: 16px;
+  }
+  
+  .mobile-avatar {
+    width: 45px;
+    height: 45px;
+    font-size: 14px;
+  }
+  
+  .mobile-customer-info h4 {
+    font-size: 15px;
+  }
+  
+  .mobile-section {
+    padding: 12px;
+  }
+  
+  .mobile-section-title {
+    font-size: 13px;
+  }
+  
+  .mobile-address-label {
+    font-size: 11px;
+  }
+  
+  .mobile-address-value {
+    font-size: 12px;
+  }
+  
+  .mobile-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 8px 0;
+  }
+  
+  .mobile-label, .mobile-value {
+    width: 100%;
+    text-align: left;
+  }
+  
+  /* Mobile actions - full width buttons */
+  .mobile-actions {
+    flex-direction: column;
+  }
+  
+  .mobile-action-btn {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  /* Adjust status select width */
+  ::ng-deep .mobile-cards .status-select {
+    max-width: 100%;
+  }
+  
+  /* Empty state adjustments */
+  .empty-state {
+    padding: 40px 12px;
+  }
+  
+  .empty-state-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
+  
+  .empty-state h3 {
+    font-size: 16px;
+  }
+  
+  .empty-state p {
+    font-size: 13px;
+  }
+}
+
+/* Very Small Phones (360px and below) */
+@media (max-width: 360px) {
+  .booking-management-container {
+    padding: 8px;
+  }
+  
+  .header-content h1 {
+    font-size: 22px;
+  }
+  
+  .header-content p {
+    font-size: 13px;
+  }
+  
+  .stat-item {
+    padding: 16px;
+  }
+  
+  .stat-details h3 {
+    font-size: 22px;
+  }
+  
+  .controls-section {
+    padding: 16px;
+  }
+  
+  .mobile-card {
+    padding: 14px;
+  }
+  
+  .mobile-section {
+    padding: 10px;
+  }
+  
+  .mobile-address-label,
+  .mobile-address-value {
+    font-size: 11px;
+  }
+  
+  .mobile-action-btn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
+/* Landscape mode for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .booking-management-container {
+    padding: 12px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .mobile-cards {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .mobile-card {
+    padding: 16px;
   }
 }

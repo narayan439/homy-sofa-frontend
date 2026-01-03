@@ -231,10 +231,10 @@
                           </div>
                         </ng-container>
                         <ng-container *ngIf="!bk.additionalServicesJson && bk.additionalServiceName">
-                          {{ bk.additionalServiceName }} (₹{{ bk.additionalServicePrice || 0 }})
+                          {{ bk.additionalServiceName }}
                         </ng-container>
                       </span>
-                      <span *ngIf="!bk.additionalServiceName && !bk.additionalServicesJson" class="text-muted">-</span>
+                      <span *ngIf="!bk.additionalServiceName && !bk.additionalServicesJson" class="text-muted">No Additional Services</span>
                     </td>
                     <td>
                       {{ bk.completionDate ? (bk.completionDate | date: 'dd MMM yyyy') : (bk.status === 'COMPLETED' ? 'N/A' : '-') }}

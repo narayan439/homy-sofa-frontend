@@ -1,89 +1,209 @@
-<h2 mat-dialog-title *ngIf="data.newStatus === 'APPROVED'">Approve Booking - Inspection</h2>
-<h2 mat-dialog-title *ngIf="data.newStatus === 'CANCELLED'">Cancel Booking</h2>
-<h2 mat-dialog-title *ngIf="data.newStatus === 'COMPLETED'">Complete Booking</h2>
-
 <mat-dialog-content>
-  <div *ngIf="data.newStatus === 'APPROVED'">
-    <mat-checkbox [(ngModel)]="additionalService">Add new service(s)?</mat-checkbox>
-    
-    <!-- Service Selection Section (only shown if adding new services) -->
-    <div *ngIf="additionalService" style="margin-top: 16px; padding: 12px; background-color: #f9f9f9; border-radius: 4px;">
-      <h4 style="margin-top: 0;">Add Additional Service</h4>
-      
-      <!-- Service Selection Dropdown -->
-      <mat-form-field appearance="outline" style="width:100%;">
-        <mat-label>Select Service <span style="color: red;">*</span></mat-label>
-        <mat-select [(ngModel)]="selectedServiceId" (selectionChange)="onServiceSelected()">
-          <mat-option *ngFor="let service of getAvailableServices()" [value]="service.id">
-            {{ service.name }} - ₹{{ service.price || 0 }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
+  <!-- Dialog Header -->
+  <div class="dialog-header" [ngClass]="data.newStatus.toLowerCase()">
+    <mat-icon class="header-icon">
+      <ng-container [ngSwitch]="data.newStatus">
+        <span *ngSwitchCase="'APPROVED'">check_circle</span>
+        <span *ngSwitchCase="'CANCELLED'">cancel</span>
+        <span *ngSwitchCase="'COMPLETED'">done_all</span>
+      </ng-container>
+    </mat-icon>
+    <div class="header-text">
+      <h2 mat-dialog-title *ngIf="data.newStatus === 'APPROVED'">Approve Booking</h2>
+      <h2 mat-dialog-title *ngIf="data.newStatus === 'CANCELLED'">Cancel Booking</h2>
+      <h2 mat-dialog-title *ngIf="data.newStatus === 'COMPLETED'">Complete Booking</h2>
+      <p class="subtitle">Update status from <strong>{{data.currentStatus}}</strong> to <strong>{{data.newStatus}}</strong></p>
+    </div>
+  </div>
 
-      <!-- Display selected service details -->
-      <div *ngIf="selectedService" style="margin-top: 8px; padding: 10px; background-color: #e8f5e9; border-radius: 4px; border-left: 4px solid #4caf50;">
-        <p style="margin: 4px 0;"><strong>Service:</strong> {{ selectedService.name }}</p>
-        <p style="margin: 4px 0;"><strong>Price:</strong> ₹{{ selectedService.price || 0 | number:'1.0-2' }}</p>
+  <!-- APPROVED Status Form -->
+  <div *ngIf="data.newStatus === 'APPROVED'" class="form-content">
+    <div class="section-header">
+      <mat-icon>info</mat-icon>
+      <h3>Additional Services</h3>
+    </div>
+    
+    <mat-checkbox [(ngModel)]="additionalService" color="primary" class="service-toggle">
+      <span class="toggle-label">
+        <mat-icon>{{ additionalService ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+        Add Additional Services
+      </span>
+    </mat-checkbox>
+    
+    <!-- Service Selection Section -->
+    <div *ngIf="additionalService" class="service-section">
+      <div class="section-card">
+        <div class="section-header">
+          <mat-icon>add_circle</mat-icon>
+          <h4>Add New Service</h4>
+        </div>
+        
+        <!-- Service Selection -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Select Service <span class="required">*</span></mat-label>
+          <mat-select [(ngModel)]="selectedServiceId" (selectionChange)="onServiceSelected()" required>
+            <mat-option *ngFor="let service of getAvailableServices()" [value]="service.id">
+              <div class="service-option">
+                <span class="service-name">{{ service.name }}</span>
+                <span class="service-price">₹{{ service.price || 0 | number:'1.0-2' }}</span>
+              </div>
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="!selectedServiceId && additionalService">Service is required</mat-error>
+        </mat-form-field>
+
+        <!-- Selected Service Preview -->
+        <div *ngIf="selectedService" class="selected-service-card">
+          <div class="service-card-header">
+            <mat-icon>build_circle</mat-icon>
+            <h5>Selected Service</h5>
+          </div>
+          <div class="service-details">
+            <div class="detail-row">
+              <span class="detail-label">Service Name:</span>
+              <span class="detail-value">{{ selectedService.name }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Standard Price:</span>
+              <span class="detail-value price">₹{{ selectedService.price || 0 | number:'1.0-2' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amount Input -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Amount Required <span class="required">*</span></mat-label>
+          <span matPrefix class="currency-prefix">₹</span>
+          <input matInput type="number" [(ngModel)]="extraAmount" required min="0" step="1">
+          <mat-icon matSuffix>payments</mat-icon>
+          <mat-hint>Enter the actual amount needed</mat-hint>
+          <mat-error *ngIf="!extraAmount && additionalService">Amount is required</mat-error>
+        </mat-form-field>
+
+        <!-- Instruments Input -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Instruments Needed <span class="required">*</span></mat-label>
+          <textarea matInput [(ngModel)]="instruments" placeholder="e.g., drill machine, wrench set, cleaning tools" required rows="2"></textarea>
+          <mat-icon matSuffix>build</mat-icon>
+          <mat-error *ngIf="!instruments && additionalService">Instruments are required</mat-error>
+        </mat-form-field>
+
+        <!-- Add Service Button -->
+        <button 
+          mat-raised-button 
+          color="accent" 
+          class="add-service-btn" 
+          (click)="addServiceToList()"
+          [disabled]="!selectedServiceId || !extraAmount || !instruments"
+        >
+          <mat-icon>add</mat-icon>
+          Add Service to List
+        </button>
       </div>
 
-      <!-- Amount needed (mandatory) -->
-      <mat-form-field appearance="outline" style="width:100%; margin-top:8px;">
-        <mat-label>Amount Needed <span style="color: red;">*</span></mat-label>
-        <input matInput type="number" [(ngModel)]="extraAmount" required>
-      </mat-form-field>
-
-      <!-- Instruments (mandatory) -->
-      <mat-form-field appearance="outline" style="width:100%; margin-top:8px;">
-        <mat-label>Instruments Needed <span style="color: red;">*</span></mat-label>
-        <input matInput [(ngModel)]="instruments" placeholder="e.g., drill, wrench" required>
-      </mat-form-field>
-
-      <!-- Add button -->
-      <button mat-raised-button color="accent" style="width: 100%; margin-top: 8px;" (click)="addServiceToList()">
-        <mat-icon>add</mat-icon> Add Service
-      </button>
-
-      <!-- List of added services -->
-      <div *ngIf="addedServices.length > 0" style="margin-top: 12px;">
-        <h4 style="margin-top: 0; margin-bottom: 8px;">Added Services:</h4>
-        <mat-list>
-          <mat-list-item *ngFor="let svc of addedServices; let i = index" style="border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; padding: 8px;">
-            <span>{{ svc.name }} - ₹{{ svc.price | number:'1.0-2' }}</span>
-            <button mat-icon-button color="warn" (click)="removeService(i)" matListItemMeta>
-              <mat-icon>delete</mat-icon>
-            </button>
-          </mat-list-item>
-        </mat-list>
+      <!-- Added Services List -->
+      <div *ngIf="addedServices.length > 0" class="added-services-section">
+        <div class="section-header">
+          <mat-icon>list_alt</mat-icon>
+          <h4>Added Services ({{addedServices.length}})</h4>
+        </div>
+        
+        <div class="services-list">
+          <div *ngFor="let svc of addedServices; let i = index" class="service-item">
+            <div class="service-item-content">
+              <div class="service-info">
+                <mat-icon class="service-icon">task_alt</mat-icon>
+                <div>
+                  <div class="service-name">{{ svc.name }}</div>
+                  <div class="service-desc">
+                    <span class="price-badge">₹{{ svc.price | number:'1.0-2' }}</span>
+                    <span class="instruments">{{ instruments }}</span>
+                  </div>
+                </div>
+              </div>
+              <button mat-icon-button color="warn" (click)="removeService(i)" matTooltip="Remove service">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Notes (not mandatory) -->
-    <mat-form-field appearance="outline" style="width:100%; margin-top:12px;">
-      <mat-label>Notes (optional)</mat-label>
-      <textarea matInput rows="3" [(ngModel)]="notes"></textarea>
-    </mat-form-field>
+    <!-- Notes Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <mat-icon>notes</mat-icon>
+        <h4>Additional Notes <span class="required">*</span></h4>
+      </div>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Enter notes about this approval...</mat-label>
+        <textarea matInput [(ngModel)]="notes" required rows="3" placeholder="Provide details about service requirements, customer instructions, or any special notes..."></textarea>
+        <mat-error *ngIf="!notes">Notes are required</mat-error>
+      </mat-form-field>
+    </div>
   </div>
 
-  <div *ngIf="data.newStatus === 'CANCELLED'">
-    <mat-form-field appearance="outline" style="width:100%;">
-      <mat-label>Reason for cancellation</mat-label>
-      <textarea matInput rows="3" [(ngModel)]="cancelReason"></textarea>
-    </mat-form-field>
+  <!-- CANCELLED Status Form -->
+  <div *ngIf="data.newStatus === 'CANCELLED'" class="form-content">
+    <div class="section-card warning-card">
+      <div class="section-header">
+        <mat-icon>warning</mat-icon>
+        <h4>Cancellation Reason <span class="required">*</span></h4>
+      </div>
+      <p class="warning-text">Please provide a detailed reason for cancellation. This will be visible to the customer.</p>
+      
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Why are you cancelling this booking?</mat-label>
+        <textarea matInput [(ngModel)]="cancelReason" required rows="4" placeholder="Enter cancellation reason..."></textarea>
+        <mat-error *ngIf="!cancelReason">Cancellation reason is required</mat-error>
+      </mat-form-field>
+    </div>
   </div>
 
-  <div *ngIf="data.newStatus === 'COMPLETED'">
-    <mat-form-field appearance="outline" style="width:100%;">
-      <mat-label>Total amount collected / needed</mat-label>
-      <input matInput type="number" [(ngModel)]="completedTotal">
-    </mat-form-field>
-    <mat-form-field appearance="outline" style="width:100%; margin-top:8px;">
-      <mat-label>Notes</mat-label>
-      <textarea matInput rows="2" [(ngModel)]="notes"></textarea>
-    </mat-form-field>
+  <!-- COMPLETED Status Form -->
+  <div *ngIf="data.newStatus === 'COMPLETED'" class="form-content">
+    <div class="section-card success-card">
+      <div class="section-header">
+        <mat-icon>verified</mat-icon>
+        <h4>Completion Details <span class="required">*</span></h4>
+      </div>
+      
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Total Amount Collected <span class="required">*</span></mat-label>
+        <span matPrefix class="currency-prefix">₹</span>
+        <input matInput type="number" [(ngModel)]="completedTotal" required min="0" step="1">
+        <mat-hint>Enter the final amount received from customer</mat-hint>
+        <mat-error *ngIf="!completedTotal">Total amount is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Completion Notes <span class="required">*</span></mat-label>
+        <textarea matInput [(ngModel)]="notes" required rows="3" placeholder="Describe the work completed, any issues faced, or customer feedback..."></textarea>
+        <mat-error *ngIf="!notes">Completion notes are required</mat-error>
+      </mat-form-field>
+
+      <div class="completion-info">
+        <mat-icon>calendar_today</mat-icon>
+        <span>Completion date will be automatically set to today: {{getTodayDate()}}</span>
+      </div>
+    </div>
   </div>
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-stroked-button (click)="cancel()">Cancel</button>
-  <button mat-flat-button color="primary" (click)="submit()">Save</button>
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-stroked-button color="warn" (click)="cancel()" class="cancel-btn">
+    <mat-icon>close</mat-icon>
+    Cancel
+  </button>
+  <button 
+    mat-raised-button 
+    color="primary" 
+    (click)="submit()" 
+    [disabled]="isFormInvalid()"
+    class="submit-btn"
+  >
+    <mat-icon>save</mat-icon>
+    Save Changes
+  </button>
 </mat-dialog-actions>
