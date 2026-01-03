@@ -1,9 +1,14 @@
 <mat-toolbar class="navbar">
   
   <!-- Logo on left -->
-  <a routerLink="/" class="logo">
-    HomY
-  </a>
+  <div class="logo-container">
+    <a routerLink="/" class="logo">
+      Homy Services
+    </a>
+    <div class="tagline">
+      Your complaint our responsibility
+    </div>
+  </div>
 
   <span class="spacer"></span>
 
@@ -43,8 +48,13 @@
   
   <!-- Sidebar Header -->
   <div class="mobile-sidebar-header">
-    <div class="mobile-logo">
-      HomY
+    <div class="mobile-logo-container">
+      <div class="mobile-logo">
+        Homy Services
+      </div>
+      <div class="mobile-tagline">
+        Your complaint our responsibility
+      </div>
     </div>
     
     <button class="close-sidebar" (click)="closeMobileSidebar()">

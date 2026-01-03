@@ -610,3 +610,150 @@
     padding: 20px;
   }
 }
+/* Logo Container */
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Logo - Updated */
+.logo {
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 0%, #ffeb3b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-decoration: none;
+  animation: fadeIn 0.8s ease 0.2s both;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  letter-spacing: -0.5px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.logo:hover {
+  background: linear-gradient(135deg, #ffeb3b 0%, #ff9800 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+/* Tagline */
+.tagline {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  animation: fadeIn 0.8s ease 0.3s both;
+  line-height: 1;
+}
+
+/* Mobile Logo Container */
+.mobile-logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Mobile Logo - Updated */
+.mobile-logo {
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 0%, #ffeb3b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+/* Mobile Tagline */
+.mobile-tagline {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+/* Navbar Shrink Adjustments */
+.navbar.shrink .logo {
+  font-size: 24px;
+}
+
+.navbar.shrink .tagline {
+  font-size: 11px;
+}
+
+/* Responsive Design Updates */
+@media (max-width: 768px) {
+  .logo {
+    font-size: 24px;
+  }
+  
+  .tagline {
+    font-size: 11px;
+  }
+  
+  .mobile-logo {
+    font-size: 20px;
+  }
+  
+  .mobile-tagline {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    font-size: 22px;
+  }
+  
+  .tagline {
+    font-size: 10px;
+  }
+  
+  .mobile-logo {
+    font-size: 18px;
+  }
+  
+  .mobile-tagline {
+    font-size: 8px;
+  }
+}
+/* Add fadeIn animation if missing */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotateIn {
+  from {
+    opacity: 0;
+    transform: rotate(-180deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0);
+  }
+}

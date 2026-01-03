@@ -61,7 +61,7 @@
 .brand h3 {
   font-size: 32px;
   font-weight: 800;
-  margin-bottom: 20px;
+  margin-bottom: 10px; /* Reduced from 20px */
   color: white;
   display: flex;
   align-items: center;
@@ -71,6 +71,7 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  line-height: 1.2;
 }
 
 .brand p {
@@ -79,8 +80,63 @@
   font-size: 15px;
   max-width: 300px;
   margin-bottom: 25px;
+  position: relative;
+  padding-top: 10px;
+}
+.brand p::first-line {
+  color: #ffeb3b;
+  font-weight: 600;
+  font-size: 16px;
 }
 
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .brand h3 {
+    font-size: 28px;
+  }
+  
+  .brand p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand h3 {
+    font-size: 24px;
+  }
+  
+  .brand p {
+    font-size: 13px;
+  }
+}
+
+/* Footer Bottom - Updated */
+.footer-bottom {
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 25px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  position: relative;
+  z-index: 1;
+  animation: fadeIn 1.5s ease-out;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-bottom strong {
+  color: #ffeb3b;
+  font-weight: 700;
+}
+
+/* Tagline highlight in the description */
+.tagline-highlight {
+  color: #ffeb3b;
+  font-weight: 600;
+  font-size: 16px;
+  display: block;
+  margin-bottom: 10px;
+}
 /* Social Links - Matching home design */
 .social-links {
   display: flex;
