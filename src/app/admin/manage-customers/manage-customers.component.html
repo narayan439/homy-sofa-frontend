@@ -4,7 +4,7 @@
   <div class="page-header">
     <div class="header-left">
       <h1 class="page-title">Customer Management</h1>
-      <p class="page-subtitle">Manage all customer information and booking history</p>
+      <p class="page-subtitle">Manage all customer information and service booking history</p>
     </div>
   </div>
 
@@ -32,11 +32,11 @@
     
     <div class="stat-card">
       <div class="stat-icon booking">
-        <mat-icon>event_available</mat-icon>
+        <mat-icon>miscellaneous_services</mat-icon>
       </div>
       <div class="stat-content">
-        <h3>{{getTotalBookings()}}</h3>
-        <p>Total Bookings</p>
+        <h3>{{getTotalServices()}}</h3>
+        <p>Total Services Booked</p>
       </div>
     </div>
   </div>
@@ -98,18 +98,18 @@
           </td>
         </ng-container>
 
-        <!-- Bookings Column -->
-        <ng-container matColumnDef="bookings">
-          <th mat-header-cell *matHeaderCellDef> Bookings </th>
-          <td mat-cell *matCellDef="let customer" class="bookings-cell">
-            <div class="bookings-badge">
-              <mat-icon>event_note</mat-icon>
-              {{ customer.totalBookings }}
+        <!-- Total Services Column -->
+        <ng-container matColumnDef="totalServices">
+          <th mat-header-cell *matHeaderCellDef> Total Services </th>
+          <td mat-cell *matCellDef="let customer" class="services-cell">
+            <div class="services-badge">
+              <mat-icon>miscellaneous_services</mat-icon>
+              {{ customer.totalBookings || 0 }} <!-- Using totalBookings as totalServices -->
             </div>
           </td>
         </ng-container>
 
-        <!-- Actions Column (Optional) -->
+        <!-- Actions Column -->
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef class="actions-header"> Actions </th>
           <td mat-cell *matCellDef="let customer" class="actions-cell">
@@ -117,24 +117,9 @@
               mat-mini-fab
               class="action-btn view-btn"
               matTooltip="View Details"
+              (click)="viewCustomerDetails(customer)"
             >
               <mat-icon>visibility</mat-icon>
-            </button>
-            
-            <button 
-              mat-mini-fab
-              class="action-btn call-btn"
-              matTooltip="Call Customer"
-            >
-              <mat-icon>call</mat-icon>
-            </button>
-            
-            <button 
-              mat-mini-fab
-              class="action-btn message-btn"
-              matTooltip="Send Message"
-            >
-              <mat-icon>message</mat-icon>
             </button>
           </td>
         </ng-container>
@@ -160,3 +145,109 @@
     </div>
   </div>
 </div>
+
+<!-- Customer Details Dialog -->
+<ng-container *ngIf="selectedCustomer">
+  <div class="dialog-overlay" *ngIf="showDetailsDialog" (click)="closeDetailsDialog()"></div>
+  
+  <div class="customer-details-dialog" *ngIf="showDetailsDialog">
+    <div class="dialog-header">
+      <h2>Customer Details</h2>
+      <button mat-icon-button class="close-btn" (click)="closeDetailsDialog()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    
+    <div class="dialog-content">
+      <!-- Customer Info Section -->
+      <div class="customer-profile">
+        <div class="profile-avatar">{{selectedCustomer.name.charAt(0)}}</div>
+        <div class="profile-info">
+          <h3>{{selectedCustomer.name}}</h3>
+          <div class="contact-details">
+            <div class="contact-item">
+              <mat-icon>phone</mat-icon>
+              <span>{{selectedCustomer.phone}}</span>
+            </div>
+            <div class="contact-item">
+              <mat-icon>email</mat-icon>
+              <span>{{selectedCustomer.email}}</span>
+            </div>
+            <div class="contact-item" *ngIf="selectedCustomer.address">
+              <mat-icon>location_on</mat-icon>
+              <span>{{selectedCustomer.address}}, {{selectedCustomer.city}} {{selectedCustomer.zipCode}}</span>
+            </div>
+            <div class="contact-item" *ngIf="selectedCustomer.joinDate">
+              <mat-icon>calendar_today</mat-icon>
+              <span>Member since {{selectedCustomer.joinDate | date}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Section -->
+      <div class="customer-stats">
+        <div class="stat-item">
+          <div class="stat-value">{{selectedCustomer.totalBookings || 0}}</div>
+          <div class="stat-label">Total Services Booked</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">{{selectedCustomer.totalSpent || 0 }}</div>
+          <div class="stat-label">Total Amount Spent</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">{{ getCompletedServicesCount() }}</div>
+          <div class="stat-label">Completed Services</div>
+        </div>
+      </div>
+
+      <!-- Service History Section -->
+      <div class="service-history-section">
+        <h3>Service History</h3>
+        
+        <div class="service-history-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Service Date</th>
+                <th>Service Type</th>
+                <th>Status</th>
+                <th>Amount</th>
+                <th>Additional Services</th>
+                <th>Completed Date</th>
+              </tr>
+            </thead>
+            <tbody>
+                  <tr *ngFor="let bk of selectedCustomerBookings">
+                    <td>{{ formatBookingDate(bk.date) }}</td>
+                    <td>{{ bk.service || 'N/A' }}</td>
+                    <td>{{ bk.status || 'N/A' }}</td>
+                    <td>₹ {{ bk.totalAmount ?? bk.price ?? 0 }}</td>
+                    <td>
+                      <span *ngIf="bk.additionalServiceName || bk.additionalServicesJson" style="background-color: #fff3cd; padding: 2px 6px; border-radius: 3px; font-size: 12px;">
+                        <ng-container *ngIf="bk.additionalServicesJson">
+                          <div *ngFor="let svc of parseAdditionalServices(bk.additionalServicesJson)">
+                            {{ svc.name }} (₹{{ svc.price || 0 }})
+                          </div>
+                        </ng-container>
+                        <ng-container *ngIf="!bk.additionalServicesJson && bk.additionalServiceName">
+                          {{ bk.additionalServiceName }} (₹{{ bk.additionalServicePrice || 0 }})
+                        </ng-container>
+                      </span>
+                      <span *ngIf="!bk.additionalServiceName && !bk.additionalServicesJson" class="text-muted">-</span>
+                    </td>
+                    <td>
+                      {{ bk.completionDate ? (bk.completionDate | date: 'dd MMM yyyy') : (bk.status === 'COMPLETED' ? 'N/A' : '-') }}
+                    </td>
+                  </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="dialog-actions">
+      <button mat-stroked-button (click)="closeDetailsDialog()">Close</button>
+    </div>
+  </div>
+</ng-container>

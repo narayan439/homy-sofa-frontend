@@ -1,0 +1,14 @@
+<div class="address-dialog">
+  <h2>Address Details</h2>
+  <div class="address-content">
+    <p><strong>Customer:</strong> {{data.customerName}}</p>
+    <p><strong>Phone:</strong> {{data.phone}}</p>
+    <p><strong>Reference:</strong> {{data.reference}}</p>
+    <p><strong>Address:</strong></p>
+    <pre class="address-block">{{ data.address }}</pre>
+  </div>
+  <div class="actions">
+    <button mat-stroked-button color="primary" (click)="openMap()">Open in Maps</button>
+    <button mat-button (click)="close()">Close</button>
+  </div>
+</div>

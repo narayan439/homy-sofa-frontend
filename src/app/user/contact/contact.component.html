@@ -200,6 +200,27 @@
       </form>
     </div>
 
+    <!-- Services List Card -->
+    <div class="services-list-card" *ngIf="services && services.length > 0">
+      <h2>
+        <mat-icon>miscellaneous_services</mat-icon>
+        Our Services
+      </h2>
+      
+      <div class="services-grid">
+        <div class="service-item" *ngFor="let service of services">
+          <div class="service-icon">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <div class="service-content">
+            <h4>{{ service.name }}</h4>
+            <p class="service-price">₹{{ service.price | number:'1.0-0' }}</p>
+            <p class="service-description">{{ service.description || 'Professional service' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Map Section -->
     <div class="map-section">
       <div class="map-card">

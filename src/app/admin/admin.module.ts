@@ -13,12 +13,17 @@ import { ManagePaymentsComponent } from './manage-payments/manage-payments.compo
 import { SettingsComponent } from './settings/settings.component';
 import { DashboardLayoutComponent } from './dashboard-layout/dashboard-layout.component';
 import { DashboardHomeComponent } from './dashboard-home/dashboard-home.component';
+import { AddressDialogComponent } from './address-dialog/address-dialog.component';
+import { StatusUpdateDialogComponent } from './status-update-dialog/status-update-dialog.component';
+
 
 
 @NgModule({
   declarations: [
     ...adminRoutingComponents,
     ManageServicesComponent,
+    AddressDialogComponent,
+    StatusUpdateDialogComponent,
     ManageCustomersComponent,
     ManagePaymentsComponent,
     SettingsComponent

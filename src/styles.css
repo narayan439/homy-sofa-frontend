@@ -238,3 +238,33 @@ img {
     transform: translateY(0);
   }
 }
+
+/* Add these to your existing CSS file */
+
+/* Snackbar Styles */
+.success-snackbar {
+  background: #4caf50 !important;
+  color: white !important;
+}
+
+.warning-snackbar {
+  background: #ff9800 !important;
+  color: white !important;
+}
+
+.error-snackbar {
+  background: #f44336 !important;
+  color: white !important;
+}
+
+.success-snackbar .mat-simple-snackbar-action {
+  color: #c8e6c9 !important;
+}
+
+.warning-snackbar .mat-simple-snackbar-action {
+  color: #fff3e0 !important;
+}
+
+.error-snackbar .mat-simple-snackbar-action {
+  color: #ffcdd2 !important;
+}

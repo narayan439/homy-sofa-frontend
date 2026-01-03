@@ -3,8 +3,10 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from './api.service';
+import { Service } from './service.service';
 
 export interface Customer {
+  totalServices: number;
   id?: string;
   name: string;
   email: string;
@@ -66,4 +68,7 @@ export class CustomerService {
   getCustomerByEmail(email: string): Observable<Customer> {
     return this.http.get<Customer>(`${this.apiService.apiUrl}/customers/email/${email}`);
   }
+  getCustomerServices(id: string): Observable<Service[]> {
+  return this.http.get<Service[]>(`${this.apiService.apiUrl}/customers/${id}/services`);
+}
 }

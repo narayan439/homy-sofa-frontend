@@ -1,6 +1,9 @@
 export type BookingStatus = 'PENDING' | 'APPROVED' | 'COMPLETED' | 'CANCELLED';
 
 export interface Booking {
+  specialInstructions: any;
+  instructions: any;
+  paymentStatus: string;
   totalBookings: number;
   id?: number | string;
   name: string;
@@ -12,6 +15,7 @@ export interface Booking {
   status: BookingStatus;
   timeSlot?: string;
   bookingDate?: string; // When the booking was created
+  completionDate?: string; // When the booking was completed
   totalAmount?: number;
   price?: number;
   notes?: string;
@@ -21,6 +25,9 @@ export interface Booking {
   updatedAt?: string;
   address?: string;
   latLong?: string; // "lat,lon"
+  additionalServiceName?: string;
+  additionalServicePrice?: number;
+  additionalServicesJson?: string; // JSON array of multiple services
 }
 
 export interface BookingFilter {

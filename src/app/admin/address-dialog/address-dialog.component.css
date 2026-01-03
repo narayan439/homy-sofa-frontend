@@ -1,0 +1,4 @@
+.address-dialog { padding: 16px; max-width: 600px; }
+.address-content { margin: 12px 0; }
+.address-block { background:#f7f7f7; padding:10px; border-radius:4px; white-space:pre-wrap; }
+.actions { display:flex; gap:8px; justify-content:flex-end; margin-top:12px; }

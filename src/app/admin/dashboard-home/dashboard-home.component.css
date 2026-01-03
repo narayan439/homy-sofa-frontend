@@ -600,3 +600,30 @@
     font-size: 11px;
   }
 }
+
+
+/* Date Display */
+.date-display {
+  display: flex;
+  flex-direction: column;
+}
+
+.date-main {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.date-full {
+  font-size: 12px;
+  color: #718096;
+}
+
+/* Highlight today's bookings */
+.today-booking {
+  background: rgba(76, 175, 80, 0.05) !important;
+  border-left: 3px solid #4caf50;
+}
+
+.today-booking:hover {
+  background: rgba(76, 175, 80, 0.1) !important;
+}

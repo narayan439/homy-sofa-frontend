@@ -1,4 +1,5 @@
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatListModule } from '@angular/material/list';
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -15,6 +16,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -38,11 +41,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatNativeDateModule,
     MatSelectModule,
     MatOptionModule,
+    MatDialogModule,
+    MatCheckboxModule,
     MatPaginatorModule,
     MatDividerModule,
     MatSnackBarModule,
     MatBadgeModule,
     MatTooltipModule,
+    MatListModule,
   ],
   exports: [
     MatToolbarModule,
@@ -58,11 +64,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatNativeDateModule,
     MatSelectModule,
     MatOptionModule,
+    MatDialogModule,
+    MatCheckboxModule,
     MatPaginatorModule,
     MatDividerModule,
     MatSnackBarModule,
     MatBadgeModule,
     MatTooltipModule,
+    MatListModule,
     MatProgressSpinnerModule
   ]
 })

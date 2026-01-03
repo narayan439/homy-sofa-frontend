@@ -3,6 +3,6 @@
 
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8080',
+  apiBaseUrl: 'https://homy-sofa-backend.onrender.com',
   apiPrefix: '/api'
 };

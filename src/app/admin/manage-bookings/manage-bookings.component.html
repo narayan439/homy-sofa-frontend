@@ -105,7 +105,7 @@
           matInput 
           [(ngModel)]="searchQuery" 
           (keyup)="applySearch()" 
-          placeholder="Search by name, email, phone, or service..."
+          placeholder="Search by name, phone, or reference..."
           [disabled]="isLoading"
         >
         <mat-icon matSuffix>search</mat-icon>
@@ -189,6 +189,10 @@
     <!-- Table Header -->
     <div class="table-header">
       <h2>All Bookings (Recent First)</h2>
+      <div class="sort-info">
+        <mat-icon>sort</mat-icon>
+        Sorted by Reference (Newest First)
+      </div>
     </div>
 
     <!-- Table Content -->
@@ -197,47 +201,29 @@
         
         <!-- Customer Column -->
         <ng-container matColumnDef="customer">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer</th>
+          <th mat-header-cell *matHeaderCellDef>Customer</th>
           <td mat-cell *matCellDef="let booking">
             <div class="customer-info">
-              <div class="customer-avatar">
-                {{getInitials(booking.name)}}
-              </div>
               <div class="customer-details">
                 <h4>{{ booking.name }}</h4>
-                <p>{{ booking.email }}</p>
+                <p class="customer-phone">
+                  <mat-icon class="phone-icon">phone</mat-icon>
+                  {{ booking.phone }}
+                </p>
               </div>
             </div>
           </td>
         </ng-container>
 
-        <!-- Phone Column -->
-        <ng-container matColumnDef="phone">
-          <th mat-header-cell *matHeaderCellDef>Phone</th>
+        <!-- Reference Column -->
+        <ng-container matColumnDef="reference">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Reference</th>
           <td mat-cell *matCellDef="let booking">
-            {{ booking.phone || 'Not provided' }}
-          </td>
-        </ng-container>
-
-        <!-- Address Column -->
-        <ng-container matColumnDef="address">
-          <th mat-header-cell *matHeaderCellDef>Address</th>
-          <td mat-cell *matCellDef="let booking">
-            <div class="address-cell">
-              <div *ngIf="booking.address; else noAddr">
-                <div class="address-text">{{ booking.address }}</div>
-                <a *ngIf="booking.latLong" 
-                   class="map-link" 
-                   href="javascript:void(0)" 
-                   (click)="openMap(booking.latLong)"
-                >
-                  <mat-icon>map</mat-icon>
-                  Open map
-                </a>
+            <div class="reference-cell">
+              <div class="reference-badge" (click)="copyReference(booking.reference || '')" matTooltip="Click to copy">
+                <mat-icon>tag</mat-icon>
+                <span class="reference-id">{{ booking.reference || 'N/A' }}</span>
               </div>
-              <ng-template #noAddr>
-                <span style="color: #a0aec0;">No address</span>
-              </ng-template>
             </div>
           </td>
         </ng-container>
@@ -245,7 +231,7 @@
         <!-- Service Date Column -->
         <ng-container matColumnDef="serviceDate">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="date-header">
               <mat-icon>calendar_today</mat-icon>
               Service Date
             </div>
@@ -253,7 +239,11 @@
           <td mat-cell *matCellDef="let booking">
             <div class="service-date-cell">
               <div class="service-date">
-                {{ booking.date | date: 'MMM dd, yyyy' }}
+                <mat-icon>event</mat-icon>
+                {{ booking.date | date: 'dd MMM yyyy' }}
+              </div>
+              <div class="date-difference">
+                {{ getDaysUntilService(booking.date) }}
               </div>
             </div>
           </td>
@@ -267,8 +257,25 @@
               class="service-badge" 
               [ngClass]="getServiceBadgeClass(booking.service)"
             >
+              <mat-icon>{{ getServiceBadgeWithIcon(booking.service).icon }}</mat-icon>
               {{ getServiceName(booking.service) }}
             </span>
+          </td>
+        </ng-container>
+
+        <!-- Additional Services Column -->
+        <ng-container matColumnDef="additionalServices">
+          <th mat-header-cell *matHeaderCellDef>Additional Services</th>
+          <td mat-cell *matCellDef="let booking">
+            <div *ngIf="booking.additionalServicesJson || booking.additionalServiceName">
+              <div *ngFor="let svc of parseAdditionalServices(booking.additionalServicesJson)" style="background-color: #fff3cd; padding: 4px 8px; border-radius: 3px; font-size: 12px; display: inline-block; margin: 2px;">
+                {{ svc.name }}
+              </div>
+              <span *ngIf="!booking.additionalServicesJson && booking.additionalServiceName" style="background-color: #fff3cd; padding: 4px 8px; border-radius: 3px; font-size: 12px; display: inline-block;">
+                {{ booking.additionalServiceName }}
+              </span>
+            </div>
+            <span *ngIf="!booking.additionalServiceName && !booking.additionalServicesJson" class="text-muted">-</span>
           </td>
         </ng-container>
 
@@ -291,6 +298,21 @@
                 {{ getStatusLockReason(booking.status) }}
               </mat-hint>
             </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let booking">
+            <button 
+              mat-icon-button 
+              color="primary" 
+              (click)="viewAddress(booking)"
+              matTooltip="View Address Details"
+            >
+              <mat-icon>visibility</mat-icon>
+            </button>
           </td>
         </ng-container>
 
@@ -342,25 +364,65 @@
         </div>
         <div class="mobile-customer-info">
           <h4>{{ booking.name }}</h4>
-          <p>{{ booking.email }}</p>
+          <p class="mobile-phone">
+            <mat-icon class="phone-icon">phone</mat-icon>
+            {{ booking.phone }}
+          </p>
+          <div class="mobile-reference" (click)="copyReference(booking.reference || '')">
+            <mat-icon>tag</mat-icon>
+            {{ booking.reference || 'N/A' }}
+          </div>
           <span 
             class="mobile-service-badge" 
             [ngClass]="getServiceBadgeClass(booking.service)"
           >
-            {{ getServiceName(booking.service) }}
+            <!-- <mat-icon>{{ getServiceBadgeWithIcon(booking.service).icon }}</mat-icon> -->
+            <!-- {{ getServiceName(booking.service) }} -->
           </span>
         </div>
       </div>
       
       <div class="mobile-card-content">
-        <div class="mobile-row">
-          <span class="mobile-label">Phone</span>
-          <span class="mobile-value">{{ booking.phone || 'Not provided' }}</span>
+        <!-- Address Details -->
+        <div class="mobile-section" *ngIf="booking.address">
+          <div class="mobile-section-title">
+            <mat-icon>location_on</mat-icon>
+            Address Details
+          </div>
+          <div class="mobile-address-grid">
+            <div class="mobile-address-row">
+              <span class="mobile-address-label">House:</span>
+              <span class="mobile-address-value">{{ getAddressPart(booking.address, 'house') }}</span>
+            </div>
+            <div class="mobile-address-row">
+              <span class="mobile-address-label">Area:</span>
+              <span class="mobile-address-value">{{ getAddressPart(booking.address, 'area') }}</span>
+            </div>
+            <div class="mobile-address-row">
+              <span class="mobile-address-label">City:</span>
+              <span class="mobile-address-value">{{ getAddressPart(booking.address, 'city') }}</span>
+            </div>
+            <div class="mobile-address-row">
+              <span class="mobile-address-label">Pincode:</span>
+              <span class="mobile-address-value">{{ getAddressPart(booking.address, 'pincode') }}</span>
+            </div>
+            <div class="mobile-address-row">
+              <span class="mobile-address-label">Near:</span>
+              <span class="mobile-address-value">{{ getAddressPart(booking.address, 'landmark') }}</span>
+            </div>
+          </div>
         </div>
+        
+        <!-- Service Details -->
         <div class="mobile-row">
           <span class="mobile-label">Service Date</span>
-          <span class="mobile-value">{{ booking.date | date: 'MMM dd, yyyy' }}</span>
+          <span class="mobile-value">
+            {{ booking.date | date: 'dd MMM yyyy' }}
+            <span class="date-diff">({{ getDaysUntilService(booking.date) }})</span>
+          </span>
         </div>
+        
+        <!-- Status -->
         <div class="mobile-row">
           <span class="mobile-label">Status</span>
           <span class="mobile-value">
@@ -370,10 +432,10 @@
                 (selectionChange)="updateStatus(booking, $event.value)"
                 [disabled]="isLoading"
               >
-                <mat-option value="PENDING">Pending</mat-option>
-                <mat-option value="APPROVED">Approved</mat-option>
-                <mat-option value="COMPLETED">Completed</mat-option>
-                <mat-option value="CANCELLED">Cancelled</mat-option>
+                <mat-option value="PENDING" *ngIf="canShowStatus('PENDING', booking.status)">Pending</mat-option>
+                <mat-option value="APPROVED" *ngIf="canShowStatus('APPROVED', booking.status)">Approved</mat-option>
+                <mat-option value="COMPLETED" *ngIf="canShowStatus('COMPLETED', booking.status)">Completed</mat-option>
+                <mat-option value="CANCELLED" *ngIf="canShowStatus('CANCELLED', booking.status)">Cancelled</mat-option>
               </mat-select>
             </mat-form-field>
           </span>
@@ -386,16 +448,10 @@
           class="mobile-action-btn mobile-map-btn" 
           (click)="openMap(booking.latLong)"
         >
-          <mat-icon>map</mat-icon>
-          View Map
+          <img src="https://maps.gstatic.com/mapfiles/api-3/images/icon7.png" alt="Google Maps" class="google-maps-icon">
+          View on Map
         </button>
-        <button 
-          class="mobile-action-btn mobile-edit-btn" 
-          (click)="editBooking(booking)"
-        >
-          <mat-icon>edit</mat-icon>
-          Edit
-        </button>
+       
       </div>
     </div>
     

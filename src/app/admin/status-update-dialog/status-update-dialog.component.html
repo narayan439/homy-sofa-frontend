@@ -1,0 +1,89 @@
+<h2 mat-dialog-title *ngIf="data.newStatus === 'APPROVED'">Approve Booking - Inspection</h2>
+<h2 mat-dialog-title *ngIf="data.newStatus === 'CANCELLED'">Cancel Booking</h2>
+<h2 mat-dialog-title *ngIf="data.newStatus === 'COMPLETED'">Complete Booking</h2>
+
+<mat-dialog-content>
+  <div *ngIf="data.newStatus === 'APPROVED'">
+    <mat-checkbox [(ngModel)]="additionalService">Add new service(s)?</mat-checkbox>
+    
+    <!-- Service Selection Section (only shown if adding new services) -->
+    <div *ngIf="additionalService" style="margin-top: 16px; padding: 12px; background-color: #f9f9f9; border-radius: 4px;">
+      <h4 style="margin-top: 0;">Add Additional Service</h4>
+      
+      <!-- Service Selection Dropdown -->
+      <mat-form-field appearance="outline" style="width:100%;">
+        <mat-label>Select Service <span style="color: red;">*</span></mat-label>
+        <mat-select [(ngModel)]="selectedServiceId" (selectionChange)="onServiceSelected()">
+          <mat-option *ngFor="let service of getAvailableServices()" [value]="service.id">
+            {{ service.name }} - ₹{{ service.price || 0 }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Display selected service details -->
+      <div *ngIf="selectedService" style="margin-top: 8px; padding: 10px; background-color: #e8f5e9; border-radius: 4px; border-left: 4px solid #4caf50;">
+        <p style="margin: 4px 0;"><strong>Service:</strong> {{ selectedService.name }}</p>
+        <p style="margin: 4px 0;"><strong>Price:</strong> ₹{{ selectedService.price || 0 | number:'1.0-2' }}</p>
+      </div>
+
+      <!-- Amount needed (mandatory) -->
+      <mat-form-field appearance="outline" style="width:100%; margin-top:8px;">
+        <mat-label>Amount Needed <span style="color: red;">*</span></mat-label>
+        <input matInput type="number" [(ngModel)]="extraAmount" required>
+      </mat-form-field>
+
+      <!-- Instruments (mandatory) -->
+      <mat-form-field appearance="outline" style="width:100%; margin-top:8px;">
+        <mat-label>Instruments Needed <span style="color: red;">*</span></mat-label>
+        <input matInput [(ngModel)]="instruments" placeholder="e.g., drill, wrench" required>
+      </mat-form-field>
+
+      <!-- Add button -->
+      <button mat-raised-button color="accent" style="width: 100%; margin-top: 8px;" (click)="addServiceToList()">
+        <mat-icon>add</mat-icon> Add Service
+      </button>
+
+      <!-- List of added services -->
+      <div *ngIf="addedServices.length > 0" style="margin-top: 12px;">
+        <h4 style="margin-top: 0; margin-bottom: 8px;">Added Services:</h4>
+        <mat-list>
+          <mat-list-item *ngFor="let svc of addedServices; let i = index" style="border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; padding: 8px;">
+            <span>{{ svc.name }} - ₹{{ svc.price | number:'1.0-2' }}</span>
+            <button mat-icon-button color="warn" (click)="removeService(i)" matListItemMeta>
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </div>
+
+    <!-- Notes (not mandatory) -->
+    <mat-form-field appearance="outline" style="width:100%; margin-top:12px;">
+      <mat-label>Notes (optional)</mat-label>
+      <textarea matInput rows="3" [(ngModel)]="notes"></textarea>
+    </mat-form-field>
+  </div>
+
+  <div *ngIf="data.newStatus === 'CANCELLED'">
+    <mat-form-field appearance="outline" style="width:100%;">
+      <mat-label>Reason for cancellation</mat-label>
+      <textarea matInput rows="3" [(ngModel)]="cancelReason"></textarea>
+    </mat-form-field>
+  </div>
+
+  <div *ngIf="data.newStatus === 'COMPLETED'">
+    <mat-form-field appearance="outline" style="width:100%;">
+      <mat-label>Total amount collected / needed</mat-label>
+      <input matInput type="number" [(ngModel)]="completedTotal">
+    </mat-form-field>
+    <mat-form-field appearance="outline" style="width:100%; margin-top:8px;">
+      <mat-label>Notes</mat-label>
+      <textarea matInput rows="2" [(ngModel)]="notes"></textarea>
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button color="primary" (click)="submit()">Save</button>
+</mat-dialog-actions>

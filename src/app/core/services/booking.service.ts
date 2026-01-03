@@ -15,6 +15,16 @@ export class BookingService {
   private bookingsSubject = new BehaviorSubject<Booking[]>([]);
   bookings$ = this.bookingsSubject.asObservable();
 
+  // Memoized sanitization to avoid regex on every call
+  private sanitizeNumber = (v: any): number | undefined => {
+    if (v == null || v === '') return undefined;
+    if (typeof v === 'number') return v;
+    const cleaned = String(v).replace(/[^0-9.\-]/g, '');
+    if (cleaned === '') return undefined;
+    const n = Number(cleaned);
+    return isNaN(n) ? undefined : n;
+  };
+
   constructor(private http: HttpClient) {
     this.loadBookings();
     // Try to sync from backend on startup
@@ -34,7 +44,26 @@ export class BookingService {
         if (!isNaN(d.getTime())) dateVal = d.toISOString();
       }
     }
-    return { ...b, service: svc, date: dateVal } as Booking;
+    // Normalize numeric price fields and support snake_case from backend
+    const rawTotal = b.totalAmount ?? b.total_amount ?? b['total_amount'];
+    const rawPrice = b.price ?? b.amount ?? b['amount'];
+
+    const totalNum = this.sanitizeNumber(rawTotal);
+    const priceNum = this.sanitizeNumber(rawPrice);
+
+    // If total not provided, try to extract numeric amount from legacy `message` field
+    let finalTotal = totalNum;
+    if (finalTotal == null && b && b.message) {
+      // find sequences of digits with optional commas and decimals, prefer largest match
+      const matches = String(b.message).match(/[0-9,.]+/g);
+      if (matches && matches.length > 0) {
+        // choose the longest match (likely the full amount)
+        const candidate = matches.reduce((a, c) => a.length >= c.length ? a : c, matches[0]);
+        finalTotal = this.sanitizeNumber(candidate);
+      }
+    }
+
+    return { ...b, service: svc, date: dateVal, totalAmount: finalTotal, price: priceNum } as Booking;
   }
 
   // API Methods
@@ -122,20 +151,7 @@ export class BookingService {
       try {
         const raw = JSON.parse(savedBookings) as any[];
         // Normalize dates stored in localStorage (convert dd/MM/yyyy to ISO)
-        const normalized = (raw || []).map((b: any) => {
-          let dateVal: string = b.date || '';
-          if (typeof dateVal === 'string' && dateVal.includes('/')) {
-            const parts = dateVal.split('/').map((p: string) => p.trim());
-            if (parts.length === 3) {
-              const day = Number(parts[0]);
-              const month = Number(parts[1]) - 1;
-              const year = Number(parts[2]);
-              const d = new Date(year, month, day);
-              if (!isNaN(d.getTime())) dateVal = d.toISOString();
-            }
-          }
-          return { ...b, date: dateVal } as Booking;
-        });
+        const normalized = (raw || []).map((b: any) => this.normalizeBooking(b));
         this.bookingsSubject.next(normalized);
       } catch (e) {
         console.error('Error loading bookings from localStorage:', e);

@@ -1,21 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ContactService, ContactPayload } from '../../core/services/contact.service';
+import { ServiceService, Service } from '../../core/services/service.service';
 
 @Component({
   selector: 'app-contact',
   templateUrl: './contact.component.html',
   styleUrls: ['./contact.component.css']
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
 
   contactForm: FormGroup;
+  services: Service[] = [];
 
   constructor(
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
-    private contactService: ContactService
+    private contactService: ContactService,
+    private serviceService: ServiceService
   ) {
     this.contactForm = this.fb.group({
       name: [
@@ -35,6 +38,14 @@ export class ContactComponent {
         Validators.maxLength(100)
       ]]
     });
+  }
+
+  ngOnInit() {
+    // Load services to display on contact page
+    this.serviceService.services$.subscribe(services => {
+      this.services = services || [];
+    });
+    this.serviceService.loadServices();
   }
 
   submitForm() {
