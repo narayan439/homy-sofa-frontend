@@ -227,24 +227,39 @@
   font-size: 14px;
 }
 
-/* Bookings Column */
-.bookings-cell {
+/* Email Display */
+.email-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4a5568;
+}
+
+.email-display mat-icon {
+  color: #a0aec0;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Services Column */
+.services-cell {
   text-align: center;
 }
 
-.bookings-badge {
+.services-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #e3f2fd;
-  color: #1976d2;
+  background: #f3e5f5;
+  color: #7b1fa2;
   padding: 6px 16px;
   border-radius: 20px;
   font-weight: 600;
   font-size: 14px;
 }
 
-.bookings-badge mat-icon {
+.services-badge mat-icon {
   font-size: 16px;
   width: 16px;
   height: 16px;
@@ -322,75 +337,6 @@
   margin: 0;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .manage-customers-container {
-    padding: 16px;
-  }
-  
-  .page-header {
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .stats-container {
-    grid-template-columns: 1fr;
-  }
-  
-  .table-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  
-  .table-controls {
-    flex-direction: column;
-  }
-  
-  .search-field {
-    width: 100%;
-  }
-  
-  .export-btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .mat-header-cell,
-  .mat-cell {
-    padding: 16px;
-  }
-  
-  .actions-cell {
-    flex-direction: column;
-    gap: 4px;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-header .page-title {
-    font-size: 24px;
-  }
-  
-  .table-header h2 {
-    font-size: 18px;
-  }
-  
-  .mat-cell {
-    padding: 12px;
-  }
-  
-  .customer-info {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .avatar {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-  }
-}
 /* Customer Details Dialog Styles */
 .dialog-overlay {
   position: fixed;
@@ -566,19 +512,54 @@
   border-bottom: none;
 }
 
+/* Status Badge - Fixed to match your design */
 .status-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  background: #e2e8f0;
-  color: #4a5568;
+  text-transform: uppercase;
+}
+
+.status-badge.pending {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.status-badge.approved {
+  background: #e3f2fd;
+  color: #1976d2;
 }
 
 .status-badge.completed {
   background: #e8f5e9;
   color: #388e3c;
+}
+
+.status-badge.cancelled {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+/* Additional Services Badge - Added proper styling */
+.additional-services-badge {
+  display: inline-block;
+  background: #fff3cd;
+  color: #856404;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 2px;
+  border: 1px solid #ffeaa7;
+}
+
+.text-muted {
+  color: #6c757d !important;
+  font-style: italic;
 }
 
 .no-services {
@@ -608,46 +589,51 @@
   justify-content: flex-end;
 }
 
-/* Update existing styles for services cell */
-.services-cell {
-  text-align: center;
-}
-
-.services-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #f3e5f5;
-  color: #7b1fa2;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.services-badge mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-}
-
-/* Update action button */
-.action-btn {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.view-btn {
-  background: #e3f2fd;
-  color: #1976d2;
-}
-
-/* Responsive adjustments for dialog */
+/* Responsive Design */
 @media (max-width: 768px) {
+  .manage-customers-container {
+    padding: 16px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .stats-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .table-controls {
+    flex-direction: column;
+  }
+  
+  .search-field {
+    width: 100%;
+  }
+  
+  .export-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .mat-header-cell,
+  .mat-cell {
+    padding: 16px;
+  }
+  
+  .actions-cell {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  /* Dialog Responsive */
   .customer-details-dialog {
     width: 95%;
     max-height: 95vh;
@@ -673,5 +659,40 @@
   .service-history-table th,
   .service-history-table td {
     padding: 12px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header .page-title {
+    font-size: 24px;
+  }
+  
+  .table-header h2 {
+    font-size: 18px;
+  }
+  
+  .mat-cell {
+    padding: 12px;
+  }
+  
+  .customer-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .profile-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+  
+  .profile-info h3 {
+    font-size: 20px;
   }
 }

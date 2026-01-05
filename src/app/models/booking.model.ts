@@ -18,7 +18,9 @@ export interface Booking {
   completionDate?: string; // When the booking was completed
   totalAmount?: number;
   price?: number;
+  extraAmount?: number; // Additional service amount
   notes?: string;
+  adminNotes?: string; // Admin's notes about the booking
   customerId?: number | string;
   reference?: string;
   createdAt?: string;

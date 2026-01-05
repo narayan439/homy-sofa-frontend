@@ -228,6 +228,16 @@
           </td>
         </ng-container>
 
+        <!-- Booking Created Column -->
+        <ng-container matColumnDef="bookingCreated">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Booked At</th>
+          <td mat-cell *matCellDef="let booking">
+            <div class="booking-created">
+              {{ booking.createdAt ? (booking.createdAt | date:'dd MMM yyyy, HH:mm') : (booking.bookingDate ? (booking.bookingDate | date:'dd MMM yyyy, HH:mm') : 'N/A') }}
+            </div>
+          </td>
+        </ng-container>
+
         <!-- Service Date Column -->
         <ng-container matColumnDef="serviceDate">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>
@@ -275,7 +285,7 @@
                 {{ booking.additionalServiceName }}
               </span>
             </div>
-            <span *ngIf="!booking.additionalServiceName && !booking.additionalServicesJson" class="text-muted">No additional Service </span>
+            <span *ngIf="!booking.additionalServiceName && !booking.additionalServicesJson" class="text-muted">None </span>
           </td>
         </ng-container>
 

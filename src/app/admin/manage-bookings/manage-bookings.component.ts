@@ -9,7 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import * as XLSX from 'xlsx';
+import { ExcelExportService } from '../../core/services/excel-export.service';
 
 @Component({
   selector: 'app-manage-bookings',
@@ -22,6 +22,7 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
   displayedColumns: string[] = [
     'customer',
     'reference',
+    'bookingCreated',
     'serviceDate',
     'service',
     'additionalServices',
@@ -45,7 +46,8 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     private bookingService: BookingService,
     private snackBar: MatSnackBar,
     private serviceService: ServiceService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private excelExportService: ExcelExportService
   ) {}
 
   ngOnInit() {
@@ -563,31 +565,61 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   viewBookingDetails(booking: Booking) {
-    const details = `
-      Customer Details:
-      -----------------
-      Name: ${booking.name}
-      Phone: ${booking.phone}
-      Email: ${booking.email || 'N/A'}
-      
-      Booking Details:
-      -----------------
-      Reference: ${booking.reference || 'N/A'}
-      Service: ${this.getServiceName(booking.service)}
-      Date: ${booking.date || 'N/A'}
-      Status: ${booking.status}
-      
-      Address Details:
-      -----------------
-      House: ${this.getAddressPart(booking.address || '', 'house')}
-      Area: ${this.getAddressPart(booking.address || '', 'area')}
-      City: ${this.getAddressPart(booking.address || '', 'city')}
-      Pincode: ${this.getAddressPart(booking.address || '', 'pincode')}
-      Landmark: ${this.getAddressPart(booking.address || '', 'landmark')}
+    const extraServices = this.parseAdditionalServices(booking.additionalServicesJson || '');
+    const extraServicesText = extraServices.length > 0 
+      ? extraServices.map(s => `${s.name} (₹${s.price})`).join(', ')
+      : 'None';
     
+    // Create a simple dialog content object for Material Dialog
+    const dialogContent = {
+      title: `Booking Details - ${booking.reference}`,
+      booking: booking,
+      extraServices: extraServices,
+      extraServicesText: extraServicesText,
+      getServiceName: (id: string) => this.getServiceName(id),
+      getAddressPart: (addr: string, part: string) => this.getAddressPart(addr, part)
+    };
+    
+    // Use window.alert with formatted content as fallback (enhanced formatting)
+    const formattedAlert = `
+BOOKING DETAILS - ${booking.reference}
+
+👤 CUSTOMER DETAILS
+━━━━━━━━━━━━━━━━━━━━━
+Name: ${booking.name}
+Phone: ${booking.phone}
+Email: ${booking.email || 'N/A'}
+
+📋 BOOKING DETAILS
+━━━━━━━━━━━━━━━━━━━━━
+Reference No: ${booking.reference || 'N/A'}
+Booking ID: ${booking.id || 'N/A'}
+Service Type: ${this.getServiceName(booking.service)}
+Status: ${booking.status || 'N/A'}
+Service Date: ${booking.date || 'N/A'}
+Time Slot: ${booking.timeSlot ? booking.timeSlot.toUpperCase() : 'N/A'}
+Booking Created: ${booking.bookingDate ? new Date(booking.bookingDate).toLocaleString() : 'N/A'}
+
+💰 SERVICES & PRICING
+━━━━━━━━━━━━━━━━━━━━━
+Main Service Price: ₹${booking.price || 'N/A'}
+Extra Amount: ₹${booking.extraAmount || '0'}
+Completed Amount: ₹${booking.totalAmount || booking.price || 'N/A'}
+Extra Services: ${extraServicesText}
+
+📍 ADDRESS DETAILS
+━━━━━━━━━━━━━━━━━━━━━
+House/Flat: ${this.getAddressPart(booking.address || '', 'house')}
+Area: ${this.getAddressPart(booking.address || '', 'area')}
+City: ${this.getAddressPart(booking.address || '', 'city')}
+Pincode: ${this.getAddressPart(booking.address || '', 'pincode')}
+Landmark: ${this.getAddressPart(booking.address || '', 'landmark')}
+
+${booking.completionDate ? `✓ Completion Date: ${booking.completionDate}\n` : ''}
+${booking.adminNotes ? `📝 Admin Notes: ${booking.adminNotes}` : ''}
     `;
     
-    alert(details);
+    alert(formattedAlert);
   }
 
   viewAddress(booking: Booking) {
@@ -618,14 +650,11 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
   exportToExcel() {
     try {
       this.isLoading = true;
-      
-      // Get filtered or all data
-      const exportData = this.dataSource.filteredData.length > 0 
-        ? this.dataSource.filteredData 
-        : this.dataSource.data;
-      
+
+      const exportData = this.dataSource.filteredData.length > 0 ? this.dataSource.filteredData : this.dataSource.data;
+
       if (exportData.length === 0) {
-        this.snackBar.open('No data to export', 'Close', { 
+        this.snackBar.open('No data to export', 'Close', {
           duration: 3000,
           panelClass: ['warning-snackbar']
         });
@@ -633,110 +662,18 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
         return;
       }
 
-      // Prepare data for Excel
-      const excelData = exportData.map(booking => {
-        const serviceName = this.getServiceName(booking.service);
-        
-        // Format date properly
-        let formattedDate = 'N/A';
-        if (booking.date) {
-          const date = new Date(booking.date);
-          formattedDate = date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          });
-        }
-
-        // Format booking time if exists
-        let bookingTime = 'N/A';
-        if (booking.timeSlot) {
-          switch(booking.timeSlot) {
-            case 'morning': bookingTime = '9 AM - 12 PM'; break;
-            case 'afternoon': bookingTime = '12 PM - 4 PM'; break;
-            case 'evening': bookingTime = '4 PM - 8 PM'; break;
-            default: bookingTime = booking.timeSlot;
-          }
-        }
-
-        // Calculate days until service
-        let daysUntilService = 'N/A';
-        if (booking.date) {
-          const serviceDate = new Date(booking.date);
-          const today = new Date();
-          const diffTime = Math.abs(serviceDate.getTime() - today.getTime());
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          daysUntilService = `${diffDays} days`;
-        }
-
-        return {
-          'Booking ID': booking.id || 'N/A',
-          'Customer Name': booking.name || 'N/A',
-          'Email': booking.email || 'N/A',
-          'Phone': booking.phone || 'N/A',
-          'Service Type': serviceName,
-          'Service Date': formattedDate,
-          'Booking Time': bookingTime,
-          'Status': booking.status || 'N/A',
-          'Days Until Service': daysUntilService,
-          'Booking Created': booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          }) : 'N/A',
-          'Total Bookings by Customer': booking.totalBookings || 1
-        };
-      });
-
-      // Create worksheet
-      const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(excelData);
-      
-      // Set column widths
-      const wscols = [
-        { wch: 15 }, // Booking ID
-        { wch: 20 }, // Customer Name
-        { wch: 25 }, // Email
-        { wch: 15 }, // Phone
-        { wch: 20 }, // Service Type
-        { wch: 15 }, // Service Date
-        { wch: 15 }, // Booking Time
-        { wch: 12 }, // Status
-        { wch: 15 }, // Days Until Service
-        { wch: 30 }, // Address
-        { wch: 30 }, // Special Instructions
-        { wch: 20 }, // Booking Created
-        { wch: 10 }, // Total Bookings
-      ];
-      worksheet['!cols'] = wscols;
-
-      // Create workbook
-      const workbook: XLSX.WorkBook = { 
-        Sheets: { 'Bookings': worksheet }, 
-        SheetNames: ['Bookings'] 
-      };
-
-      // Generate Excel file
-      const excelBuffer: any = XLSX.write(workbook, { 
-        bookType: 'xlsx', 
-        type: 'array' 
-      });
-
-      // Save the file
-      this.saveAsExcelFile(excelBuffer, 'HomY_Sofa_Bookings');
+      // Delegate Excel export to shared service
+      this.excelExportService.exportBookings(exportData, this.getServiceName.bind(this));
 
       this.isLoading = false;
-      
-      this.snackBar.open(`✅ Exported ${exportData.length} bookings to Excel`, 'Close', { 
+      this.snackBar.open(`✅ Exported ${exportData.length} bookings to Excel`, 'Close', {
         duration: 4000,
         panelClass: ['success-snackbar']
       });
-
     } catch (error) {
       console.error('Export error:', error);
       this.isLoading = false;
-      this.snackBar.open('❌ Failed to export to Excel', 'Close', { 
+      this.snackBar.open('❌ Failed to export to Excel', 'Close', {
         duration: 3000,
         panelClass: ['error-snackbar']
       });
@@ -747,14 +684,6 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
 
 
   saveAsExcelFile(excelBuffer: any, fileName: string) {
-    const data: Blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
-    const url = window.URL.createObjectURL(data);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${fileName}.xlsx`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    // Method removed - saving is now handled by ExcelExportService
   }
 }
