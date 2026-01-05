@@ -220,6 +220,9 @@
                     placeholder="6-digit pincode"
                     maxlength="6"
                   >
+                  <button mat-icon-button matSuffix type="button" aria-label="Detect city" (click)="detectCityFromPincode()">
+                    <mat-icon>search</mat-icon>
+                  </button>
                   <mat-icon matPrefix>pin</mat-icon>
                   <mat-error *ngIf="bookingForm.get('pincode')?.hasError('required') && bookingForm.get('pincode')?.touched">
                     Pincode is required

@@ -23,12 +23,33 @@
       <h3>Additional Services</h3>
     </div>
     
-    <mat-checkbox [(ngModel)]="additionalService" color="primary" class="service-toggle">
-      <span class="toggle-label">
-        <mat-icon>{{ additionalService ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-        Add Additional Services
-      </span>
-    </mat-checkbox>
+    <!-- Single Checkbox Card Design -->
+    <div 
+      class="service-toggle-card" 
+      [class.checked]="additionalService"
+      (click)="additionalService = !additionalService"
+    >
+      <div class="toggle-content">
+        <div class="toggle-info">
+          <mat-icon class="toggle-icon" [class.checked]="additionalService">
+            {{ additionalService ? 'add_circle' : 'add_circle_outline' }}
+          </mat-icon>
+          <div class="toggle-text">
+            <div class="toggle-label" [class.checked]="additionalService">
+              Add Additional Services
+            </div>
+            <div class="toggle-description">
+              Select this to add extra services to the booking
+            </div>
+          </div>
+        </div>
+        <div class="toggle-check">
+          <mat-icon class="check-icon" [class.checked]="additionalService">
+            check_circle
+          </mat-icon>
+        </div>
+      </div>
+    </div>
     
     <!-- Service Selection Section -->
     <div *ngIf="additionalService" class="service-section">
@@ -45,7 +66,7 @@
             <mat-option *ngFor="let service of getAvailableServices()" [value]="service.id">
               <div class="service-option">
                 <span class="service-name">{{ service.name }}</span>
-                <span class="service-price">₹{{ service.price || 0 | number:'1.0-2' }}</span>
+      
               </div>
             </mat-option>
           </mat-select>

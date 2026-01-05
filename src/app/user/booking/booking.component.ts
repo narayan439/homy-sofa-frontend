@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BookingService } from '../../core/services/booking.service';
 import { ServiceService, Service } from '../../core/services/service.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-booking',
@@ -81,32 +82,8 @@ export class BookingComponent implements OnInit, OnDestroy {
       this.selectedServicePrice = svc?.price ?? null;
     });
 
-    // When pincode entered, try to detect city (India postal API)
-    this.bookingForm.get('pincode')?.valueChanges.subscribe(async (val: string) => {
-      if (!val) return;
-      const cleaned = (val || '').toString().trim();
-      if (/^[0-9]{6}$/.test(cleaned)) {
-        try {
-          const resp = await fetch(`https://api.postalpincode.in/pincode/${cleaned}`);
-          if (resp.ok) {
-            const data = await resp.json();
-            if (Array.isArray(data) && data.length > 0 && data[0].Status === 'Success') {
-              const postOffices = data[0].PostOffice || [];
-              if (postOffices.length > 0) {
-                // Prefer District or Division as city
-                const po = postOffices[0];
-                const cityName = po.District || po.Division || po.Block || po.State || '';
-                if (cityName) {
-                  this.bookingForm.patchValue({ city: cityName });
-                }
-              }
-            }
-          }
-        } catch (e) {
-          console.warn('Pincode lookup failed', e);
-        }
-      }
-    });
+    // Note: automatic pincode -> district lookup removed.
+    // City detection will be performed only when user clicks 'Detect City' button next to the pincode field.
 
     // Try to get location on page load
     this.checkLocationPermission();
@@ -188,87 +165,146 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   async reverseGeocode(lat: number, lng: number) {
     try {
-      // Use Google Maps API (requires public API key or fallback to Nominatim)
-      // Fallback to Nominatim if Google API is not available
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch address');
-      }
+      // First try BigDataCloud reverse geocode (no key required for the free reverse endpoint)
+      const base = environment.bigDataCloudUrl || 'https://api.bigdatacloud.net/data';
+      const key = environment.bigDataCloudApiKey || '';
+      let bdUrl = `${base}/reverse-geocode-client?latitude=${encodeURIComponent(String(lat))}&longitude=${encodeURIComponent(String(lng))}&localityLanguage=en`;
+      if (key) bdUrl += `&key=${encodeURIComponent(key)}`;
 
-      const data = await response.json();
-      
-      if (data && data.address) {
-        const address = data.address;
-        
-        // Build address components from Nominatim response
-        let house = address.house_number || address.building || '';
-        let road = address.road || address.street || address.street_address || '';
-        let area = address.suburb || address.neighbourhood || address.locality || '';
-        let city = address.city || address.town || address.village || address.county || '';
-        let state = address.state || '';
-        let pincode = address.postcode || '';
-        
-        // If no house/street info, use display_name
-        if (!house && !road && data.display_name) {
-          const parts = data.display_name.split(',');
-          if (parts.length > 0) {
-            road = parts[0].trim();
-          }
-          if (parts.length > 1) {
-            area = parts[1].trim();
+      let usedData: any = null;
+      try {
+        const bdResp = await fetch(bdUrl);
+        if (bdResp.ok) {
+          const bdJson = await bdResp.json();
+          // bigdatacloud returns fields like locality, city, principalSubdivision, postcode
+          if (bdJson) {
+            usedData = { type: 'bigdatacloud', data: bdJson };
           }
         }
-        
-        // Build full address
-        const fullAddress = [
-          house && road ? house + ', ' + road : (house || road),
-          area,
-          city,
-          state,
-          pincode
-        ].filter(Boolean).join(', ');
+      } catch (bdErr) {
+        console.warn('BigDataCloud reverse lookup failed, falling back to Nominatim', bdErr);
+      }
 
-        // Update form fields with detected address
+      // If BigDataCloud didn't provide usable data, fallback to Nominatim
+      if (!usedData) {
+        const nomUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+        const nomResp = await fetch(nomUrl);
+        if (nomResp.ok) {
+          const nomJson = await nomResp.json();
+          if (nomJson) usedData = { type: 'nominatim', data: nomJson };
+        }
+      }
+
+      if (!usedData) {
+        this.bookingForm.patchValue({ fullAddress: `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}` });
+        this.isServiceable = false;
+        return;
+      }
+
+      if (usedData.type === 'bigdatacloud') {
+        const d = usedData.data;
+        const house = '';
+        const road = d.locality || d.city || '';
+        const area = d.locality || (d.localityInfo && d.localityInfo.administrative && d.localityInfo.administrative[1] ? d.localityInfo.administrative[1].name : '') || '';
+        const city = d.city || d.locality || d.principalSubdivision || '';
+        const state = d.principalSubdivision || '';
+        const pincode = d.postcode || d.postalCode || d.postal || '';
+
+        const fullAddress = [road, area, city, state, pincode].filter(Boolean).join(', ');
+
         this.bookingForm.patchValue({
-          house: (house && road) ? house : (house || road),
+          house: '',
           area: area || '',
           city: city || '',
           pincode: pincode || '',
-          fullAddress: fullAddress || data.display_name || ''
+          fullAddress: fullAddress || ''
         });
 
-        // Determine serviceability based on detected city or full address
-        const detectedCity = (city || '').toString();
-        const detectedFull = (fullAddress || data.display_name || '').toString();
-        this.isServiceable = this.checkServiceable(detectedCity, detectedFull);
+        this.isServiceable = this.checkServiceable(city || '', fullAddress || '');
+      } else if (usedData.type === 'nominatim') {
+        const data = usedData.data;
+        if (data && data.address) {
+          const address = data.address;
+          let house = address.house_number || address.building || '';
+          let road = address.road || address.street || address.street_address || '';
+          let area = address.suburb || address.neighbourhood || address.locality || '';
+          let city = address.city || address.town || address.village || address.county || '';
+          let state = address.state || '';
+          let pincode = address.postcode || '';
 
-        // Auto-fill landmark if not already set
-        if (!this.bookingForm.get('landmark')?.value) {
-          const landmark = address.amenity || address.shop || address.cafe || address.restaurant || '';
-          if (landmark) {
-            this.bookingForm.patchValue({
-              landmark: landmark
-            });
+          if (!house && !road && data.display_name) {
+            const parts = data.display_name.split(',');
+            if (parts.length > 0) road = parts[0].trim();
+            if (parts.length > 1) area = parts[1].trim();
+          }
+
+          const fullAddress = [house && road ? house + ', ' + road : (house || road), area, city, state, pincode].filter(Boolean).join(', ');
+
+          this.bookingForm.patchValue({
+            house: (house && road) ? house : (house || road),
+            area: area || '',
+            city: city || '',
+            pincode: pincode || '',
+            fullAddress: fullAddress || data.display_name || ''
+          });
+
+          this.isServiceable = this.checkServiceable(city || '', fullAddress || data.display_name || '');
+
+          if (!this.bookingForm.get('landmark')?.value) {
+            const landmark = address.amenity || address.shop || address.cafe || address.restaurant || '';
+            if (landmark) this.bookingForm.patchValue({ landmark: landmark });
           }
         }
-      } else {
-        // If no address found, use coordinates
-        this.bookingForm.patchValue({
-          fullAddress: `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`
-        });
-        // Coordinates-only — mark as not serviceable by default
-        this.isServiceable = false;
       }
     } catch (error) {
       console.warn('Reverse geocoding failed:', error);
-      // Still use coordinates even if reverse geocoding fails
-      this.bookingForm.patchValue({
-        fullAddress: `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`
-      });
+      this.bookingForm.patchValue({ fullAddress: `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}` });
       this.isServiceable = false;
+    }
+  }
+
+  // Use BigDataCloud postal-code lookup to detect only the city when user requests it
+  async detectCityFromPincode() {
+    const raw = this.bookingForm.get('pincode')?.value;
+    if (!raw) {
+      this.snackBar.open('Please enter a valid 6-digit pincode before detecting city', 'Close', { duration: 3000 });
+      return;
+    }
+    const pincode = raw.toString().trim();
+    if (!/^[0-9]{6}$/.test(pincode)) {
+      this.snackBar.open('Please enter a 6-digit pincode', 'Close', { duration: 3000 });
+      return;
+    }
+
+    try {
+      const key = environment.bigDataCloudApiKey || '';
+      const base = environment.bigDataCloudUrl || 'https://api.bigdatacloud.net/data';
+      // BigDataCloud postal-code endpoint. If your plan uses a different path, update environment.bigDataCloudUrl accordingly.
+      const url = `${base}/postal-code?postalCode=${encodeURIComponent(pincode)}&localityLanguage=en&key=${encodeURIComponent(key)}`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('Lookup failed');
+      const data = await resp.json();
+
+      // Try multiple possible fields for city
+      let city = '';
+      if (data.locality) city = data.locality;
+      else if (data.city) city = data.city;
+      else if (data.localityName) city = data.localityName;
+      else if (data.principalSubdivision) city = data.principalSubdivision;
+      else if (data.localityInfo && data.localityInfo.administrative && data.localityInfo.administrative.length > 0) {
+        city = data.localityInfo.administrative[0].name || '';
+      }
+
+      if (city) {
+        // Only set the `city` field — do not auto-fill district or other fields
+        this.bookingForm.patchValue({ city });
+        this.snackBar.open(`City detected: ${city}`, 'Close', { duration: 3000 });
+      } else {
+        this.snackBar.open('Could not determine city from pincode. Please enter city manually.', 'Close', { duration: 4000, panelClass: ['warning-snackbar'] });
+      }
+    } catch (e) {
+      console.warn('BigDataCloud pincode lookup failed', e);
+      this.snackBar.open('Pincode lookup failed. Please enter city manually.', 'Close', { duration: 4000 });
     }
   }
 
