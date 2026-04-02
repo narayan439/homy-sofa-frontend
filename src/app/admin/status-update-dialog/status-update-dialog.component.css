@@ -21,6 +21,10 @@
   --header-gradient-end: #388e3c;
 }
 
+.dialog-header.assigned {
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  border-radius: 8px;
+}
 .dialog-header.cancelled {
   --header-gradient-start: #f44336;
   --header-gradient-end: #d32f2f;

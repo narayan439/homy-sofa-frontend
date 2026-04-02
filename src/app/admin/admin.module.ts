@@ -15,6 +15,7 @@ import { DashboardLayoutComponent } from './dashboard-layout/dashboard-layout.co
 import { DashboardHomeComponent } from './dashboard-home/dashboard-home.component';
 import { AddressDialogComponent } from './address-dialog/address-dialog.component';
 import { StatusUpdateDialogComponent } from './status-update-dialog/status-update-dialog.component';
+import { ManageTechniciansComponent } from './manage-technicians/manage-technicians.component';
 
 
 
@@ -26,7 +27,8 @@ import { StatusUpdateDialogComponent } from './status-update-dialog/status-updat
     StatusUpdateDialogComponent,
     ManageCustomersComponent,
     ManagePaymentsComponent,
-    SettingsComponent
+    SettingsComponent,
+    ManageTechniciansComponent
   ],
   imports: [
     CommonModule,

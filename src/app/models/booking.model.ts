@@ -1,4 +1,4 @@
-export type BookingStatus = 'PENDING' | 'APPROVED' | 'COMPLETED' | 'CANCELLED';
+export type BookingStatus = 'PENDING' | 'ASSIGNED' | 'COMPLETED' | 'CANCELLED';
 
 export interface Booking {
   specialInstructions: any;
@@ -43,7 +43,7 @@ export interface BookingFilter {
 export interface BookingStats {
   totalBookings: number;
   pendingBookings: number;
-  approvedBookings: number;
+  assignedBookings: number;
   completedBookings: number;
   cancelledBookings: number;
   totalRevenue: number;

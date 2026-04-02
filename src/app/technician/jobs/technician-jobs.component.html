@@ -1,0 +1,568 @@
+<div class="jobs-container">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>
+        <mat-icon>assignment</mat-icon>
+        Your Jobs
+      </h1>
+      <p class="subtitle">Manage and track all your assigned service jobs</p>
+    </div>
+    <div class="header-right">
+      <button class="refresh-btn" (click)="loadJobs()" matTooltip="Refresh jobs">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Inlined Job Details Dialog Template -->
+  <ng-template #jobDialog>
+    <div class="dialog-header">
+      <h2 class="dialog-title">
+        <mat-icon>assignment_ind</mat-icon>
+        Job Details
+      </h2>
+      <button mat-icon-button (click)="dialogRef?.close()" class="close-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="dialog-content">
+
+      <!-- Section 1: Service Info -->
+      <div class="dialog-section">
+        <h3 class="section-title">
+          <mat-icon>build</mat-icon>
+          Service Details
+        </h3>
+        <div class="section-content">
+          <div class="info-grid">
+            <div class="info-item full">
+              <span class="label">Service:</span>
+              <span class="value service-name">{{ currentJob?.serviceType || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Date:</span>
+              <span class="value">{{ currentJob?.bookingDate | date:'dd MMM yyyy' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Time:</span>
+              <span class="value">{{ currentJob?.timeSlot || 'Flexible' }}</span>
+            </div>
+            <div class="info-item" *ngIf="currentJob?.totalAmount">
+              <span class="label">Amount:</span>
+              <span class="value amount">₹{{ currentJob?.totalAmount }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Booking Info -->
+      <div class="dialog-section">
+        <h3 class="section-title">
+          <mat-icon>info</mat-icon>
+          Booking Information
+        </h3>
+        <div class="section-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Reference #:</span>
+              <span class="value">{{ currentJob?.reference || '#' + currentJob?.id }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Status:</span>
+              <span class="value status-badge" [ngClass]="(currentJob?.technicianStatus || '').toLowerCase()">
+                {{ currentJob?.technicianStatus || 'PENDING' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Customer Info -->
+      <div class="dialog-section">
+        <h3 class="section-title">
+          <mat-icon>person</mat-icon>
+          Customer Information
+        </h3>
+        <div class="section-content">
+          <div class="info-grid">
+            <div class="info-item full">
+              <span class="label">Name:</span>
+              <span class="value customer-name">{{ currentJob?.customerName || 'Unknown' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Phone:</span>
+              <span class="value">{{ currentJob?.customerPhone || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Email:</span>
+              <span class="value">{{ currentJob?.customerEmail || 'N/A' }}</span>
+            </div>
+            <div class="info-item full">
+              <span class="label">Address:</span>
+              <span class="value address">{{ currentJob?.specialAddress || currentJob?.address || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Additional Services -->
+      <div class="dialog-section" *ngIf="getAdditionalServiceNames(currentJob)">
+        <h3 class="section-title">
+          <mat-icon>add_circle</mat-icon>
+          Additional Services
+        </h3>
+        <div class="section-content">
+          <div class="extras-list">{{ getAdditionalServiceNames(currentJob) }}</div>
+        </div>
+      </div>
+
+      <!-- Add service form -->
+      <div *ngIf="addServiceMode" class="dialog-section action-form">
+        <h3 class="section-title">
+          <mat-icon>add</mat-icon>
+          Add Additional Service
+        </h3>
+        <div class="section-content">
+          <label class="form-label">Select service to add:</label>
+          <select [(ngModel)]="selectedServiceId" (ngModelChange)="onServiceSelected($event)" class="form-select">
+            <option [ngValue]="null">-- Choose Service --</option>
+            <ng-container *ngFor="let s of services">
+              <option *ngIf="!isServiceAlreadyAdded(s)" [value]="s.id">{{ s.name }} (₹{{ s.price }})</option>
+            </ng-container>
+          </select>
+          <div class="action-buttons">
+            <button (click)="submitAddService()" class="btn btn-primary">
+              <mat-icon>check</mat-icon>
+              Add Service
+            </button>
+            <button (click)="addServiceMode=false" class="btn btn-secondary">
+              <mat-icon>close</mat-icon>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Complete form -->
+      <div *ngIf="completeMode" class="dialog-section action-form">
+        <h3 class="section-title">
+          <mat-icon>done</mat-icon>
+          Complete Job
+        </h3>
+        <div class="section-content">
+          <label class="form-label">Total amount collected:</label>
+          <input type="number" [(ngModel)]="totalAmount" class="form-input" placeholder="Enter amount" />
+          <label class="form-label">Completion notes:</label>
+          <textarea rows="3" [(ngModel)]="completionNotes" class="form-textarea" placeholder="Enter completion notes..."></textarea>
+          <div class="action-buttons">
+            <button (click)="submitComplete()" class="btn btn-primary">
+              <mat-icon>check_circle</mat-icon>
+              Complete Job
+            </button>
+            <button (click)="completeMode=false" class="btn btn-secondary">
+              <mat-icon>close</mat-icon>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cancel form -->
+      <div *ngIf="cancelMode" class="dialog-section action-form">
+        <h3 class="section-title">
+          <mat-icon>cancel</mat-icon>
+          Cancel Job
+        </h3>
+        <div class="section-content">
+          <label class="form-label">Cancellation reason:</label>
+          <textarea rows="3" [(ngModel)]="cancelReason" class="form-textarea" placeholder="Enter cancellation reason..."></textarea>
+          <div class="action-buttons">
+            <button (click)="submitCancel()" class="btn btn-danger">
+              <mat-icon>delete</mat-icon>
+              Confirm Cancel
+            </button>
+            <button (click)="cancelMode=false" class="btn btn-secondary">
+              <mat-icon>close</mat-icon>
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button (click)="dialogRef?.close()" class="btn btn-secondary">
+        <mat-icon>close</mat-icon>
+        Close
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card" (click)="filterByStatus('all')">
+      <div class="stat-icon all">
+        <mat-icon>assignment</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ totalJobs }}</h3>
+        <p>Total Jobs</p>
+      </div>
+    </div>
+
+    <div class="stat-card" (click)="filterByStatus('all')">
+      <div class="stat-icon active">
+        <mat-icon>work</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ activeJobsCount }}</h3>
+        <p>Active Jobs</p>
+      </div>
+    </div>
+
+    <div class="stat-card" (click)="filterByStatus('ACCEPTED')">
+      <div class="stat-icon accepted">
+        <mat-icon>schedule</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ acceptedCount }}</h3>
+        <p>Accepted</p>
+        <span class="stat-badge" *ngIf="acceptedCount > 0">Ready to start</span>
+      </div>
+    </div>
+
+    <div class="stat-card" (click)="filterByStatus('IN_PROGRESS')">
+      <div class="stat-icon progress">
+        <mat-icon>engineering</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ inProgressCount }}</h3>
+        <p>In Progress</p>
+        <span class="stat-badge" *ngIf="inProgressCount > 0">Active jobs</span>
+      </div>
+    </div>
+
+    <div class="stat-card" (click)="filterByStatus('COMPLETED')">
+      <div class="stat-icon completed">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ completedCount }}</h3>
+        <p>Completed</p>
+      </div>
+    </div>
+
+    <div class="stat-card" (click)="filterByStatus('CANCELLED')">
+      <div class="stat-icon cancelled">
+        <mat-icon>remove_circle</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ cancelledCount }}</h3>
+        <p>Cancelled</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Card -->
+  <div class="filters-card">
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input type="text" placeholder="Search by customer, service, or address..." [(ngModel)]="searchQuery" (input)="applyFilters()">
+    </div>
+    
+    <div class="filter-group">
+      <select class="filter-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+        <option value="all">All Status</option>
+        <option value="ASSIGNED">Assigned</option>
+        <option value="ACCEPTED">Accepted</option>
+        <option value="IN_PROGRESS">In Progress</option>
+        <option value="COMPLETED">Completed</option>
+        <option value="CANCELLED">Cancelled</option>
+      </select>
+      
+      <select class="filter-select" [(ngModel)]="dateFilter" (change)="applyFilters()">
+        <option value="all">All Time</option>
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+      </select>
+
+      <!-- Sort Toggle Button -->
+      <button class="sort-btn" (click)="toggleSortOrder()" matTooltip="Toggle sort order">
+        <mat-icon>{{ sortOrder === 'newest' ? 'arrow_downward' : 'arrow_upward' }}</mat-icon>
+        <span>{{ sortOrder === 'newest' ? 'Newest First' : 'Oldest First' }}</span>
+      </button>
+      
+      <button class="reset-btn" (click)="resetFilters()">
+        <mat-icon>refresh</mat-icon> Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Calendar Quick View Card - REDESIGNED -->
+  <div class="calendar-quick-card" (click)="toggleCalendarView()">
+    <div class="calendar-quick-content">
+      <div class="calendar-quick-icon">
+        <mat-icon>calendar_month</mat-icon>
+      </div>
+      <div class="calendar-quick-info">
+        <div class="calendar-quick-label">Service date</div>
+        <div class="calendar-quick-date">{{ todayDate | date:'EEEE, MMM d' }}</div>
+      </div>
+      <div class="calendar-quick-badge">
+        <span class="appointment-count">{{ getTodayBookingsCount() }}</span>
+        <span class="appointment-text">today</span>
+      </div>
+      <mat-icon class="calendar-quick-arrow">chevron_right</mat-icon>
+    </div>
+  </div>
+
+  <!-- Compact Calendar Popup (shown when card is clicked) -->
+  <div class="calendar-popup" *ngIf="showCalendarPopup" (click)="$event.stopPropagation()">
+    <div class="calendar-popup-header">
+      <h3>
+        <mat-icon>calendar_month</mat-icon>
+        {{ currentMonth }} {{ currentYear }}
+      </h3>
+      <button class="close-popup-btn" (click)="closeCalendarView()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="calendar-popup-nav">
+      <button class="popup-nav-btn" (click)="previousMonth()" matTooltip="Previous Month">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <span class="popup-month-year">{{ currentMonth }} {{ currentYear }}</span>
+      <button class="popup-nav-btn" (click)="nextMonth()" matTooltip="Next Month">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="calendar-popup-grid">
+      <div class="popup-weekday" *ngFor="let day of weekDays">{{ day }}</div>
+      
+      <div *ngFor="let date of calendarDays" 
+           class="popup-day" 
+           [class.today]="isToday(date)"
+           [class.selected]="isSelectedDate(date)"
+           (click)="selectDate(date); showAppointmentsForDate(date)">
+        <span class="popup-day-number">{{ date.getDate() }}</span>
+        <span class="popup-booking-count" [class.zero]="getBookingsCountForDate(date) === 0">
+          {{ getBookingsCountForDate(date) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Selected Date Appointments -->
+    <div class="selected-date-appointments" *ngIf="selectedDate">
+      <div class="selected-date-header">
+        <mat-icon>event</mat-icon>
+        <span>{{ selectedDate | date:'fullDate' }}</span>
+        <span class="appointment-total">{{ getBookingsCountForDate(selectedDate) }} appointments</span>
+      </div>
+      
+      <div class="appointments-list" *ngIf="getJobsForDate(selectedDate).length > 0">
+        <div class="appointment-item" *ngFor="let job of getJobsForDate(selectedDate)">
+          <div class="appointment-time">
+            <mat-icon>schedule</mat-icon>
+            {{ job.timeSlot || job.time || 'Flexible' }}
+          </div>
+          <div class="appointment-details">
+            <div class="appointment-customer">{{ job.customerName || 'Customer' }}</div>
+            <div class="appointment-service">{{ job.serviceType || job.service || 'Service' }}</div>
+          </div>
+          <div class="appointment-status" [ngClass]="job.technicianStatus?.toLowerCase()">
+            {{ job.technicianStatus || 'PENDING' }}
+          </div>
+        </div>
+      </div>
+      
+      <div class="no-appointments" *ngIf="getJobsForDate(selectedDate).length === 0">
+        <mat-icon>event_busy</mat-icon>
+        <p>No appointments on this date</p>
+      </div>
+    </div>
+
+    <div class="calendar-popup-footer">
+      <button class="view-all-btn" (click)="viewAllAppointments()">
+        View All Appointments
+      </button>
+    </div>
+  </div>
+
+  <!-- Overlay for popup (click overlay to close popup) -->
+  <div class="popup-overlay" *ngIf="showCalendarPopup" (click)="closeCalendarView()"></div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading your jobs...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button class="retry-btn" (click)="loadJobs()">
+      <mat-icon>refresh</mat-icon> Try Again
+    </button>
+  </div>
+
+  <!-- Jobs List - VERTICAL LIST VIEW -->
+  <div class="jobs-list" *ngIf="!isLoading && !errorMessage">
+    <!-- Results Count -->
+    <div class="results-info" *ngIf="filteredJobs.length > 0">
+      <span>Showing {{filteredJobs.length}} of {{jobs.length}} jobs</span>
+    </div>
+
+    <!-- Job Items - Vertical List -->
+    <div class="job-item" *ngFor="let job of filteredJobs; trackBy: trackByJob; let i = index" 
+         [ngClass]="job.technicianStatus?.toLowerCase()">
+      
+      <!-- Timeline Dot -->
+      <div class="item-timeline">
+        <div class="timeline-dot" [ngClass]="job.technicianStatus?.toLowerCase()"></div>
+        <div class="timeline-line" *ngIf="i !== filteredJobs.length - 1"></div>
+      </div>
+
+      <!-- Job Content -->
+      <div class="item-content">
+        <!-- Header Row -->
+        <div class="item-header">
+          <div class="customer-info">
+            <div class="customer-avatar">{{ (job.customerName || 'C').charAt(0) }}</div>
+            <div>
+              <h3 class="customer-name">{{ job.customerName || 'Customer' }}</h3>
+              <div class="customer-phone">
+                <mat-icon>phone</mat-icon>
+                <span>{{ job.customerPhone || job.phone || 'No phone' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="status-badge" [ngClass]="job.technicianStatus?.toLowerCase()">
+            <mat-icon>
+              {{ job.technicianStatus === 'ASSIGNED' ? 'assignment' :
+                 job.technicianStatus === 'ACCEPTED' ? 'schedule' :
+                 job.technicianStatus === 'IN_PROGRESS' ? 'engineering' :
+                 job.technicianStatus === 'COMPLETED' ? 'check_circle' :
+                 'cancel' }}
+            </mat-icon>
+            <span>{{ job.technicianStatus || 'PENDING' }}</span>
+          </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="details-grid">
+          <!-- Service Row -->
+          <div class="detail-row">
+            <mat-icon class="detail-icon">build</mat-icon>
+            <span class="detail-label">Service:</span>
+            <span class="detail-value">{{ job?.serviceType || job?.service || 'Service Not Available' }}</span>
+          </div>
+
+          <!-- Date Row -->
+          <div class="detail-row">
+            <mat-icon class="detail-icon">calendar_today</mat-icon>
+            <span class="detail-label">Date:</span>
+            <span class="detail-value">{{ job.bookingDate ? (job.bookingDate | date:'dd MMM yyyy') : 'Not Set' }}</span>
+          </div>
+
+          <!-- Time Row -->
+          <div class="detail-row">
+            <mat-icon class="detail-icon">schedule</mat-icon>
+            <span class="detail-label">Time:</span>
+            <span class="detail-value">{{ job.timeSlot || job.time || 'Flexible' }}</span>
+          </div>
+
+          <!-- Amount Row (for completed jobs) -->
+          <div class="detail-row" *ngIf="job.technicianStatus === 'COMPLETED'">
+            <mat-icon class="detail-icon">payments</mat-icon>
+            <span class="detail-label">Amount:</span>
+            <span class="detail-value amount">₹{{ job.totalAmount || job.price || 0 }}</span>
+          </div>
+        </div>
+
+        <!-- Address Row -->
+        <div class="address-row">
+          <mat-icon class="detail-icon">location_on</mat-icon>
+          <span class="detail-label">Address:</span>
+          <span class="address-value">{{ job?.specialAddress || job?.address || 'Address not available' }}</span>
+          <button *ngIf="job.latLong" class="map-link" (click)="openMap(job.latLong)" matTooltip="Open in Google Maps">
+            <mat-icon>map</mat-icon>
+          </button>
+        </div>
+
+        <!-- Additional Services Row -->
+        <div class="services-row" *ngIf="getAdditionalServiceNames(job)">
+          <mat-icon class="detail-icon">add_circle</mat-icon>
+          <span class="detail-label">Extra:</span>
+          <span class="services-tag">{{ getAdditionalServiceNames(job) }}</span>
+        </div>
+
+        <!-- Completion Info (for completed jobs) -->
+        <div class="completion-row" *ngIf="job.technicianStatus === 'COMPLETED' && job.completionDate">
+          <mat-icon class="detail-icon">check_circle</mat-icon>
+          <span class="completion-text">Completed on {{ job.completionDate | date:'dd MMM yyyy' }}</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <!-- Details Button -->
+          <button class="action-btn details" (click)="openDetails(job)">
+            <mat-icon>visibility</mat-icon>
+            <span>Details</span>
+          </button>
+
+          <!-- Accept Button -->
+          <button *ngIf="job.technicianStatus === 'ASSIGNED'" 
+                  class="action-btn accept" 
+                  (click)="accept(job)">
+            <mat-icon>check_circle</mat-icon>
+            <span>Accept</span>
+          </button>
+          
+          <!-- Start Button -->
+          <button *ngIf="job.technicianStatus === 'ACCEPTED'" 
+                  class="action-btn start" 
+                  (click)="start(job)">
+            <mat-icon>play_arrow</mat-icon>
+            <span>Start</span>
+          </button>
+          
+          <!-- Add Service Button -->
+          <button *ngIf="job.technicianStatus === 'IN_PROGRESS'" 
+                  class="action-btn add-service" 
+                  (click)="openAddService(job)">
+            <mat-icon>add</mat-icon>
+            <span>Add</span>
+          </button>
+          
+          <!-- Complete Button -->
+          <button *ngIf="job.technicianStatus === 'IN_PROGRESS'" 
+                  class="action-btn complete" 
+                  (click)="openComplete(job)">
+            <mat-icon>check</mat-icon>
+            <span>Complete</span>
+          </button>
+
+          <!-- Cancel Button -->
+          <button *ngIf="['ASSIGNED', 'ACCEPTED', 'IN_PROGRESS'].includes(job.technicianStatus)" 
+                  class="action-btn cancel" 
+                  (click)="openCancel(job)">
+            <mat-icon>cancel</mat-icon>
+            <span>Cancel</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredJobs.length === 0">
+      <mat-icon>assignment_turned_in</mat-icon>
+      <h3>No Jobs Found</h3>
+      <p>You don't have any assigned jobs at the moment.</p>
+    </div>
+  </div>
+</div>

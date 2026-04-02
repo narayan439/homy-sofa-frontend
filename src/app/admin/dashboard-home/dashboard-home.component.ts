@@ -61,7 +61,7 @@ export class DashboardHomeComponent implements OnInit, AfterViewInit {
     const pending = bookings.filter(b => String(b.status).toUpperCase() === 'PENDING').length;
     const confirmed = bookings.filter(b => {
       const s = String(b.status).toUpperCase();
-      return s === 'CONFIRMED' || s === 'APPROVED';
+      return s === 'CONFIRMED' || s === 'ASSIGNED';
     }).length;
     const completed = bookings.filter(b => String(b.status).toUpperCase() === 'COMPLETED').length;
     const cancelled = bookings.filter(b => String(b.status).toUpperCase() === 'CANCELLED').length;
@@ -234,6 +234,7 @@ export class DashboardHomeComponent implements OnInit, AfterViewInit {
       case 'pending': return 'status-pending';
       case 'confirmed':
       case 'approved': return 'status-confirmed';
+      case 'assigned': return 'status-confirmed';
       case 'completed': return 'status-completed';
       case 'cancelled': return 'status-cancelled';
       default: return 'status-pending';
@@ -247,7 +248,7 @@ export class DashboardHomeComponent implements OnInit, AfterViewInit {
       return 'amount-completed';
     }
     
-    if (status === 'CONFIRMED' || status === 'APPROVED') {
+    if (status === 'CONFIRMED' || status === 'ASSIGNED') {
       return 'amount-approved';
     }
     
