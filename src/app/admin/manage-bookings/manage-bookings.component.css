@@ -167,6 +167,7 @@
 
 .stat-icon.pending { background: linear-gradient(135deg, #ff9800, #f57c00); }
 .stat-icon.approved { background: linear-gradient(135deg, #4caf50, #388e3c); }
+.stat-icon.assigned { background: linear-gradient(135deg, #4caf50, #388e3c); }
 .stat-icon.completed { background: linear-gradient(135deg, #2196f3, #1976d2); }
 .stat-icon.cancelled { background: linear-gradient(135deg, #f44336, #d32f2f); }
 .stat-icon.total { background: linear-gradient(135deg, #673ab7, #512da8); }

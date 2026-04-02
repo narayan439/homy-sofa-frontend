@@ -41,15 +41,15 @@
     
     <div 
       class="stat-item" 
-      [class.active]="currentFilterStatus === 'APPROVED'"
-      (click)="filterByStatus('APPROVED')"
+      [class.active]="currentFilterStatus === 'ASSIGNED'"
+      (click)="filterByStatus('ASSIGNED')"
     >
-      <div class="stat-icon approved">
+      <div class="stat-icon assigned">
         <mat-icon>check_circle</mat-icon>
       </div>
       <div class="stat-details">
-        <h3>{{getBookingCountByStatus('APPROVED')}}</h3>
-        <p>Approved Bookings</p>
+        <h3>{{getBookingCountByStatus('ASSIGNED')}}</h3>
+        <p>Assigned Bookings</p>
       </div>
     </div>
     
@@ -162,10 +162,10 @@
       </button>
       <button 
         class="filter-chip" 
-        [class.active]="currentFilterStatus === 'APPROVED'"
-        (click)="filterByStatus('APPROVED')"
+        [class.active]="currentFilterStatus === 'ASSIGNED'"
+        (click)="filterByStatus('ASSIGNED')"
       >
-        Approved
+        Assigned
       </button>
       <button 
         class="filter-chip" 
@@ -273,43 +273,53 @@
           </td>
         </ng-container>
 
-        <!-- Additional Services Column -->
-        <ng-container matColumnDef="additionalServices">
-          <th mat-header-cell *matHeaderCellDef>Additional Services</th>
+        <!-- Assigned Technician (show name with serial and status) -->
+        <ng-container matColumnDef="technician">
+          <th mat-header-cell *matHeaderCellDef>Technician</th>
           <td mat-cell *matCellDef="let booking">
-            <div *ngIf="booking.additionalServicesJson || booking.additionalServiceName">
-              <div *ngFor="let svc of parseAdditionalServices(booking.additionalServicesJson)" style="background-color: #fff3cd; padding: 4px 8px; border-radius: 3px; font-size: 12px; display: inline-block; margin: 2px;">
-                {{ svc.name }}
-              </div>
-              <span *ngIf="!booking.additionalServicesJson && booking.additionalServiceName" style="background-color: #fff3cd; padding: 4px 8px; border-radius: 3px; font-size: 12px; display: inline-block;">
-                {{ booking.additionalServiceName }}
-              </span>
+            <div class="technician-cell">
+              <ng-container *ngIf="booking['technicianName'] || (booking['technicianId'] && technicianMap[booking['technicianId']]); else unassignedTech">
+                <span class="tech-name">
+                  {{ booking['technicianName'] || technicianMap[booking['technicianId']] }}
+                </span>
+                <span class="tech-id" *ngIf="booking['technicianSerial'] || (booking['technicianId'] && technicianSerialMap[booking['technicianId']])">
+                  ({{ booking['technicianSerial'] || technicianSerialMap[booking['technicianId']] }})
+                </span>
+                <span class="tech-status" *ngIf="booking['technicianId'] && technicians">
+                  <small [ngClass]="(getTechActive(booking['technicianId']) ? 'online' : 'offline')">
+                    {{ getTechActive(booking['technicianId']) ? 'Online' : 'Offline' }}
+                  </small>
+                </span>
+              </ng-container>
+              <ng-template #unassignedTech>
+                <span>Unassigned</span>
+              </ng-template>
             </div>
-            <span *ngIf="!booking.additionalServiceName && !booking.additionalServicesJson" class="text-muted">None </span>
           </td>
         </ng-container>
 
-        <!-- Status Column -->
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
-          <td mat-cell *matCellDef="let booking" class="status-cell">
-            <mat-form-field appearance="outline" class="status-select" [ngClass]="booking.status.toLowerCase()">
-              <mat-select
-                [value]="booking.status"
-                (selectionChange)="updateStatus(booking, $event.value)"
-                [disabled]="isLoading || isStatusLocked(booking.status)"
-              >
-                <mat-option value="PENDING" *ngIf="canShowStatus('PENDING', booking.status)">Pending</mat-option>
-                <mat-option value="APPROVED" *ngIf="canShowStatus('APPROVED', booking.status)">Approved</mat-option>
-                <mat-option value="COMPLETED" *ngIf="canShowStatus('COMPLETED', booking.status)">Completed</mat-option>
-                <mat-option value="CANCELLED" *ngIf="canShowStatus('CANCELLED', booking.status)">Cancelled</mat-option>
-              </mat-select>
-              <mat-hint *ngIf="isStatusLocked(booking.status)" class="status-hint">
-                {{ getStatusLockReason(booking.status) }}
-              </mat-hint>
-            </mat-form-field>
+        <!-- Technician Tracking Column: show technician lifecycle info (from technician dashboard) -->
+        <ng-container matColumnDef="techTracking">
+          <th mat-header-cell *matHeaderCellDef>Tech Tracking</th>
+          <td mat-cell *matCellDef="let booking">
+            <div class="tech-tracking">
+              <div class="tech-status-badge" *ngIf="booking.technicianStatus">
+                <small [ngClass]="booking.technicianStatus.toLowerCase()">{{ booking.technicianStatus }}</small>
+              </div>
+              <div class="tech-completed-amount" *ngIf="booking.totalAmount">
+                <small>Amount: ₹{{ booking.totalAmount }}</small>
+              </div>
+              <div class="tech-additional-services" *ngIf="parseAdditionalServices(booking.additionalServicesJson).length">
+                <small>Extras: {{ getAdditionalServiceNames(booking) }}</small>
+              </div>
+              <div class="tech-notes" *ngIf="booking.technicianNotes">
+                <small>Note: {{ booking.technicianNotes }}</small>
+              </div>
+            </div>
           </td>
         </ng-container>
+
+        <!-- Status column removed: admin uses dialog; technician lifecycle is tracked separately -->
 
         <!-- Actions Column -->
         <ng-container matColumnDef="actions">
@@ -431,23 +441,35 @@
             <span class="date-diff">({{ getDaysUntilService(booking.date) }})</span>
           </span>
         </div>
+
+        <!-- Technician (Mobile) -->
+        <div class="mobile-row">
+          <span class="mobile-label">Technician</span>
+          <span class="mobile-value">
+            <span *ngIf="booking['technicianName']; else techLookupMobile">{{ booking['technicianName'] }}</span>
+            <ng-template #techLookupMobile>
+              <span *ngIf="booking['technicianId'] && technicianMap[booking['technicianId']]">
+                {{ technicianMap[booking['technicianId']] }}
+                <small class="mobile-tech-id" *ngIf="booking['technicianSerial'] || technicianSerialMap[booking['technicianId']]">({{ booking['technicianSerial'] || technicianSerialMap[booking['technicianId']] }})</small>
+                <div class="mobile-tech-status"><small [ngClass]="(getTechActive(booking['technicianId']) ? 'online' : 'offline')">{{ getTechActive(booking['technicianId']) ? 'Online' : 'Offline' }}</small></div>
+              </span>
+              <span *ngIf="!booking['technicianId']">Unassigned</span>
+            </ng-template>
+            <!-- Mobile: Technician Tracking -->
+            <div class="mobile-tech-tracking">
+              <div *ngIf="booking.technicianStatus"><small>Status: {{ booking.technicianStatus }}</small></div>
+              <div *ngIf="booking.totalAmount"><small>Amount: ₹{{ booking.totalAmount }}</small></div>
+              <div *ngIf="parseAdditionalServices(booking.additionalServicesJson).length"><small>Extras: {{ getAdditionalServiceNames(booking) }}</small></div>
+              <div *ngIf="booking.technicianNotes"><small>Note: {{ booking.technicianNotes }}</small></div>
+            </div>
+          </span>
+        </div>
         
         <!-- Status -->
         <div class="mobile-row">
           <span class="mobile-label">Status</span>
           <span class="mobile-value">
-            <mat-form-field appearance="outline" class="status-select" [ngClass]="booking.status.toLowerCase()">
-              <mat-select
-                [value]="booking.status"
-                (selectionChange)="updateStatus(booking, $event.value)"
-                [disabled]="isLoading"
-              >
-                <mat-option value="PENDING" *ngIf="canShowStatus('PENDING', booking.status)">Pending</mat-option>
-                <mat-option value="APPROVED" *ngIf="canShowStatus('APPROVED', booking.status)">Approved</mat-option>
-                <mat-option value="COMPLETED" *ngIf="canShowStatus('COMPLETED', booking.status)">Completed</mat-option>
-                <mat-option value="CANCELLED" *ngIf="canShowStatus('CANCELLED', booking.status)">Cancelled</mat-option>
-              </mat-select>
-            </mat-form-field>
+            <span class="status-badge" [ngClass]="booking.status.toLowerCase()">{{ booking.status }}</span>
           </span>
         </div>
       </div>

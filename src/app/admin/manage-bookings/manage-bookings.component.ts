@@ -3,6 +3,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { BookingService } from '../../core/services/booking.service';
+import { TechnicianService } from '../../core/services/technician.service';
 import { Booking } from '../../models/booking.model';
 import { ServiceService, Service } from '../../core/services/service.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -25,12 +26,12 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     'bookingCreated',
     'serviceDate',
     'service',
-    'additionalServices',
-    'status',
+    'technician',
+    'techTracking',
     'actions'
   ];
 
-  dataSource = new MatTableDataSource<Booking>();
+  dataSource = new MatTableDataSource<any>();
   currentFilterStatus: Booking['status'] | '' = '';
   isLoading = true;
   searchQuery = '';
@@ -41,6 +42,9 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
 
   serviceMap: { [id: string]: string } = {};
   services: Service[] = [];
+  technicianMap: { [id: string]: string } = {};
+  technicianSerialMap: { [id: string]: string } = {};
+  technicians: any[] = [];
 
   constructor(
     private bookingService: BookingService,
@@ -48,6 +52,7 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     private serviceService: ServiceService,
     private dialog: MatDialog,
     private excelExportService: ExcelExportService
+    , private technicianService: TechnicianService
   ) {}
 
   ngOnInit() {
@@ -62,14 +67,51 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     });
     
     this.serviceService.loadServices();
-    
+    // Load technicians and build a map id -> name
+    this.technicianService.technicians$.pipe(takeUntil(this.destroy$)).subscribe(techs => {
+      this.technicians = techs || [];
+      this.technicianMap = {};
+      this.technicianSerialMap = {};
+      for (const t of this.technicians) {
+        if (t && t.id !== undefined) this.technicianMap[String(t.id)] = t.name;
+        if (t && t.id !== undefined) this.technicianSerialMap[String(t.id)] = t.technicianId || '';
+      }
+      // Update existing bookings with technician names if bookings already loaded
+      if (this.dataSource && this.dataSource.data && this.dataSource.data.length) {
+        this.dataSource.data = this.attachTechnicianNames(this.dataSource.data as Booking[]);
+      }
+    });
+
     this.bookingService.bookings$.pipe(takeUntil(this.destroy$)).subscribe(bookings => {
       const incoming: Booking[] = (bookings || []).map(b => ({ ...(b || {}), status: b?.status || '' } as Booking));
       // Sort bookings by reference number (highest first)
       const sortedBookings = this.sortBookingsByReference(incoming);
-      this.dataSource.data = sortedBookings;
+      // Attach technician names if available
+      this.dataSource.data = this.attachTechnicianNames(sortedBookings);
       this.isLoading = false;
     });
+  }
+
+  // Add `technicianName` property to bookings for template use
+  attachTechnicianNames(bookings: Booking[]): Booking[] {
+    return (bookings || []).map(b => {
+      const copy: any = { ...(b || {}) };
+      const tid = (copy as any).technicianId;
+      if (tid !== undefined && this.technicianMap && this.technicianMap[String(tid)]) {
+        copy.technicianName = this.technicianMap[String(tid)];
+      }
+      if (tid !== undefined && this.technicianSerialMap && this.technicianSerialMap[String(tid)]) {
+        copy.technicianSerial = this.technicianSerialMap[String(tid)];
+      }
+      return copy as Booking;
+    });
+  }
+
+  // Helper to check technician active status from cached technicians
+  getTechActive(techId: string | number): boolean {
+    if (!this.technicians || !techId) return false;
+    const t = this.technicians.find(x => String(x.id) === String(techId));
+    return !!(t && (t.isActive === true || t.isActive === 'true'));
   }
 
   ngAfterViewInit() {
@@ -361,6 +403,15 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
+  getAdditionalServiceNames(booking: Booking): string {
+    try {
+      const arr = this.parseAdditionalServices(booking?.additionalServicesJson || '');
+      return arr.map(s => s.name).join(', ');
+    } catch (e) {
+      return '';
+    }
+  }
+
   isStatusLocked(status: Booking['status']): boolean {
     const s = String(status).toUpperCase();
     return s === 'COMPLETED' || s === 'CANCELLED';
@@ -380,11 +431,12 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     if (current === option) return true;
 
     if (current === 'PENDING') {
-      return option === 'APPROVED' || option === 'CANCELLED';
+      return option === 'ASSIGNED' || option === 'CANCELLED';
     }
 
-    if (current === 'APPROVED') {
-      return option === 'COMPLETED';
+    if (current === 'ASSIGNED') {
+      // Admin cannot mark as COMPLETED; only technician can progress assigned -> completed
+      return option === 'CANCELLED';
     }
 
     return false;
@@ -401,11 +453,12 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     if (current === 'PENDING') {
-      return next === 'APPROVED' || next === 'CANCELLED';
+      return next === 'ASSIGNED' || next === 'CANCELLED';
     }
 
-    if (current === 'APPROVED') {
-      return next === 'COMPLETED';
+    if (current === 'ASSIGNED') {
+      // Admin cannot directly complete a job
+      return next === 'CANCELLED';
     }
 
     return false;
@@ -426,7 +479,7 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     // For certain transitions, ask admin for additional info via dialog
     if (!booking.id) return;
 
-    const needsDialog = ['APPROVED', 'CANCELLED', 'COMPLETED'].includes(String(status).toUpperCase());
+    const needsDialog = ['ASSIGNED', 'CANCELLED', 'COMPLETED'].includes(String(status).toUpperCase());
 
     // Open our StatusUpdateDialogComponent for richer inputs when needed
     if (needsDialog) {
@@ -477,12 +530,29 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
             if (result.additionalServicePrice !== undefined) payload.additionalServicePrice = result.additionalServicePrice;
           }
 
+          // Technician assignment is automatic on backend; do not send manual technician fields from admin UI
+
           this.bookingService.updateBooking(bookingId, payload).subscribe({
             next: () => {
               this.snackBar.open(`✅ Booking status changed to ${status}`, 'Close', {
                 duration: 3000,
                 panelClass: ['success-snackbar']
               });
+              // If admin marked booking as ASSIGNED, trigger backend auto-assignment explicitly
+              if (String(status).toUpperCase() === 'ASSIGNED') {
+                if (bookingId != null) {
+                  this.technicianService.assignAuto(bookingId).subscribe({
+                    next: () => {
+                      this.snackBar.open('🔔 Technician assignment attempted', 'Close', { duration: 2500 });
+                      // refresh bookings to show assigned technician
+                      this.bookingService.getAllBookings().subscribe();
+                    },
+                    error: () => {
+                      this.snackBar.open('⚠️ Auto-assignment failed', 'Close', { duration: 3000, panelClass: ['warning-snackbar'] });
+                    }
+                  });
+                }
+              }
             },
             error: () => {
               booking.status = oldStatus;
@@ -509,6 +579,20 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
           duration: 3000,
           panelClass: ['success-snackbar']
         });
+        // If admin marked booking as ASSIGNED, trigger backend auto-assignment explicitly
+        if (String(status).toUpperCase() === 'ASSIGNED') {
+          if (booking.id != null) {
+            this.technicianService.assignAuto(booking.id).subscribe({
+              next: () => {
+                this.snackBar.open('🔔 Technician assignment attempted', 'Close', { duration: 2500 });
+                this.bookingService.getAllBookings().subscribe();
+              },
+              error: () => {
+                this.snackBar.open('⚠️ Auto-assignment failed', 'Close', { duration: 3000, panelClass: ['warning-snackbar'] });
+              }
+            });
+          }
+        }
       },
       error: () => {
         booking.status = oldStatus;
@@ -530,11 +614,11 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     if (current === 'CANCELLED') {
       return 'Cancelled bookings cannot change status';
     }
-    if (current === 'PENDING' && !(next === 'APPROVED' || next === 'CANCELLED')) {
-      return 'Pending bookings can only be approved or cancelled';
+    if (current === 'PENDING' && !(next === 'ASSIGNED' || next === 'CANCELLED')) {
+      return 'Pending bookings can only be assigned or cancelled';
     }
-    if (current === 'APPROVED' && next !== 'COMPLETED') {
-      return 'Approved bookings can only be marked as completed';
+    if (current === 'ASSIGNED' && next !== 'COMPLETED') {
+      return 'Assigned bookings can only be marked as completed';
     }
 
     return 'Invalid status transition';

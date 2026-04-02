@@ -20,7 +20,7 @@ export class StatusUpdateDialogComponent implements OnInit {
   instruments: string = '';
   cancelReason: string = '';
   completedTotal: number | null = null;
-  notes: string = '';
+  
   
   services: Service[] = [];
   selectedServiceId: string | null = null;
@@ -96,27 +96,21 @@ export class StatusUpdateDialogComponent implements OnInit {
   }
 
   isFormInvalid(): boolean {
-    if (this.data.newStatus === 'APPROVED') {
-      // For APPROVED: Notes are always required
-      if (!this.notes.trim()) return true;
-      
+    if (this.data.newStatus === 'ASSIGNED') {
       // If additional service is checked, validate service fields
       if (this.additionalService) {
-        // Check if any service is added
         if (this.addedServices.length === 0) {
           return true;
         }
       }
     }
-    
+    // No manual technician selection; backend will auto-assign
+
     if (this.data.newStatus === 'CANCELLED') {
       return !this.cancelReason.trim();
     }
-    
-    if (this.data.newStatus === 'COMPLETED') {
-      return !this.notes.trim() || !this.completedTotal || this.completedTotal < 0;
-    }
-    
+
+    // COMPLETED handled by technician; admin does not need to fill details
     return false;
   }
 
@@ -129,26 +123,16 @@ export class StatusUpdateDialogComponent implements OnInit {
 
     const payload: any = { status: this.data.newStatus };
     
-    if (this.data.newStatus === 'APPROVED') {
+    if (this.data.newStatus === 'ASSIGNED') {
       if (this.addedServices.length > 0) {
         payload.addedServices = this.addedServices;
-      }
-      payload.adminNotes = this.notes.trim();
-      
-      if (this.additionalService && this.addedServices.length > 0) {
         payload.extraAmount = this.addedServices.reduce((sum, svc) => sum + svc.price, 0);
       }
+      // Technician assignment is automatic; backend will select and notify the technician.
     }
 
     if (this.data.newStatus === 'CANCELLED') {
       payload.cancelReason = this.cancelReason.trim();
-      payload.adminNotes = this.cancelReason.trim();
-    }
-
-    if (this.data.newStatus === 'COMPLETED') {
-      payload.totalAmount = this.completedTotal;
-      payload.completionDate = this.getTodayDate();
-      payload.adminNotes = this.notes.trim();
     }
 
     this.dialogRef.close(payload);

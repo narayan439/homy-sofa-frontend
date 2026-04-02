@@ -6,19 +6,17 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NavbarComponent } from './shared/components/navbar/navbar.component';
-import { FooterComponent } from './shared/components/footer/footer.component';
+import { SharedUiModule } from './shared/shared-ui.module';
 import { MaterialModule } from './shared/material/material/material.module';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
-    AppComponent,
-    NavbarComponent,
-    FooterComponent
+    AppComponent
   ],
   imports: [
     BrowserModule,
+    SharedUiModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     MaterialModule,

@@ -16,11 +16,13 @@ export class AppComponent {
       if (event instanceof NavigationEnd) {
 
         const isAdminPage = event.url.includes('/admin');
+        const isTechnicianPage = event.url.includes('/technician');
 
-        // Hide everything in admin panel
-        this.showNavbar = !isAdminPage;
-        this.showFooter = !isAdminPage;
-        this.showWhatsApp = !isAdminPage;
+        // Hide navbar/footer/whatsapp on admin and technician panels
+        const hide = isAdminPage || isTechnicianPage;
+        this.showNavbar = !hide;
+        this.showFooter = !hide;
+        this.showWhatsApp = !hide;
       }
     });
   }

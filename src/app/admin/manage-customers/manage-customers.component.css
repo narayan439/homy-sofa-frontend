@@ -533,6 +533,10 @@
   background: #e3f2fd;
   color: #1976d2;
 }
+.status-badge.assigned {
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  color: white;
+}
 
 .status-badge.completed {
   background: #e8f5e9;

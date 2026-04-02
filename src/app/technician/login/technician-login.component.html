@@ -1,0 +1,114 @@
+<div class="login-container">
+  <!-- Background Elements -->
+  <div class="background-gradient"></div>
+  <div class="floating-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+  </div>
+
+  <!-- Login Card -->
+  <mat-card class="login-card">
+    <!-- Header Section -->
+    <div class="login-header">
+      <div class="header-icon">
+        <mat-icon class="icon-large">build_circle</mat-icon>
+      </div>
+      <h1 class="login-title">Technician Portal</h1>
+      <p class="login-subtitle">Access your service jobs and manage bookings</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="error-message">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage }}</span>
+      <button mat-icon-button (click)="errorMessage = ''" class="close-error">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Login Form -->
+    <form (ngSubmit)="submit()" [formGroup]="form" class="login-form">
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email" class="form-label">
+          <mat-icon class="input-icon">email</mat-icon>
+          Email Address
+        </label>
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Enter your email</mat-label>
+          <input 
+            matInput 
+            id="email"
+            formControlName="email" 
+            type="email"
+            placeholder="technician@example.com"
+            [disabled]="isLoading">
+          <mat-icon matPrefix>mail</mat-icon>
+          <mat-error *ngIf="form.get('email')?.hasError('required')">Email is required</mat-error>
+          <mat-error *ngIf="form.get('email')?.hasError('email')">Please enter a valid email</mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password" class="form-label">
+          <mat-icon class="input-icon">lock</mat-icon>
+          Password
+        </label>
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Enter your password</mat-label>
+          <input 
+            matInput 
+            id="password"
+            [type]="showPassword ? 'text' : 'password'" 
+            formControlName="password"
+            placeholder="••••••••"
+            [disabled]="isLoading">
+          <mat-icon matPrefix>lock</mat-icon>
+          <button 
+            mat-icon-button 
+            matSuffix 
+            (click)="togglePasswordVisibility()" 
+            type="button"
+            [disabled]="isLoading"
+            class="toggle-password">
+            <mat-icon>{{ showPassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="form.get('password')?.hasError('required')">Password is required</mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Remember Me & Forgot Password -->
+      <div class="form-footer">
+        <mat-checkbox class="remember-me">
+          <span>Remember me</span>
+        </mat-checkbox>
+        <a href="#" class="forgot-password">Forgot password?</a>
+      </div>
+
+      <!-- Login Button -->
+      <button 
+        mat-raised-button 
+        color="primary" 
+        type="submit"
+        class="login-button"
+        [disabled]="form.invalid || isLoading">
+        <mat-icon *ngIf="!isLoading">login</mat-icon>
+        <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
+        <span>{{ isLoading ? 'Signing in...' : 'Sign In' }}</span>
+      </button>
+    </form>
+
+    <!-- Divider -->
+    <div class="divider">
+      <span>or</span>
+    </div>
+
+    <!-- Footer Info -->
+    <div class="login-footer">
+      <p class="footer-text">Don't have access yet?</p>
+      <p class="footer-contact">Contact the admin to request technician credentials</p>
+    </div>
+  </mat-card>
+</div>

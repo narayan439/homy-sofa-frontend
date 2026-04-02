@@ -1,0 +1,367 @@
+<div class="manage-technicians-container">
+  
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Manage Technicians</h1>
+      <p class="page-subtitle">Add, view, and manage all technician profiles and assignments</p>
+    </div>
+    <div class="header-right">
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="openAddTechnicianDialog()"
+        class="add-technician-btn"
+      >
+        <mat-icon>person_add</mat-icon> Add Technician
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-container">
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #e3f2fd;">
+        <mat-icon style="color: #1976d2;">people</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{technicians.length}}</h3>
+        <p>Total Technicians</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #e8f5e9;">
+        <mat-icon style="color: #388e3c;">check_circle</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{getActiveTechnicians()}}</h3>
+        <p>Active Technicians</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #fff3e0;">
+        <mat-icon style="color: #f57c00;">miscellaneous_services</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{getTotalCategories()}}</h3>
+        <p>Service Categories</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #f3e5f5;">
+        <mat-icon style="color: #7b1fa2;">assignment</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{getTotalAssignedJobs()}}</h3>
+        <p>Active Jobs</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Search -->
+  <div class="filters-card">
+    <div class="filters-header">
+      <h3>Filters & Search</h3>
+      <button mat-stroked-button class="clear-filters-btn" (click)="clearFilters()">
+        <mat-icon>clear_all</mat-icon> Clear All
+      </button>
+    </div>
+    
+    <div class="filters-content">
+      <div class="filter-row">
+        <!-- Search -->
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search technicians...</mat-label>
+          <input matInput [(ngModel)]="searchQuery" placeholder="Search by name, email, phone, or category">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <!-- Category Filter -->
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Service Category</mat-label>
+          <mat-select [(ngModel)]="categoryFilter" multiple>
+            <mat-option *ngFor="let cat of getUniqueCategories()" [value]="cat">
+              {{cat}}
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix>filter_list</mat-icon>
+        </mat-form-field>
+
+        <!-- Status Filter -->
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="statusFilter">
+            <mat-option value="all">All</mat-option>
+            <mat-option value="active">Active</mat-option>
+            <mat-option value="inactive">Inactive</mat-option>
+            <mat-option value="busy">Busy</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <!-- Technicians Grid -->
+  <div class="technicians-grid">
+    <!-- Grid Header -->
+    <div class="grid-header">
+      <div class="grid-count">
+        Showing {{filteredTechnicians.length}} of {{technicians.length}} technicians
+      </div>
+      <div class="grid-actions">
+        <button mat-stroked-button class="action-btn" (click)="exportTechnicians()">
+          <mat-icon>download</mat-icon> Export
+        </button>
+        <button mat-stroked-button class="action-btn" (click)="refreshList()">
+          <mat-icon>refresh</mat-icon> Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Technician Cards -->
+    <div class="cards-container">
+      <ng-container *ngFor="let tech of filteredTechnicians; let i = index">
+        <div class="technician-card" [class.featured]="tech.isFeatured">
+          <!-- Card Header -->
+          <div class="card-header">
+            <div class="technician-avatar" [style.background]="getAvatarColor(tech.name)">
+              {{tech.name?.charAt(0) || 'T'}}
+            </div>
+            <div class="technician-status">
+              <span class="status-badge" [ngClass]="tech.isActive ? 'active' : 'inactive'">
+                {{ tech.isActive ? 'Active' : 'Inactive' }}
+              </span>
+              <span class="jobs-badge" *ngIf="tech.activeJobs">
+                {{tech.activeJobs}} Jobs
+              </span>
+            </div>
+          </div>
+
+          <!-- Technician Info -->
+          <div class="technician-info">
+            <h3 class="technician-name">{{tech.name || 'Unknown'}}</h3>
+            <div class="subline">
+              <small class="tech-id">ID: {{tech.technicianId || tech.technician_id || '—'}}</small>
+            </div>
+            
+            <div class="info-grid">
+              <div class="info-item">
+                <mat-icon>email</mat-icon>
+                <span>{{tech.email || 'No email'}}</span>
+              </div>
+              
+              <div class="info-item">
+                <mat-icon>phone</mat-icon>
+                <span>{{tech.phone || tech.mobile || 'No phone'}}</span>
+              </div>
+              
+              <div class="info-item">
+                <mat-icon>category</mat-icon>
+                <span class="category-badge">{{tech.serviceCategory || 'General'}}</span>
+              </div>
+              
+              <div class="info-item">
+                <mat-icon>calendar_today</mat-icon>
+                <span>Joined {{ tech.createdAt ? (tech.createdAt | date:'medium') : (tech.joinDate ? (tech.joinDate | date:'medium') : 'N/A') }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Stats -->
+          <div class="performance-stats">
+            <div class="stat">
+              <div class="stat-value">{{tech.completedJobs || 0}}</div>
+              <div class="stat-label">Completed</div>
+            </div>
+          </div>
+
+          <!-- Active Jobs Section -->
+          <div class="active-jobs-section" *ngIf="tech.activeJobs && tech.activeJobs > 0">
+            <div class="jobs-header">
+              <mat-icon>assignment_turned_in</mat-icon>
+              <span>{{tech.activeJobs}} Active Job(s)</span>
+            </div>
+            <button mat-stroked-button class="view-details-btn" color="accent" (click)="viewSchedule(tech)">
+              <mat-icon>visibility</mat-icon> View Details
+            </button>
+          </div>
+
+          <!-- Card Actions -->
+          <div class="card-actions">
+            <button mat-stroked-button class="action-btn view-btn" (click)="viewTechnician(tech)">
+              <mat-icon>visibility</mat-icon> View
+            </button>
+            <button mat-stroked-button class="action-btn edit-btn" (click)="editTechnician(tech)">
+              <mat-icon>edit</mat-icon> Edit
+            </button>
+            <button mat-icon-button class="more-btn" [matMenuTriggerFor]="techMenu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            
+            <mat-menu #techMenu="matMenu">
+              <button mat-menu-item (click)="assignJobs(tech)">
+                <mat-icon>assignment</mat-icon>
+                <span>Assign Jobs</span>
+              </button>
+              <button mat-menu-item (click)="viewSchedule(tech)">
+                <mat-icon>schedule</mat-icon>
+                <span>View Schedule</span>
+              </button>
+              <button mat-menu-item (click)="resetPassword(tech)">
+                <mat-icon>vpn_key</mat-icon>
+                <span>Reset Password</span>
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="toggleStatus(tech)">
+                <mat-icon [style.color]="tech.isActive === true ? '#f44336' : '#4caf50'">
+                  {{ tech.isActive === true ? 'block' : 'check_circle' }}
+                </mat-icon>
+                <span>{{ tech.isActive === true ? 'Deactivate' : 'Activate' }}</span>
+              </button>
+              <button mat-menu-item class="delete-item" (click)="deleteTechnician(tech)">
+                <mat-icon>delete</mat-icon>
+                <span>Delete</span>
+              </button>
+            </mat-menu>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Add Technician Card -->
+      <div class="add-card" (click)="openAddTechnicianDialog()">
+        <div class="add-icon">
+          <mat-icon>person_add</mat-icon>
+        </div>
+        <h3>Add New Technician</h3>
+        <p>Click to add a new technician to the team</p>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredTechnicians.length === 0">
+      <mat-icon class="empty-icon">people_outline</mat-icon>
+      <h3>No Technicians Found</h3>
+      <p *ngIf="searchQuery">
+        No technicians match your search for "{{searchQuery}}"
+      </p>
+      <p *ngIf="!searchQuery">
+        Start by adding your first technician
+      </p>
+      <button mat-raised-button color="primary" (click)="openAddTechnicianDialog()" class="add-first-btn">
+        <mat-icon>person_add</mat-icon> Add First Technician
+      </button>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="filteredTechnicians.length > 0">
+      <mat-paginator [pageSize]="pageSize" 
+                    [pageSizeOptions]="[6, 12, 24, 48]" 
+                    showFirstLastButtons
+                    [length]="filteredTechnicians.length">
+      </mat-paginator>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Technician Dialog -->
+<ng-container *ngIf="showDialog">
+  <div class="dialog-overlay" (click)="closeDialog()"></div>
+  
+  <div class="technician-dialog">
+    <div class="dialog-header" [ngClass]="{'edit-mode': dialogMode === 'edit'}">
+      <div class="header-icon">
+        <mat-icon>{{dialogMode === 'add' ? 'person_add' : 'edit'}}</mat-icon>
+      </div>
+      <div class="header-text">
+        <h2>{{dialogMode === 'add' ? 'Add New Technician' : 'Edit Technician'}}</h2>
+        <p>{{dialogMode === 'add' ? 'Fill in the technician details' : 'Update technician information'}}</p>
+      </div>
+      <button class="close-btn" (click)="closeDialog()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="dialog-content">
+      <form #technicianForm="ngForm" (ngSubmit)="saveTechnician()">
+        <!-- Name Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Full Name *</mat-label>
+          <input matInput [(ngModel)]="formData.name" name="name" required placeholder="Enter technician's full name">
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-error>Name is required</mat-error>
+        </mat-form-field>
+
+        <!-- Email Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email Address *</mat-label>
+          <input matInput [(ngModel)]="formData.email" name="email" required email placeholder="technician@company.com">
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error>Valid email is required</mat-error>
+        </mat-form-field>
+
+        <!-- Mobile Number Field - NEW -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mobile Number *</mat-label>
+          <input matInput [(ngModel)]="formData.phone" name="phone" required 
+                 placeholder="+91 9876543210" 
+                 pattern="[0-9+\-\s]{10,15}"
+                 maxlength="15">
+          <mat-icon matPrefix>phone</mat-icon>
+          <mat-icon matSuffix>smartphone</mat-icon>
+          <mat-hint>Enter 10-digit mobile number with country code</mat-hint>
+          <mat-error>Valid phone number is required</mat-error>
+        </mat-form-field>
+
+        <!-- Password Field (only for add mode) -->
+        <mat-form-field *ngIf="dialogMode === 'add'" appearance="outline" class="full-width">
+          <mat-label>Generated Password</mat-label>
+          <input matInput [value]="formData.password" readonly type="text" placeholder="Password will be generated">
+          <button mat-icon-button matSuffix type="button" aria-label="Regenerate password" (click)="regeneratePassword()">
+            <mat-icon>autorenew</mat-icon>
+          </button>
+          <mat-icon matPrefix>lock</mat-icon>
+          <mat-hint>Automatically generated: first 4 letters of name + first 3 digits of phone</mat-hint>
+        </mat-form-field>
+
+        <!-- Service Category -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Service Category *</mat-label>
+          <mat-select [(ngModel)]="formData.serviceCategory" name="serviceCategory" required>
+            <mat-option value="CleaniAll">CleaniAll</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>category</mat-icon>
+        </mat-form-field>
+
+        <!-- Status Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="formData.isActive" name="isActive">
+            <mat-option [value]="true">Active</mat-option>
+            <mat-option [value]="false">Inactive</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>toggle_on</mat-icon>
+        </mat-form-field>
+
+        <!-- Technician ID (read-only for edit mode) -->
+        <mat-form-field *ngIf="dialogMode === 'edit'" appearance="outline" class="full-width">
+          <mat-label>Technician ID</mat-label>
+          <input matInput [value]="selectedTechnician?.technicianId || selectedTechnician?.technician_id" readonly>
+          <mat-icon matPrefix>badge</mat-icon>
+        </mat-form-field>
+
+        <!-- Removed Experience, Address, and Skills fields per request -->
+
+        <div class="dialog-actions">
+          <button mat-stroked-button type="button" (click)="closeDialog()">Cancel</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="technicianForm.invalid">
+            <mat-icon>save</mat-icon> 
+            {{dialogMode === 'add' ? 'Add Technician' : 'Update Technician'}}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</ng-container>
