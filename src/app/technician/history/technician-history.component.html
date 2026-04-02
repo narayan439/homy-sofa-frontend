@@ -1,0 +1,168 @@
+<div class="history-container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Job History</h1>
+      <p>View complete history of all your assigned and completed jobs</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading job history...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="loadJobHistory()">
+      <mat-icon>refresh</mat-icon> Try Again
+    </button>
+  </div>
+
+  <!-- Filters and Controls -->
+  <ng-container *ngIf="!isLoading && !errorMessage">
+    <div class="filters-card">
+      
+      <!-- Filter Row 1 -->
+      <div class="filter-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Status Filter</mat-label>
+          <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onStatusChange()">
+            <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Sort by Date</mat-label>
+          <mat-select [(ngModel)]="selectedDateSort" (selectionChange)="onDateSortChange()">
+            <mat-option value="recent">Most Recent</mat-option>
+            <mat-option value="oldest">Oldest First</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field search-field">
+          <mat-label>Search</mat-label>
+          <input matInput placeholder="Search by customer, service, or address..." 
+                 [(ngModel)]="searchTerm" (input)="onSearchChange()">
+          <mat-icon matSuffix *ngIf="searchTerm">clear</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Results Count -->
+      <div class="results-info">
+        <p>Showing {{ filteredJobs.length }} of {{ allJobs.length }} jobs</p>
+      </div>
+
+    </div>
+
+    <!-- Jobs Container -->
+    <div class="jobs-container">
+      <div *ngIf="filteredJobs.length > 0; else noJobs" class="jobs-list">
+        
+        <!-- Job Card -->
+        <div *ngFor="let job of filteredJobs" class="job-card">
+          
+          <!-- Card Header -->
+          <div class="card-header">
+            <div class="header-left">
+              <h3>{{ job.service || job.serviceName || 'Service' }}</h3>
+              <p class="customer-info">{{ job.name || job.customerName || 'Customer' }}</p>
+            </div>
+            <span [class]="'status-badge ' + getStatusClass(job.technicianStatus || job.status)">
+              <mat-icon>{{ getStatusIcon(job.technicianStatus || job.status) }}</mat-icon>
+              {{ (job.technicianStatus || job.status || 'PENDING') }}
+            </span>
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body">
+            <div class="info-row">
+              <div class="info-item">
+                <mat-icon>calendar_today</mat-icon>
+                <div class="info-content">
+                  <span class="label">Date</span>
+                  <span class="value">{{ formatDate(job.date || job.bookingDate) }}</span>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>schedule</mat-icon>
+                <div class="info-content">
+                  <span class="label">Time Slot</span>
+                  <span class="value">{{ formatTime(job.timeSlot || job.time) }}</span>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>location_on</mat-icon>
+                <div class="info-content">
+                  <span class="label">Address</span>
+                  <span class="value truncate">{{ job.address || 'Not provided' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-row" *ngIf="job.amount || job.price">
+              <div class="info-item">
+                <mat-icon>payment</mat-icon>
+                <div class="info-content">
+                  <span class="label">Amount</span>
+                  <span class="value">₹{{ job.amount || job.price | number:'1.0-0' }}</span>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>phone</mat-icon>
+                <div class="info-content">
+                  <span class="label">Phone</span>
+                  <span class="value">{{ job.phone || 'Not provided' }}</span>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon>description</mat-icon>
+                <div class="info-content">
+                  <span class="label">Notes</span>
+                  <span class="value">{{ job.notes || 'None' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="card-footer">
+            <button mat-button color="primary" (click)="viewJobDetails(job.id)">
+              <mat-icon>visibility</mat-icon>
+              View Full Details
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- No Jobs Template -->
+      <ng-template #noJobs>
+        <div class="empty-state">
+          <mat-icon>history</mat-icon>
+          <h3>No Jobs Found</h3>
+          <p *ngIf="searchTerm || selectedStatus !== 'all'">
+            Try adjusting your filters to see more results
+          </p>
+          <p *ngIf="!searchTerm && selectedStatus === 'all'">
+            You don't have any job history yet
+          </p>
+        </div>
+      </ng-template>
+
+    </div>
+
+  </ng-container>
+
+</div>

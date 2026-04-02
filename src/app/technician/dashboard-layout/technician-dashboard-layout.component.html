@@ -1,0 +1,77 @@
+<mat-sidenav-container class="sidenav-container">
+
+  <!-- Mobile Overlay -->
+  <div class="mobile-overlay" 
+       [class.active]="mobileSidebarOpen" 
+       (click)="closeMobileSidebar()">
+  </div>
+
+  <!-- Sidebar -->
+  <mat-sidenav #sidenav [mode]="isMobile ? 'over' : 'side'" [opened]="isMobile ? mobileSidebarOpen : true" class="sidenav">
+    
+    <!-- Brand Section -->
+    <div class="brand">
+      <h3>HomY Technician</h3>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="nav-menu">
+      <button mat-button routerLink="/technician/dashboard" routerLinkActive="router-link-active" (click)="closeMobileSidebar()">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </button>
+
+      <button mat-button routerLink="/technician/jobs" routerLinkActive="router-link-active" (click)="closeMobileSidebar()">
+        <mat-icon>assignment</mat-icon>
+        All Jobs
+      </button>
+
+      <button mat-button routerLink="/technician/history" routerLinkActive="router-link-active" (click)="closeMobileSidebar()">
+        <mat-icon>history</mat-icon>
+        Job History
+      </button>
+
+   
+      <button mat-button routerLink="/technician/profile" routerLinkActive="router-link-active" (click)="closeMobileSidebar()">
+        <mat-icon>person</mat-icon>
+        My Profile
+      </button>
+
+      <!-- Logout Button -->
+      <button mat-button color="warn" (click)="logout(); closeMobileSidebar()">
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    </div>
+
+    <!-- User Profile -->
+    <div class="user-profile">
+      <div class="user-avatar">{{ getTechnicianInitials() }}</div>
+      <div class="user-info">
+        <h4>{{ technicianName }}</h4>
+        <p>Technician</p>
+      </div>
+    </div>
+
+  </mat-sidenav>
+
+  <!-- Main Content -->
+  <mat-sidenav-content>
+    
+    <!-- Toolbar -->
+    <mat-toolbar>
+      <!-- Mobile Toggle Button -->
+      <button class="mobile-toggle" (click)="toggleMobileSidebar()">
+        <span class="menu-icon" [class.open]="mobileSidebarOpen"></span>
+      </button>
+      
+    </mat-toolbar>
+
+    <!-- Content Area -->
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

@@ -17,13 +17,16 @@
     <a mat-button routerLink="/services" routerLinkActive="active">
       Services
     </a>
+    <a mat-button routerLink="/tracking" routerLinkActive="active">
+      <mat-icon class="menu-icon-small">location_on</mat-icon>
+      Track Booking
+    </a>
     <a mat-button routerLink="/about" routerLinkActive="active">
       About
     </a>
     <a mat-button routerLink="/contact" routerLinkActive="active">
       Contact
     </a>
-    
 
     <!-- Book Now Button on right -->
     <a mat-raised-button routerLink="/booking" class="desktop-book-btn">
@@ -86,6 +89,13 @@
     <li>
       <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileSidebar()">
         Contact
+      </a>
+    </li>
+
+    <li>
+      <a routerLink="/tracking" routerLinkActive="active" (click)="closeMobileSidebar()">
+        <mat-icon class="menu-icon-small">location_on</mat-icon>
+        Track Booking
       </a>
     </li>
     <!-- Technician login moved to footer -->

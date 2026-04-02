@@ -3,13 +3,27 @@
   <!-- Dashboard Header -->
   <div class="dashboard-header">
     <div class="header-content">
-      <h1>Welcome to Admin Dashboard</h1>
-      <p>Monitor and manage all your sofa service operations from one place</p>
+      <div class="title-section">
+        <h1>Admin Dashboard</h1>
+        <p>Real-time business intelligence & service management</p>
+      </div>
+      <div class="header-actions">
+        <button mat-raised-button class="action-btn">
+          <mat-icon>notifications</mat-icon>
+          Alerts
+        </button>
+        <button mat-raised-button class="action-btn">
+          <mat-icon>refresh</mat-icon>
+          Sync Data
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Stats Cards Grid -->
-  <div class="stats-grid">
+  <!-- Key Metrics Section -->
+  <div class="key-metrics-section">
+    <h2 class="section-title">Key Performance Indicators</h2>
+    <div class="stats-grid">
     
     <!-- Total Bookings -->
     <div class="stat-card">
@@ -118,8 +132,44 @@
   <!-- Main Content Grid -->
   <div class="content-grid">
     
+    <!-- Quick Actions Card -->
+    <div class="quick-actions-card">
+      <div class="card-header">
+        <h2>
+          <mat-icon>flash_on</mat-icon>
+          Quick Actions
+        </h2>
+      </div>
+      <div class="card-content">
+        <button mat-raised-button color="primary" class="action-button">
+          <mat-icon>add</mat-icon>
+          New Booking
+        </button>
+        <button mat-raised-button class="action-button">
+          <mat-icon>person_add</mat-icon>
+          Add Customer
+        </button>
+        <button mat-raised-button class="action-button">
+          <mat-icon>engineering</mat-icon>
+          Add Technician
+        </button>
+        <button mat-raised-button class="action-button">
+          <mat-icon>settings</mat-icon>
+          Manage Services
+        </button>
+        <button mat-raised-button class="action-button">
+          <mat-icon>assessment</mat-icon>
+          Generate Report
+        </button>
+        <button mat-raised-button class="action-button">
+          <mat-icon>download</mat-icon>
+          Export Data
+        </button>
+      </div>
+    </div>
+
     <!-- Recent Bookings Card -->
-    <div class="recent-bookings-card">
+    <div class="recent-bookings-card full-width">
       
       <!-- Card Header -->
       <div class="card-header">
@@ -246,6 +296,130 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- Analytics & Insights Section -->
+    <div class="analytics-section full-width">
+      <div class="section-header">
+        <h2>
+          <mat-icon>analytics</mat-icon>
+          Analytics & Insights
+        </h2>
+      </div>
+      
+      <div class="analytics-grid">
+        
+        <!-- Service Performance Card -->
+        <div class="insight-card">
+          <div class="card-header">
+            <h3>
+              <mat-icon>build</mat-icon>
+              Top Services
+            </h3>
+          </div>
+          <div class="card-content">
+            <div class="insight-list">
+              <div class="insight-item" *ngFor="let service of getTopServices() | slice:0:5">
+                <div class="insight-label">
+                  <span class="label-text">{{ service.name }}</span>
+                  <span class="label-count">{{ service.count }}</span>
+                </div>
+                <div class="insight-bar">
+                  <div class="progress-bar" [style.width.%]="(service.count / (getTopServices()[0]?.count || 1)) * 100"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Technician Performance Card -->
+        <div class="insight-card">
+          <div class="card-header">
+            <h3>
+              <mat-icon>engineering</mat-icon>
+              Active Technicians
+            </h3>
+          </div>
+          <div class="card-content">
+            <div class="stats-mini">
+              <div class="stat-mini">
+                <div class="stat-value">{{ getTechnicianCount() }}</div>
+                <div class="stat-label">Total Technicians</div>
+              </div>
+              <div class="stat-mini">
+                <div class="stat-value">{{ getActiveTechnicianCount() }}</div>
+                <div class="stat-label">Currently Active</div>
+              </div>
+              <div class="stat-mini">
+                <div class="stat-value">{{ getIdleTechnicianCount() }}</div>
+                <div class="stat-label">Available</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Metrics Card -->
+        <div class="insight-card">
+          <div class="card-header">
+            <h3>
+              <mat-icon>people</mat-icon>
+              Customer Metrics
+            </h3>
+          </div>
+          <div class="card-content">
+            <div class="stats-mini">
+              <div class="stat-mini">
+                <div class="stat-value">{{ getTotalCustomers() }}</div>
+                <div class="stat-label">Total Customers</div>
+              </div>
+              <div class="stat-mini">
+                <div class="stat-value">{{ getNewCustomersThisMonth() }}</div>
+                <div class="stat-label">New This Month</div>
+              </div>
+              <div class="stat-mini">
+                <div class="stat-value">{{ getReturnCustomers() }}%</div>
+                <div class="stat-label">Returning</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Health Card -->
+        <div class="insight-card">
+          <div class="card-header">
+            <h3>
+              <mat-icon>health_and_safety</mat-icon>
+              System Health
+            </h3>
+          </div>
+          <div class="card-content">
+            <div class="health-indicators">
+              <div class="health-item">
+                <div class="health-label">API Status</div>
+                <div class="health-badge online">
+                  <span class="health-dot"></span>
+                  Online
+                </div>
+              </div>
+              <div class="health-item">
+                <div class="health-label">Database</div>
+                <div class="health-badge online">
+                  <span class="health-dot"></span>
+                  Connected
+                </div>
+              </div>
+              <div class="health-item">
+                <div class="health-label">Cache Server</div>
+                <div class="health-badge online">
+                  <span class="health-dot"></span>
+                  Active
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
 
   </div>

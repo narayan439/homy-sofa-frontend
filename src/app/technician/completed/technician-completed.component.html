@@ -1,0 +1,221 @@
+<div class="completed-container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Completed Jobs</h1>
+      <p>View all your successfully completed service jobs</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading completed jobs...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="loadCompletedJobs()">
+      <mat-icon>refresh</mat-icon> Try Again
+    </button>
+  </div>
+
+  <!-- Stats and Filters -->
+  <ng-container *ngIf="!isLoading && !errorMessage">
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ totalCompleted }}</h3>
+          <p>Jobs Completed</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <mat-icon>paid</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>₹{{ totalEarnings | number:'1.0-0' }}</h3>
+          <p>Total Earnings</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <mat-icon>star</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ averageRating.toFixed(1) }}</h3>
+          <p>Average Rating</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ (totalCompleted / 10) | number:'1.0-0' }}</h3>
+          <p>Performance</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-card">
+      <div class="filter-row">
+        <mat-form-field appearance="outline" class="filter-field search-field">
+          <mat-label>Search</mat-label>
+          <input matInput placeholder="Search by customer or service..." 
+                 [(ngModel)]="searchTerm" (input)="onSearchChange()">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Sort by</mat-label>
+          <mat-select [(ngModel)]="selectedSort" (selectionChange)="onSortChange()">
+            <mat-option value="recent">Most Recent</mat-option>
+            <mat-option value="oldest">Oldest First</mat-option>
+            <mat-option value="highest_earning">Highest Earning</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="results-info">
+        <p>Showing {{ filteredJobs.length }} completed jobs</p>
+      </div>
+    </div>
+
+    <!-- Jobs Container -->
+    <div class="jobs-container">
+      <div *ngIf="filteredJobs.length > 0; else noJobs" class="jobs-grid">
+        
+        <!-- Job Card -->
+        <div *ngFor="let job of filteredJobs" class="job-card">
+          
+          <!-- Card Header -->
+          <div class="card-header">
+            <div class="header-info">
+              <h3>{{ job.service || job.serviceName || 'Service' }}</h3>
+              <p class="customer-name">{{ job.name || job.customerName || 'Customer' }}</p>
+            </div>
+            <div class="completion-badge">
+              <mat-icon>check_circle</mat-icon>
+              Completed
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body">
+            
+            <!-- Basic Info -->
+            <div class="info-section">
+              <div class="info-item">
+                <span class="label">
+                  <mat-icon>calendar_today</mat-icon>
+                  Date
+                </span>
+                <span class="value">{{ formatDate(job.date || job.bookingDate) }}</span>
+              </div>
+
+              <div class="info-item">
+                <span class="label">
+                  <mat-icon>location_on</mat-icon>
+                  Address
+                </span>
+                <span class="value truncate">{{ job.address || 'N/A' }}</span>
+              </div>
+
+              <div class="info-item">
+                <span class="label">
+                  <mat-icon>schedule</mat-icon>
+                  Time Slot
+                </span>
+                <span class="value">{{ formatTime(job.timeSlot || job.time) }}</span>
+              </div>
+            </div>
+
+            <!-- Amount and Rating -->
+            <div class="info-section">
+              <div class="info-item">
+                <span class="label">
+                  <mat-icon>paid</mat-icon>
+                  Amount Earned
+                </span>
+                <span class="value amount">₹{{ job.amount || job.price | number:'1.0-0' }}</span>
+              </div>
+
+              <div class="info-item" *ngIf="job.rating || job.customerRating">
+                <span class="label">
+                  <mat-icon>star</mat-icon>
+                  Rating
+                </span>
+                <div class="rating-display">
+                  <span class="rating-value">{{ (job.rating || job.customerRating) | number:'1.1-1' }}</span>
+                  <div class="stars">
+                    <mat-icon *ngFor="let star of [1,2,3,4,5]" 
+                              [class.filled]="star <= getRatingStars(job.rating || job.customerRating)">
+                      star
+                    </mat-icon>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-item" *ngIf="job.phone">
+                <span class="label">
+                  <mat-icon>phone</mat-icon>
+                  Phone
+                </span>
+                <span class="value">{{ job.phone }}</span>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="notes-section" *ngIf="job.notes">
+              <span class="label">
+                <mat-icon>description</mat-icon>
+                Notes
+              </span>
+              <p class="notes-text">{{ job.notes }}</p>
+            </div>
+
+          </div>
+
+          <!-- Card Footer -->
+          <div class="card-footer">
+            <button mat-button color="primary" (click)="viewJobDetails(job.id)">
+              <mat-icon>visibility</mat-icon>
+              View Details
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- No Jobs Template -->
+      <ng-template #noJobs>
+        <div class="empty-state">
+          <mat-icon>check_circle_outline</mat-icon>
+          <h3>No Completed Jobs</h3>
+          <p *ngIf="searchTerm">
+            Try adjusting your search filters
+          </p>
+          <p *ngIf="!searchTerm">
+            You haven't completed any jobs yet. Start completing assigned jobs to see them here.
+          </p>
+        </div>
+      </ng-template>
+
+    </div>
+
+  </ng-container>
+
+</div>

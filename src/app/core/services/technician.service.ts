@@ -131,4 +131,18 @@ export class TechnicianService {
   updateStatus(id: string | number, status: string): Observable<any> {
     return this.http.patch(`${this.techApi}/${id}/status`, { status });
   }
+
+  /**
+   * Get all jobs/bookings for a technician
+   * @param technicianId The ID of the technician
+   */
+  getTechnicianJobs(technicianId: string | number): Observable<any> {
+    const token = localStorage.getItem('technicianToken');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    const options: any = { headers };
+    return this.getBookingsForTechnician(technicianId, 0, 100);
+  }
 }

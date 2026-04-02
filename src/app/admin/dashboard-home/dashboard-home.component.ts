@@ -307,4 +307,70 @@ export class DashboardHomeComponent implements OnInit, AfterViewInit {
       year: 'numeric' 
     });
   }
+
+  // Analytics helper methods
+  getTopServices(): Array<{ name: string; count: number }> {
+    const serviceCount: { [key: string]: number } = {};
+    
+    this.recentBookings.forEach(booking => {
+      const serviceName = this.getServiceName(booking.service as any);
+      serviceCount[serviceName] = (serviceCount[serviceName] || 0) + 1;
+    });
+    
+    return Object.entries(serviceCount)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  getTechnicianCount(): number {
+    // This would be fetched from a technician service in a real app
+    // For now, returning a placeholder
+    return 12;
+  }
+
+  getActiveTechnicianCount(): number {
+    // In a real app, this would check the status of technicians
+    return 8;
+  }
+
+  getIdleTechnicianCount(): number {
+    // In a real app, this would be calculated from technician assignments
+    return this.getTechnicianCount() - this.getActiveTechnicianCount();
+  }
+
+  getTotalCustomers(): number {
+    return this.dashboardStats.totalCustomers;
+  }
+
+  getNewCustomersThisMonth(): number {
+    // Count customers from bookings created this month
+    const now = new Date();
+    return this.recentBookings.filter(booking => {
+      try {
+        const createdDate = this.normalizeDate((booking as any).createdAt);
+        if (!createdDate) return false;
+        return createdDate.getFullYear() === now.getFullYear() && 
+               createdDate.getMonth() === now.getMonth();
+      } catch {
+        return false;
+      }
+    }).length;
+  }
+
+  getReturnCustomers(): number {
+    // Calculate percentage of customers with more than 1 booking
+    if (this.dashboardStats.totalCustomers === 0) return 0;
+    
+    const customerBookingCounts: { [key: string]: number } = {};
+    this.recentBookings.forEach(booking => {
+      const customerId = booking.customerId || booking.email || booking.phone || '';
+      customerBookingCounts[customerId] = (customerBookingCounts[customerId] || 0) + 1;
+    });
+    
+    const returnCustomerCount = Object.values(customerBookingCounts)
+      .filter(count => count > 1).length;
+    
+    const percentage = (returnCustomerCount / this.dashboardStats.totalCustomers) * 100;
+    return Math.round(percentage);
+  }
 }
