@@ -143,6 +143,27 @@
   height: 4px;
 }
 
+/* Check Status Button */
+.check-status-btn {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.check-status-btn:hover {
+  color: #ffeb3b !important;
+  transform: translateY(-2px);
+}
+
+.check-status-btn .status-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
 /* Book Now Button - Matches Home Page Button */
 .desktop-book-btn {
   background: linear-gradient(135deg, #ff5252, #e53935);
@@ -428,6 +449,7 @@
 .mobile-sidebar-menu li:nth-child(2) { animation-delay: 0.2s; }
 .mobile-sidebar-menu li:nth-child(3) { animation-delay: 0.3s; }
 .mobile-sidebar-menu li:nth-child(4) { animation-delay: 0.4s; }
+.mobile-sidebar-menu li:nth-child(5) { animation-delay: 0.5s; }
 
 @keyframes slideInRightItem {
   from {
@@ -483,6 +505,16 @@
   font-weight: 600;
   border-left: 4px solid #ff5252;
   box-shadow: 0 5px 15px rgba(255, 82, 82, 0.2);
+}
+
+/* Menu Icon Small */
+.menu-icon-small {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
 }
 
 /* Mobile Sidebar Footer */

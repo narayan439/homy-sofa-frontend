@@ -30,6 +30,10 @@ export class TechnicianLoginComponent {
     this.showPassword = !this.showPassword;
   }
 
+  goBack() {
+    this.router.navigate(['/']);
+  }
+
   submit() {
     if (this.form.invalid) return;
     

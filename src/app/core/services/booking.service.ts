@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Booking, BookingStatus } from '../../models/booking.model';
@@ -142,6 +142,26 @@ export class BookingService {
 
   getBookingsByCustomer(email: string): Observable<Booking[]> {
     return this.http.get<Booking[]>(`${API_URL}/bookings/customer/${email}`);
+  }
+
+  searchBooking(searchValue: string): Observable<any> {
+    // Try to search by booking reference or phone number
+    const params = new HttpParams().set('q', searchValue);
+    return this.http.get<any>(`${API_URL}/bookings/search`, { params });
+  }
+
+  searchBookingByIdAndPhone(trackingId: string, phoneNumber: string): Observable<any> {
+    // Search by both booking reference/ID and phone number using GET with query parameters
+    const params = new HttpParams()
+      .set('trackingId', trackingId)
+      .set('phone', phoneNumber);
+    return this.http.get<any>(`${API_URL}/bookings/search`, { params });
+  }
+
+  searchBookingByReference(searchValue: string): Observable<any> {
+    // Try to search by booking reference or phone number
+    const params = new HttpParams().set('reference', searchValue);
+    return this.http.get<any>(`${API_URL}/bookings/search`, { params });
   }
 
   // Local Methods

@@ -140,10 +140,13 @@
         
         <!-- Card Header -->
         <div class="card-header">
-          <h2>
-            <mat-icon>schedule</mat-icon>
-            Today's Schedule
-          </h2>
+          <div class="header-left">
+            <h2>
+              <mat-icon>schedule</mat-icon>
+              Today's Schedule
+            </h2>
+            <span class="schedule-count">{{ todaysJobs.length }} jobs</span>
+          </div>
           <button 
             mat-raised-button 
             class="refresh-btn" 
@@ -157,60 +160,61 @@
         <!-- Card Content -->
         <div class="card-content">
           <div *ngIf="todaysJobs.length > 0; else noTodayJobs" class="schedule-list">
-            <div *ngFor="let job of todaysJobs" class="schedule-item">
-              <div class="item-left">
-                <div class="time-badge">{{ job.timeSlot || job.time || 'Flexible' }}</div>
+            <div *ngFor="let job of todaysJobs; let idx = index" class="schedule-item" [attr.data-index]="idx">
+              <!-- Timeline Indicator -->
+              <div class="timeline-indicator">
+                <div class="timeline-dot" [ngClass]="getStatusClass(job.technicianStatus || job.status)"></div>
+                <div class="timeline-line" *ngIf="idx !== todaysJobs.length - 1"></div>
               </div>
-              <div class="item-center">
-                <div class="job-service">{{ job.service || job.serviceName || 'Service' }}</div>
-                <div class="job-customer">{{ job.name || job.customerName || 'Customer' }}</div>
-                <div class="job-address" *ngIf="job.address">{{ job.address | slice:0:35 }}{{ job.address?.length > 35 ? '...' : '' }}</div>
+
+              <!-- Time Badge -->
+              <div class="item-time">
+                <div class="time-badge">
+                  <mat-icon>access_time</mat-icon>
+                  {{ job.timeSlot || job.time || 'Flexible' }}
+                </div>
               </div>
-              <div class="item-right">
-                <span [class]="'status-badge ' + getStatusClass(job.technicianStatus || job.status)">
-                  {{ (job.technicianStatus || job.status || 'ASSIGNED') }}
-                </span>
+
+              <!-- Job Details -->
+              <div class="item-details">
+                <div class="details-top">
+                  <div class="service-info">
+                    <h3 class="job-service">{{ job.service || job.serviceName || 'Service' }}</h3>
+                    <p class="job-customer">
+                      <mat-icon>person</mat-icon>
+                      {{ job.name || job.customerName || 'Customer' }}
+                    </p>
+                  </div>
+                  <span [class]="'status-pill ' + getStatusClass(job.technicianStatus || job.status)">
+                    {{ (job.technicianStatus || job.status || 'ASSIGNED') }}
+                  </span>
+                </div>
+                <div class="details-bottom" *ngIf="job.address">
+                  <mat-icon>location_on</mat-icon>
+                  <span class="job-address">{{ job.address | slice:0:40 }}{{ job.address?.length > 40 ? '...' : '' }}</span>
+                </div>
+              </div>
+
+              <!-- Action Button -->
+              <div class="item-action">
+                <button 
+                  mat-icon-button 
+                  [color]="(job.technicianStatus || job.status) === 'ASSIGNED' ? 'accent' : 'primary'" 
+                  (click)="viewJobDetails(job.id)"
+                  matTooltip="View Details"
+                >
+                  <mat-icon>arrow_forward</mat-icon>
+                </button>
               </div>
             </div>
           </div>
           <ng-template #noTodayJobs>
             <div class="empty-state-small">
               <mat-icon>event_busy</mat-icon>
-              <p>No jobs scheduled for today</p>
+              <h3>No jobs scheduled</h3>
+              <p>You have no jobs scheduled for today</p>
             </div>
           </ng-template>
-        </div>
-      </div>
-
-      <!-- Quick Actions Card -->
-      <div class="quick-actions-card">
-        
-        <!-- Card Header -->
-        <div class="card-header">
-          <h2>
-            <mat-icon>flash_on</mat-icon>
-            Quick Actions
-          </h2>
-        </div>
-
-        <!-- Card Content -->
-        <div class="card-content">
-          <button mat-raised-button color="primary" class="quick-action-btn" routerLink="/technician/jobs">
-            <mat-icon>list_alt</mat-icon>
-            <span>View All Jobs</span>
-          </button>
-          <button mat-raised-button class="quick-action-btn" routerLink="/technician/jobs" [queryParams]="{statusFilter: 'ASSIGNED'}">
-            <mat-icon>pending_actions</mat-icon>
-            <span>Assigned Only</span>
-          </button>
-          <button mat-raised-button class="quick-action-btn" routerLink="/technician/jobs" [queryParams]="{statusFilter: 'COMPLETED'}">
-            <mat-icon>history</mat-icon>
-            <span>Completed Jobs</span>
-          </button>
-          <button mat-raised-button class="quick-action-btn" routerLink="/technician/profile">
-            <mat-icon>person</mat-icon>
-            <span>My Profile</span>
-          </button>
         </div>
       </div>
 

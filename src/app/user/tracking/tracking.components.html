@@ -1,0 +1,281 @@
+<div class="tracking-container">
+  
+  <!-- Page Header -->
+  <div class="tracking-header">
+    <div class="header-content">
+      <h1>Track Your Booking</h1>
+      <p>Enter your booking reference and phone number to securely access your booking details and technician information</p>
+    </div>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-card">
+    <div class="search-header">
+      <h2>
+        <mat-icon>search</mat-icon>
+        Find Your Booking
+      </h2>
+    </div>
+
+    <form [formGroup]="trackingForm" (ngSubmit)="trackBooking()" class="search-form">
+      
+      <!-- Two Column Input Layout -->
+      <div class="search-inputs-row">
+        <!-- Tracking ID/Reference Input -->
+        <mat-form-field class="search-field" appearance="outline">
+          <mat-label>Booking Reference/ID</mat-label>
+          <input 
+            matInput 
+            formControlName="trackingId"
+            placeholder="e.g., BKG-2024-001"
+            type="text"
+          />
+          <mat-icon matSuffix *ngIf="!trackingForm.get('trackingId')?.hasError('required')">receipt_long</mat-icon>
+          <mat-error *ngIf="trackingForm.get('trackingId')?.hasError('required')">
+            Booking Reference is required
+          </mat-error>
+          <mat-error *ngIf="trackingForm.get('trackingId')?.hasError('minlength')">
+            Reference must be at least 3 characters
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Phone Number Input -->
+        <mat-form-field class="search-field" appearance="outline">
+          <mat-label>Phone Number</mat-label>
+          <input 
+            matInput 
+            formControlName="phoneNumber"
+            placeholder="e.g., +92 300 1234567"
+            type="tel"
+          />
+          <mat-icon matSuffix *ngIf="!trackingForm.get('phoneNumber')?.hasError('required')">phone</mat-icon>
+          <mat-error *ngIf="trackingForm.get('phoneNumber')?.hasError('required')">
+            Phone Number is required
+          </mat-error>
+          <mat-error *ngIf="trackingForm.get('phoneNumber')?.hasError('minlength')">
+            Phone must be at least 10 digits
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="search-actions">
+        <button 
+          type="submit" 
+          mat-raised-button 
+          color="primary" 
+          class="btn-search"
+          [disabled]="isLoading || trackingForm.invalid"
+        >
+          <mat-icon>search</mat-icon>
+          {{ isLoading ? 'Searching...' : 'Track Booking' }}
+        </button>
+        <button 
+          type="button" 
+          mat-stroked-button 
+          (click)="clearSearch()"
+          [disabled]="!searchAttempted"
+        >
+          <mat-icon>clear</mat-icon>
+          Clear
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Searching for your booking...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <h3>Booking Not Found</h3>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="clearSearch()">
+      <mat-icon>search</mat-icon>
+      Try Again
+    </button>
+  </div>
+
+  <!-- Booking Details Section -->
+  <div *ngIf="bookingDetails && !isLoading" class="booking-details-section">
+    
+    <!-- Booking Header Info -->
+    <div class="booking-header-card">
+      <div class="booking-ref">
+        <span class="label">Booking Reference</span>
+        <h2>{{ bookingDetails.bookingReference }}</h2>
+      </div>
+      <div class="booking-date">
+        <span class="label">Booking Date</span>
+        <p>{{ formatDate(bookingDetails.createdAt) }}</p>
+      </div>
+      <div class="booking-status">
+        <span class="label">Current Status</span>
+        <span [class]="'status-badge ' + getStatusClass(bookingDetails.technicianStatus)">
+          <mat-icon>{{ getStatusIcon(bookingDetails.technicianStatus) }}</mat-icon>
+          {{ bookingDetails.technicianStatus }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Status Timeline -->
+    <div class="timeline-card">
+      <h3>
+        <mat-icon>timeline</mat-icon>
+        Service Timeline
+      </h3>
+      <div class="timeline">
+        <div *ngFor="let step of statusTimeline; let last = last" class="timeline-step" [class.completed]="step.completed">
+          <div class="timeline-marker">
+            <mat-icon class="timeline-icon">{{ step.icon }}</mat-icon>
+          </div>
+          <div class="timeline-content">
+            <h4>{{ step.label }}</h4>
+            <p *ngIf="step.completed && step.status === bookingDetails.technicianStatus">
+              Current Status
+            </p>
+          </div>
+          <div class="timeline-connector" *ngIf="!last"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="details-grid">
+      
+      <!-- Service Details -->
+      <div class="detail-card">
+        <h3>
+          <mat-icon>home_repair_service</mat-icon>
+          Service Details
+        </h3>
+        <div class="detail-item">
+          <span class="detail-label">Service Name</span>
+          <p class="detail-value">{{ bookingDetails.service }}</p>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Service Date</span>
+          <p class="detail-value">{{ formatDate(bookingDetails.date) }}</p>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Service Time</span>
+          <p class="detail-value">{{ bookingDetails.time }}</p>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Service Price</span>
+          <p class="detail-value">{{ bookingDetails.price ? 'PKR ' + bookingDetails.price : 'N/A' }}</p>
+        </div>
+      </div>
+
+      <!-- Customer Details -->
+      <div class="detail-card">
+        <h3>
+          <mat-icon>person</mat-icon>
+          Customer Information
+        </h3>
+        <div class="detail-item">
+          <span class="detail-label">Name</span>
+          <p class="detail-value">{{ bookingDetails.name }}</p>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Phone Number</span>
+          <p class="detail-value">
+            <a [href]="'tel:' + bookingDetails.phone" *ngIf="bookingDetails.phone !== '-'">
+              {{ bookingDetails.phone }}
+            </a>
+            <span *ngIf="bookingDetails.phone === '-'">{{ bookingDetails.phone }}</span>
+          </p>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Email</span>
+          <p class="detail-value">
+            <a [href]="'mailto:' + bookingDetails.email" *ngIf="bookingDetails.email !== '-'">
+              {{ bookingDetails.email }}
+            </a>
+            <span *ngIf="bookingDetails.email === '-'">{{ bookingDetails.email }}</span>
+          </p>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Address</span>
+          <p class="detail-value">{{ bookingDetails.address }}</p>
+        </div>
+      </div>
+
+      <!-- Technician Details -->
+      <div class="detail-card">
+        <h3>
+          <mat-icon>engineering</mat-icon>
+          Assigned Technician
+        </h3>
+        <div class="detail-item">
+          <span class="detail-label">Technician Name</span>
+          <p class="detail-value">{{ bookingDetails.technicianName !== '-' ? bookingDetails.technicianName : 'Not Assigned Yet' }}</p>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Technician Phone</span>
+          <p class="detail-value" *ngIf="bookingDetails.technicianPhone !== '-'">
+            <a [href]="'tel:' + bookingDetails.technicianPhone" class="phone-link">
+              <mat-icon>phone</mat-icon>
+              {{ bookingDetails.technicianPhone }}
+            </a>
+          </p>
+          <p class="detail-value" *ngIf="bookingDetails.technicianPhone === '-'">
+            {{ bookingDetails.technicianPhone }}
+          </p>
+        </div>
+        <div class="detail-item" *ngIf="bookingDetails.estimatedCompletionTime">
+          <span class="detail-label">Estimated Completion</span>
+          <p class="detail-value">{{ formatDate(bookingDetails.estimatedCompletionTime) }}</p>
+        </div>
+        <div class="detail-item" *ngIf="bookingDetails.completedAt">
+          <span class="detail-label">Completed At</span>
+          <p class="detail-value">{{ formatDate(bookingDetails.completedAt) }}</p>
+        </div>
+      </div>
+
+      <!-- Payment Details -->
+      <div class="detail-card">
+        <h3>
+          <mat-icon>payment</mat-icon>
+          Payment Information
+        </h3>
+        <div class="detail-item">
+          <span class="detail-label">Total Amount</span>
+          <p class="detail-value">{{ bookingDetails.price ? 'PKR ' + bookingDetails.price : 'N/A' }}</p>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Payment Status</span>
+          <p class="detail-value">{{ bookingDetails.paymentStatus }}</p>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Payment Method</span>
+          <p class="detail-value">{{ bookingDetails.paymentMethod }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-section">
+      <button mat-raised-button color="primary" (click)="trackBooking()">
+        <mat-icon>refresh</mat-icon>
+        Refresh Status
+      </button>
+      <button mat-stroked-button (click)="clearSearch()">
+        <mat-icon>search</mat-icon>
+        Search Another Booking
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="searchAttempted && !bookingDetails && !isLoading && !errorMessage" class="empty-state">
+    <mat-icon>info</mat-icon>
+    <p>Enter your booking details to get started</p>
+  </div>
+
+</div>

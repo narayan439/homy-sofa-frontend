@@ -627,3 +627,325 @@
 .today-booking:hover {
   background: rgba(76, 175, 80, 0.1) !important;
 }
+
+/* Quick Actions Card */
+.quick-actions-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  animation: fadeInUp 1s ease 0.1s both;
+}
+
+.card-content {
+  padding: 24px;
+}
+
+/* Action Buttons */
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f0f4ff;
+  color: #1a237e;
+  border: 2px solid #e3f2fd;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  background: linear-gradient(135deg, #1a237e, #304ffe);
+  color: white;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(26, 35, 126, 0.2);
+}
+
+.action-button mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Analytics Section */
+.analytics-section {
+  animation: fadeInUp 1.2s ease 0.2s both;
+}
+
+.section-header {
+  margin-bottom: 24px;
+  padding: 0 0 16px 0;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.section-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a237e;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-header mat-icon {
+  color: #304ffe;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+/* Analytics Grid */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* Insight Card */
+.insight-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInUp 1s ease;
+}
+
+.insight-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.insight-card .card-header {
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.insight-card .card-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a237e;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.insight-card .card-header mat-icon {
+  color: #304ffe;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.insight-card .card-content {
+  padding: 20px;
+}
+
+/* Insight List */
+.insight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.insight-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.insight-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.label-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.label-count {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #f0f4ff;
+  color: #1a237e;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.insight-bar {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #304ffe, #1a237e);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Stats Mini Grid */
+.stats-mini {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.stat-mini {
+  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.stat-mini:hover {
+  background: #f0f4ff;
+  border-color: #304ffe;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a237e;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #718096;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Health Indicators */
+.health-indicators {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.health-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.health-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.health-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.health-badge.online {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 2s infinite;
+}
+
+@keyframes healthPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* View All Link */
+.view-all-link {
+  text-decoration: none;
+  color: #304ffe;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.view-all-link:hover {
+  background: #f0f4ff;
+  color: #1a237e;
+}
+
+/* Section Title Styling */
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Responsive Analytics */
+@media (max-width: 1200px) {
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-mini {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .section-header h2 {
+    font-size: 18px;
+  }
+  
+  .action-button {
+    flex: 1;
+    margin: 6px 4px;
+  }
+}

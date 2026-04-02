@@ -1,0 +1,239 @@
+<div class="job-details-container">
+  
+  <!-- Header with Back Button -->
+  <div class="details-header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>Job Details</h1>
+    <div class="placeholder"></div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading job details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMessage }}</p>
+    <button mat-raised-button color="primary" (click)="loadJobDetails()">
+      <mat-icon>refresh</mat-icon> Try Again
+    </button>
+  </div>
+
+  <!-- Job Details Content -->
+  <ng-container *ngIf="!isLoading && !errorMessage">
+    
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span [class]="'status-badge ' + getStatusClass(job.technicianStatus || job.status)">
+        <mat-icon>{{ getStatusIcon(job.technicianStatus || job.status) }}</mat-icon>
+        {{ (job.technicianStatus || job.status || 'PENDING') }}
+      </span>
+    </div>
+
+    <!-- Main Content -->
+    <div class="details-grid">
+      
+      <!-- Service Information Card -->
+      <div class="detail-card">
+        <div class="card-header">
+          <h2>
+            <mat-icon>miscellaneous_services</mat-icon>
+            Service Information
+          </h2>
+        </div>
+        
+        <div class="card-body">
+          <div class="detail-item">
+            <span class="label">Service Type</span>
+            <span class="value">{{ job.service || job.serviceName || 'Not specified' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Service Description</span>
+            <span class="value">{{ job.description || job.serviceDescription || 'No description' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Estimated Duration</span>
+            <span class="value">{{ job.estimatedDuration || '2-3 hours' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Information Card -->
+      <div class="detail-card">
+        <div class="card-header">
+          <h2>
+            <mat-icon>person</mat-icon>
+            Customer Information
+          </h2>
+        </div>
+        
+        <div class="card-body">
+          <div class="customer-header">
+            <div class="customer-avatar">{{ (job.name || job.customerName || 'C').charAt(0) }}</div>
+            <div class="customer-name">{{ job.name || job.customerName || 'Unknown Customer' }}</div>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">
+              <mat-icon>phone</mat-icon>
+              Phone Number
+            </span>
+            <span class="value">{{ job.phone || 'Not provided' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">
+              <mat-icon>email</mat-icon>
+              Email
+            </span>
+            <span class="value">{{ job.email || 'Not provided' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedule & Location Card -->
+      <div class="detail-card">
+        <div class="card-header">
+          <h2>
+            <mat-icon>location_on</mat-icon>
+            Schedule & Location
+          </h2>
+        </div>
+        
+        <div class="card-body">
+          <div class="detail-item">
+            <span class="label">
+              <mat-icon>calendar_today</mat-icon>
+              Date
+            </span>
+            <span class="value">{{ formatDate(job.date || job.bookingDate) }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">
+              <mat-icon>schedule</mat-icon>
+              Time Slot
+            </span>
+            <span class="value">{{ formatTime(job.timeSlot || job.time) }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">
+              <mat-icon>location_on</mat-icon>
+              Service Address
+            </span>
+            <span class="value">{{ job.address || 'Not provided' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">
+              <mat-icon>pin_drop</mat-icon>
+              City
+            </span>
+            <span class="value">{{ job.city || 'Not provided' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Information Card -->
+      <div class="detail-card">
+        <div class="card-header">
+          <h2>
+            <mat-icon>payment</mat-icon>
+            Payment Information
+          </h2>
+        </div>
+        
+        <div class="card-body">
+          <div class="detail-item">
+            <span class="label">Amount</span>
+            <span class="value amount">₹{{ job.amount || job.price | number:'1.0-0' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Payment Status</span>
+            <span class="value">{{ job.paymentStatus || 'Pending' }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Payment Method</span>
+            <span class="value">{{ job.paymentMethod || 'Not specified' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes & Special Requests Card -->
+      <div class="detail-card full-width" *ngIf="job.notes || job.specialRequests">
+        <div class="card-header">
+          <h2>
+            <mat-icon>note</mat-icon>
+            Notes & Special Requests
+          </h2>
+        </div>
+        
+        <div class="card-body">
+          <div class="notes-content">
+            <p>{{ job.notes || job.specialRequests || 'No special requests' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rating Card (if completed) -->
+      <div class="detail-card full-width" *ngIf="(job.technicianStatus || job.status) === 'COMPLETED' && job.rating">
+        <div class="card-header">
+          <h2>
+            <mat-icon>star</mat-icon>
+            Customer Rating
+          </h2>
+        </div>
+        
+        <div class="card-body">
+          <div class="rating-display">
+            <div class="rating-value">{{ job.rating | number:'1.1-1' }} out of 5</div>
+            <div class="stars">
+              <mat-icon *ngFor="let star of [1,2,3,4,5]" 
+                        [class.filled]="star <= getRoundedRating(job.rating)">
+                star
+              </mat-icon>
+            </div>
+            <div class="rating-comment">{{ job.ratingComment || 'No comment' }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button *ngIf="(job.technicianStatus || job.status) === 'ASSIGNED'" 
+              mat-raised-button color="primary" 
+              [disabled]="isActionLoading"
+              (click)="startJob()">
+        <mat-icon>{{ isActionLoading ? 'hourglass_empty' : 'play_arrow' }}</mat-icon>
+        {{ isActionLoading ? 'Starting...' : 'Start Job' }}
+      </button>
+
+      <button *ngIf="(job.technicianStatus || job.status) === 'IN_PROGRESS'" 
+              mat-raised-button color="accent" 
+              [disabled]="isActionLoading"
+              (click)="completeJob()">
+        <mat-icon>{{ isActionLoading ? 'hourglass_empty' : 'check_circle' }}</mat-icon>
+        {{ isActionLoading ? 'Completing...' : 'Complete Job' }}
+      </button>
+
+      <button mat-stroked-button (click)="goBack()">
+        <mat-icon>close</mat-icon>
+        Back to History
+      </button>
+    </div>
+
+  </ng-container>
+
+</div>

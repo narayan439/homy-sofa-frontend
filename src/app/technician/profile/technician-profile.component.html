@@ -1,0 +1,183 @@
+<div class="profile-container">
+  
+  <!-- Profile Header -->
+  <div class="profile-header">
+    <div class="header-content">
+      <h1>My Profile</h1>
+      <p>Manage your profile information and settings</p>
+    </div>
+    <button 
+      mat-raised-button 
+      class="edit-btn" 
+      (click)="toggleEdit()"
+    >
+      <mat-icon>{{ isEditing ? 'close' : 'edit' }}</mat-icon>
+      {{ isEditing ? 'Cancel' : 'Edit Profile' }}
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading profile...</p>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="success-message">
+    <mat-icon>check_circle</mat-icon>
+    <p>{{ successMessage }}</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <!-- Profile Content -->
+  <ng-container *ngIf="!isLoading">
+    <div class="profile-content">
+      
+      <!-- Profile Card -->
+      <div class="profile-card">
+        <div class="profile-avatar">
+          <div class="avatar-circle">{{ getInitials(technician.name) }}</div>
+          <div class="avatar-status online"></div>
+        </div>
+        
+        <div class="profile-info">
+          <h2>{{ technician.name }}</h2>
+          <p class="tech-id">ID: {{ technician.id }}</p>
+          <div class="status-badge">
+            <mat-icon>check_circle</mat-icon>
+            Active
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Info Grid -->
+      <div class="info-grid">
+        
+        <!-- Personal Information -->
+        <div class="info-section">
+          <h3>
+            <mat-icon>person</mat-icon>
+            Personal Information
+          </h3>
+          <div class="info-item">
+            <label>Full Name</label>
+            <div *ngIf="!isEditing" class="value">{{ technician.name }}</div>
+            <mat-form-field *ngIf="isEditing" appearance="outline">
+              <mat-label>Full Name</mat-label>
+              <input matInput [(ngModel)]="editForm.name">
+            </mat-form-field>
+          </div>
+          
+          <div class="info-item">
+            <label>Email</label>
+            <div *ngIf="!isEditing" class="value">{{ technician.email || 'Not provided' }}</div>
+            <mat-form-field *ngIf="isEditing" appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" [(ngModel)]="editForm.email">
+            </mat-form-field>
+          </div>
+
+          <div class="info-item">
+            <label>Phone</label>
+            <div *ngIf="!isEditing" class="value">{{ technician.phone || 'Not provided' }}</div>
+            <mat-form-field *ngIf="isEditing" appearance="outline">
+              <mat-label>Phone</mat-label>
+              <input matInput [(ngModel)]="editForm.phone">
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Address Information -->
+        <div class="info-section">
+          <h3>
+            <mat-icon>location_on</mat-icon>
+            Address Information
+          </h3>
+          <div class="info-item">
+            <label>City</label>
+            <div *ngIf="!isEditing" class="value">{{ technician.city || 'Not provided' }}</div>
+            <mat-form-field *ngIf="isEditing" appearance="outline">
+              <mat-label>City</mat-label>
+              <input matInput [(ngModel)]="editForm.city">
+            </mat-form-field>
+          </div>
+
+          <div class="info-item">
+            <label>Address</label>
+            <div *ngIf="!isEditing" class="value">{{ technician.address || 'Not provided' }}</div>
+            <mat-form-field *ngIf="isEditing" appearance="outline">
+              <mat-label>Address</mat-label>
+              <textarea matInput rows="3" [(ngModel)]="editForm.address"></textarea>
+            </mat-form-field>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Performance Stats -->
+      <div class="performance-section">
+        <h3>
+          <mat-icon>trending_up</mat-icon>
+          Performance Stats
+        </h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-number">{{ technician.totalJobs || 0 }}</div>
+            <div class="stat-label">Total Jobs</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ technician.completedJobs || 0 }}</div>
+            <div class="stat-label">Completed</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ technician.rating || '4.5' }}</div>
+            <div class="stat-label">Rating</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ technician.experience || '2' }} yrs</div>
+            <div class="stat-label">Experience</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons" *ngIf="isEditing">
+        <button mat-raised-button color="primary" (click)="saveProfile()">
+          <mat-icon>save</mat-icon>
+          Save Changes
+        </button>
+        <button mat-raised-button (click)="toggleEdit()">
+          <mat-icon>close</mat-icon>
+          Discard Changes
+        </button>
+      </div>
+
+      <!-- Settings Section -->
+      <div class="settings-section">
+        <h3>
+          <mat-icon>settings</mat-icon>
+          Account Settings
+        </h3>
+        <button mat-raised-button class="setting-btn">
+          <mat-icon>lock</mat-icon>
+          <span>Change Password</span>
+        </button>
+        <button mat-raised-button class="setting-btn">
+          <mat-icon>notifications</mat-icon>
+          <span>Notification Settings</span>
+        </button>
+        <button mat-raised-button class="setting-btn logout-btn" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </div>
+
+    </div>
+  </ng-container>
+
+</div>

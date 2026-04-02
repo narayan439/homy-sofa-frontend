@@ -1,4 +1,6 @@
 import { Component, HostListener } from '@angular/core';
+import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-navbar',
@@ -9,6 +11,8 @@ export class NavbarComponent {
 
   mobileSidebarOpen = false;
   isScrolled = false;
+
+  constructor(private router: Router, public dialog: MatDialog) {}
 
   @HostListener('window:scroll')
   onWindowScroll() {
@@ -34,6 +38,11 @@ export class NavbarComponent {
   closeMobileSidebar() {
     this.mobileSidebarOpen = false;
     document.body.style.overflow = '';
+  }
+
+  openCheckStatus() {
+    // Navigate to the check booking status page
+    this.router.navigate(['/user/booking']);
   }
 
 }

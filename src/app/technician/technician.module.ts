@@ -4,6 +4,11 @@ import { TechnicianRoutingModule } from './technician-routing.module';
 import { TechnicianLoginComponent } from './login/technician-login.component';
 import { TechnicianDashboardComponent } from './dashboard/technician-dashboard.component';
 import { TechnicianJobsComponent } from './jobs/technician-jobs.component';
+import { TechnicianProfileComponent } from './profile/technician-profile.component';
+import { TechnicianHistoryComponent } from './history/technician-history.component';
+import { TechnicianCompletedComponent } from './completed/technician-completed.component';
+import { JobDetailsComponent } from './job-details/job-details.component';
+import { TechnicianDashboardLayoutComponent } from './dashboard-layout/technician-dashboard-layout.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,13 +24,20 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SharedUiModule } from '../shared/shared-ui.module';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 @NgModule({
   declarations: [
     TechnicianLoginComponent,
     TechnicianDashboardComponent,
-    TechnicianJobsComponent
-    
+    TechnicianJobsComponent,
+    TechnicianProfileComponent,
+    TechnicianHistoryComponent,
+    TechnicianCompletedComponent,
+    JobDetailsComponent,
+    TechnicianDashboardLayoutComponent
   ],
   imports: [
     CommonModule,
@@ -45,6 +57,9 @@ import { MatMenuModule } from '@angular/material/menu';
     MatCheckboxModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatSidenavModule,
+    MatToolbarModule,
+    MatPaginatorModule,
     FormsModule
 ]
 })
