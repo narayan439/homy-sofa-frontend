@@ -1,0 +1,54 @@
+.address-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+  padding: 4px;
+}
+
+.address-icon {
+  color: #4CAF50;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.address-text {
+  flex: 1;
+  word-break: break-word;
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+.view-btn,
+.map-btn {
+  flex-shrink: 0;
+  min-width: 32px;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 4px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1976d2 !important;
+  cursor: pointer;
+}
+
+.view-btn:hover,
+.map-btn:hover {
+  color: #4CAF50 !important;
+  background-color: rgba(76, 175, 80, 0.1) !important;
+}
+
+.view-btn mat-icon,
+.map-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px !important;
+}
+
+
+

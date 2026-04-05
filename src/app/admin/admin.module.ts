@@ -8,7 +8,7 @@ import { AdminLoginComponent } from './login/login.component';
 import { ManageServicesComponent } from './manage-services/manage-services.component';
 import { ManageBookingsComponent } from './manage-bookings/manage-bookings.component';
 import { adminRoutingComponents } from './admin-routing.module';
-import { ManageCustomersComponent } from './manage-customers/manage-customers.component';
+import { ManageUsersComponent } from './manage-users/manage-users.component';
 import { ManagePaymentsComponent } from './manage-payments/manage-payments.component';
 import { SettingsComponent } from './settings/settings.component';
 import { DashboardLayoutComponent } from './dashboard-layout/dashboard-layout.component';
@@ -25,7 +25,7 @@ import { ManageTechniciansComponent } from './manage-technicians/manage-technici
     ManageServicesComponent,
     AddressDialogComponent,
     StatusUpdateDialogComponent,
-    ManageCustomersComponent,
+    ManageUsersComponent,
     ManagePaymentsComponent,
     SettingsComponent,
     ManageTechniciansComponent

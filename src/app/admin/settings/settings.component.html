@@ -212,4 +212,34 @@
         </button>
       </div>
     </mat-card>
+
+    <!-- DELETE ACCOUNT CARD -->
+    <mat-card class="settings-card danger-card">
+      <!-- Card Header -->
+      <div class="card-header">
+        <h3>
+          <mat-icon>delete_forever</mat-icon>
+          Delete Account
+        </h3>
+      </div>
+
+      <!-- Card Content -->
+      <div class="card-content">
+        <p class="danger-text">
+          <strong>Warning:</strong> Deleting your account is a permanent action. 
+          All your data will be deleted and cannot be recovered.
+        </p>
+
+        <!-- Delete Account Button -->
+        <button 
+          mat-raised-button 
+          color="warn" 
+          (click)="deleteAccount()"
+          class="delete-btn"
+        >
+          <mat-icon>delete_forever</mat-icon>
+          Delete My Account
+        </button>
+      </div>
+    </mat-card>
 </div>

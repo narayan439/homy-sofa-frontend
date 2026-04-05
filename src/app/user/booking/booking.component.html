@@ -21,51 +21,27 @@
         
         <form [formGroup]="bookingForm" (ngSubmit)="submit()" class="booking-form">
           
-          <!-- Personal Details Row -->
-          <div class="form-row">
-            <!-- Full Name -->
-            <mat-form-field appearance="outline">
-              <mat-label>Full Name</mat-label>
-              <input 
-                matInput 
-                formControlName="fullName"
-                placeholder="Enter your full name"
-              >
-              <mat-icon matPrefix>person</mat-icon>
-              <mat-error *ngIf="bookingForm.get('fullName')?.hasError('required') && bookingForm.get('fullName')?.touched">
-                Please enter your name
-              </mat-error>
-            </mat-form-field>
-
-            <!-- Phone Number -->
-            <mat-form-field appearance="outline">
-              <mat-label>Phone Number</mat-label>
-              <input 
-                matInput 
-                formControlName="phone"
-                placeholder="9876543210"
-              >
-              <mat-icon matPrefix>phone</mat-icon>
-              <mat-error *ngIf="bookingForm.get('phone')?.hasError('required') && bookingForm.get('phone')?.touched">
-                Phone number is required
-              </mat-error>
-            </mat-form-field>
+          <!-- Your Details Card (Read-only) -->
+          <div class="your-details-card">
+            <div class="details-header">
+              <mat-icon>account_circle</mat-icon>
+              <span>Your Details</span>
+            </div>
+            <div class="details-content">
+              <div class="detail-item">
+                <label>Name:</label>
+                <span>{{ (userAuthService.getCurrentUser())?.name || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Phone:</label>
+                <span>{{ (userAuthService.getCurrentUser())?.phone || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Email:</label>
+                <span>{{ (userAuthService.getCurrentUser())?.email || 'N/A' }}</span>
+              </div>
+            </div>
           </div>
-
-          <!-- Email -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Email Address</mat-label>
-            <input 
-              matInput 
-              formControlName="email"
-              type="email"
-              placeholder="your.email@example.com"
-            >
-            <mat-icon matPrefix>email</mat-icon>
-            <mat-error *ngIf="bookingForm.get('email')?.hasError('required') && bookingForm.get('email')?.touched">
-              Email is required
-            </mat-error>
-          </mat-form-field>
 
           <!-- Service Selection Row -->
           <div class="form-row">

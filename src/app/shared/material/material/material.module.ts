@@ -1,5 +1,6 @@
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatListModule } from '@angular/material/list';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -49,6 +50,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatBadgeModule,
     MatTooltipModule,
     MatListModule,
+    MatChipsModule,
+    MatProgressSpinnerModule,
   ],
   exports: [
     MatToolbarModule,
@@ -72,6 +75,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatBadgeModule,
     MatTooltipModule,
     MatListModule,
+    MatChipsModule,
     MatProgressSpinnerModule
   ]
 })

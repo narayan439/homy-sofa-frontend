@@ -9,10 +9,11 @@ import { TechnicianCompletedComponent } from './completed/technician-completed.c
 import { JobDetailsComponent } from './job-details/job-details.component';
 import { TechnicianDashboardLayoutComponent } from './dashboard-layout/technician-dashboard-layout.component';
 import { TechnicianGuard } from '../core/guards/technician.guard';
+import { TechnicianNoAuthGuard } from '../core/guards/technician-no-auth.guard';
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
-  { path: 'login', component: TechnicianLoginComponent },
+  { path: 'login', component: TechnicianLoginComponent, canActivate: [TechnicianNoAuthGuard] },
   {
     path: '',
     component: TechnicianDashboardLayoutComponent,

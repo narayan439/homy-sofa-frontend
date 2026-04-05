@@ -9,6 +9,7 @@ import { TechnicianHistoryComponent } from './history/technician-history.compone
 import { TechnicianCompletedComponent } from './completed/technician-completed.component';
 import { JobDetailsComponent } from './job-details/job-details.component';
 import { TechnicianDashboardLayoutComponent } from './dashboard-layout/technician-dashboard-layout.component';
+import { AddressDisplayComponent } from './jobs/address-display/address-display.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,6 +28,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @NgModule({
   declarations: [
@@ -37,7 +39,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
     TechnicianHistoryComponent,
     TechnicianCompletedComponent,
     JobDetailsComponent,
-    TechnicianDashboardLayoutComponent
+    TechnicianDashboardLayoutComponent,
+    AddressDisplayComponent
   ],
   imports: [
     CommonModule,
@@ -60,6 +63,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
     MatSidenavModule,
     MatToolbarModule,
     MatPaginatorModule,
+    MatSnackBarModule,
     FormsModule
 ]
 })

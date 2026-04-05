@@ -29,7 +29,7 @@
     <div class="dialog-content">
 
       <!-- Section 1: Service Info -->
-      <div class="dialog-section">
+      <div class="dialog-section" *ngIf="!addServiceMode && !completeMode && !cancelMode">
         <h3 class="section-title">
           <mat-icon>build</mat-icon>
           Service Details
@@ -57,7 +57,7 @@
       </div>
 
       <!-- Section 2: Booking Info -->
-      <div class="dialog-section">
+      <div class="dialog-section" *ngIf="!addServiceMode && !completeMode && !cancelMode">
         <h3 class="section-title">
           <mat-icon>info</mat-icon>
           Booking Information
@@ -73,6 +73,14 @@
               <span class="value status-badge" [ngClass]="(currentJob?.technicianStatus || '').toLowerCase()">
                 {{ currentJob?.technicianStatus || 'PENDING' }}
               </span>
+            </div>
+            <div class="info-item">
+              <span class="label">Payment:</span>
+              <span class="value">{{ currentJob?.paymentMethod || (currentJob?.paymentId ? 'ONLINE' : 'CASH') }}</span>
+            </div>
+            <div class="info-item" *ngIf="currentJob?.paymentId || currentJob?.razorpayPaymentId || currentJob?.payment_reference || currentJob?.paymentRef">
+              <span class="label">Payment ID:</span>
+              <span class="value">{{ currentJob?.paymentId || currentJob?.razorpayPaymentId || currentJob?.payment_reference || currentJob?.paymentRef }}</span>
             </div>
           </div>
         </div>
@@ -98,10 +106,7 @@
               <span class="label">Email:</span>
               <span class="value">{{ currentJob?.customerEmail || 'N/A' }}</span>
             </div>
-            <div class="info-item full">
-              <span class="label">Address:</span>
-              <span class="value address">{{ currentJob?.specialAddress || currentJob?.address || 'N/A' }}</span>
-            </div>
+          
           </div>
         </div>
       </div>
@@ -117,28 +122,94 @@
         </div>
       </div>
 
+      <!-- Section 5: Payment Information (Display) -->
+      <div class="dialog-section" *ngIf="currentJob?.paymentMethod">
+        <h3 class="section-title">
+          <mat-icon>payment</mat-icon>
+          Payment Details
+        </h3>
+        <div class="section-content">
+          <div class="payment-info-grid">
+            <div class="payment-info-item">
+              <span class="label">Payment Method:</span>
+              <span class="value" [ngClass]="'method-' + currentJob.paymentMethod?.toLowerCase()">
+                {{ currentJob.paymentMethod === 'CASH' ? '💵 Cash' : '🌐 Online' }}
+              </span>
+            </div>
+            <div class="payment-info-item">
+              <span class="label">Payment Status:</span>
+              <span class="value" [ngClass]="'status-' + (currentJob.paymentStatus || 'unknown')?.toLowerCase()">
+                {{ currentJob.paymentStatus || 'Not specified' }}
+              </span>
+            </div>
+            <div class="payment-info-item" *ngIf="currentJob.paymentId">
+              <span class="label">Payment ID:</span>
+              <span class="value">{{ currentJob.paymentId }}</span>
+            </div>
+            <div class="payment-info-item" *ngIf="currentJob.transactionId">
+              <span class="label">Transaction ID:</span>
+              <span class="value">{{ currentJob.transactionId }}</span>
+            </div>
+            <div class="payment-info-item" *ngIf="currentJob.paymentTimestamp">
+              <span class="label">Processed At:</span>
+              <span class="value">{{ currentJob.paymentTimestamp | date:'short' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Add service form -->
       <div *ngIf="addServiceMode" class="dialog-section action-form">
         <h3 class="section-title">
-          <mat-icon>add</mat-icon>
+          <mat-icon>add_circle</mat-icon>
           Add Additional Service
         </h3>
         <div class="section-content">
-          <label class="form-label">Select service to add:</label>
-          <select [(ngModel)]="selectedServiceId" (ngModelChange)="onServiceSelected($event)" class="form-select">
-            <option [ngValue]="null">-- Choose Service --</option>
+          <!-- Instructions -->
+          <p class="form-hint">Select an additional service to add to this booking. You can add multiple services.</p>
+
+          <!-- Services Grid -->
+          <div class="services-grid">
             <ng-container *ngFor="let s of services">
-              <option *ngIf="!isServiceAlreadyAdded(s)" [value]="s.id">{{ s.name }} (₹{{ s.price }})</option>
+              <button 
+                *ngIf="!isServiceAlreadyAdded(s)"
+                type="button"
+                class="service-option"
+                (click)="onServiceSelected(s.id)"
+                [class.selected]="selectedServiceId === s.id"
+              >
+                <mat-icon>build</mat-icon>
+                <div class="service-details">
+                  <span class="service-name">{{ s.name }}</span>
+                  <span class="service-price">₹{{ s.price }}</span>
+                </div>
+              </button>
             </ng-container>
-          </select>
+          </div>
+
+          <!-- Already Added Services -->
+          <div class="already-added" *ngIf="getAdditionalServices().length > 0">
+            <p class="label">Already Added:</p>
+            <div class="added-services-list">
+              <span *ngFor="let extra of getAdditionalServices()" class="added-tag">
+                {{ extra.name }} (₹{{ extra.price }})
+              </span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
           <div class="action-buttons">
-            <button (click)="submitAddService()" class="btn btn-primary">
+            <button 
+              (click)="submitAddService()" 
+              class="btn btn-primary"
+              [disabled]="selectedServiceId == null"
+            >
               <mat-icon>check</mat-icon>
               Add Service
             </button>
             <button (click)="addServiceMode=false" class="btn btn-secondary">
               <mat-icon>close</mat-icon>
-              Cancel
+              Done Adding
             </button>
           </div>
         </div>
@@ -152,15 +223,32 @@
         </h3>
         <div class="section-content">
           <label class="form-label">Total amount collected:</label>
-          <input type="number" [(ngModel)]="totalAmount" class="form-input" placeholder="Enter amount" />
-          <label class="form-label">Completion notes:</label>
-          <textarea rows="3" [(ngModel)]="completionNotes" class="form-textarea" placeholder="Enter completion notes..."></textarea>
-          <div class="action-buttons">
+          <div class="amount-display">₹{{ totalAmount | number:'1.2-2' }}</div>
+          
+          <label class="form-label" style="margin-top: 20px;">Payment Method:</label>
+          <div class="payment-options">
+            <label class="payment-option-label">
+              <input type="radio" [(ngModel)]="selectedPaymentMethod" value="CASH" name="paymentMethod" />
+              <span class="radio-label">
+                <mat-icon>payments</mat-icon>
+                Cash
+              </span>
+            </label>
+            <label class="payment-option-label">
+              <input type="radio" [(ngModel)]="selectedPaymentMethod" value="ONLINE" name="paymentMethod" />
+              <span class="radio-label">
+                <mat-icon>credit_card</mat-icon>
+                Online (Razorpay)
+              </span>
+            </label>
+          </div>
+
+          <div class="action-buttons" style="margin-top: 20px;">
             <button (click)="submitComplete()" class="btn btn-primary">
               <mat-icon>check_circle</mat-icon>
               Complete Job
             </button>
-            <button (click)="completeMode=false" class="btn btn-secondary">
+            <button (click)="completeMode=false; selectedPaymentMethod='CASH'" class="btn btn-secondary">
               <mat-icon>close</mat-icon>
               Cancel
             </button>
@@ -457,15 +545,8 @@
           <!-- Date Row -->
           <div class="detail-row">
             <mat-icon class="detail-icon">calendar_today</mat-icon>
-            <span class="detail-label">Date:</span>
+            <span class="detail-label"> Service Date:</span>
             <span class="detail-value">{{ job.bookingDate ? (job.bookingDate | date:'dd MMM yyyy') : 'Not Set' }}</span>
-          </div>
-
-          <!-- Time Row -->
-          <div class="detail-row">
-            <mat-icon class="detail-icon">schedule</mat-icon>
-            <span class="detail-label">Time:</span>
-            <span class="detail-value">{{ job.timeSlot || job.time || 'Flexible' }}</span>
           </div>
 
           <!-- Amount Row (for completed jobs) -->
@@ -478,12 +559,7 @@
 
         <!-- Address Row -->
         <div class="address-row">
-          <mat-icon class="detail-icon">location_on</mat-icon>
-          <span class="detail-label">Address:</span>
-          <span class="address-value">{{ job?.specialAddress || job?.address || 'Address not available' }}</span>
-          <button *ngIf="job.latLong" class="map-link" (click)="openMap(job.latLong)" matTooltip="Open in Google Maps">
-            <mat-icon>map</mat-icon>
-          </button>
+          <app-address-display [booking]="job"></app-address-display>
         </div>
 
         <!-- Additional Services Row -->
@@ -549,6 +625,8 @@
         </div>
       </div>
     </div>
+
+    
 
     <!-- Empty State -->
     <div class="empty-state" *ngIf="filteredJobs.length === 0">

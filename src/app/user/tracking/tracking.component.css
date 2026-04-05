@@ -246,7 +246,9 @@
 
 .booking-ref,
 .booking-date,
-.booking-status {
+.booking-status,
+.tech-status,
+.complete-date {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -254,7 +256,9 @@
 
 .booking-ref .label,
 .booking-date .label,
-.booking-status .label {
+.booking-status .label,
+.tech-status .label,
+.complete-date .label {
   font-size: 12px;
   font-weight: 600;
   color: #718096;
@@ -272,7 +276,9 @@
 }
 
 .booking-date p,
-.booking-status p {
+.booking-status p,
+.tech-status p,
+.complete-date p {
   font-size: 16px;
   font-weight: 600;
   color: #2d3748;
@@ -487,6 +493,82 @@
   height: 16px;
 }
 
+/* Payment Badge */
+.payment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+}
+
+.payment-badge mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.payment-method-cash {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.payment-method-online {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+/* Payment Status Badge */
+.status-badge-payment {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+}
+
+.status-badge-payment mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.status-badge-payment.status-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-badge-payment.status-failed {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-badge-payment.status-pending {
+  background: #e7f3ff;
+  color: #004085;
+  border: 1px solid #bee5eb;
+}
+
+.status-badge-payment.status-not_required {
+  background: #e2e3e5;
+  color: #383d41;
+  border: 1px solid #d6d8db;
+}
+
 /* Status Badges */
 .status-badge {
   display: inline-flex;
@@ -530,6 +612,91 @@
 .status-badge.cancelled {
   background: linear-gradient(135deg, #ffebee, #ffcdd2);
   color: #d32f2f;
+}
+
+/* Technician Status Badge */
+.tech-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  width: fit-content;
+}
+
+.tech-status-badge mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.tech-status-assigned {
+  background: linear-gradient(135deg, #e0e7ff, #c7d2e8);
+  color: #4f46e5;
+}
+
+.tech-status-in_progress {
+  background: linear-gradient(135deg, #e0e7ff, #c7d2e8);
+  color: #4f46e5;
+}
+
+.tech-status-completed {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  color: #059669;
+}
+
+.no-tech {
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+/* Booking Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  width: fit-content;
+}
+
+.status-badge mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #b45309;
+}
+
+.status-confirmed {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1e40af;
+}
+
+.status-in_progress {
+  background: linear-gradient(135deg, #e0e7ff, #c7d2e8);
+  color: #4f46e5;
+}
+
+.status-completed {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  color: #059669;
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #dc2626;
 }
 
 /* Actions Section */

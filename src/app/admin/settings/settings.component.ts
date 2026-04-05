@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { UserAdminService } from '../../core/services/user-admin.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
@@ -23,7 +26,12 @@ export class SettingsComponent {
     confirm: ''
   };
 
-  constructor(private snackBar: MatSnackBar) {}
+  constructor(
+    private snackBar: MatSnackBar,
+    private userAdminService: UserAdminService,
+    private router: Router,
+    private dialog: MatDialog
+  ) {}
 
   saveSettings() {
     // Show success message
@@ -87,5 +95,47 @@ export class SettingsComponent {
 
     // Reset password fields
     this.password = { current: '', new: '', confirm: '' };
+  }
+
+  deleteAccount() {
+    const confirmation = confirm('Are you sure you want to delete your account? This action cannot be undone.');
+    
+    if (!confirmation) {
+      return;
+    }
+
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      this.snackBar.open('User ID not found', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    this.userAdminService.deleteAccount(Number(userId)).subscribe(
+      (response) => {
+        this.snackBar.open('Account deleted successfully', 'Close', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+        
+        // Clear localStorage and redirect to login
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userEmail');
+        this.router.navigate(['/auth/login']);
+      },
+      (error) => {
+        this.snackBar.open(
+          error.error?.message || 'Failed to delete account',
+          'Close',
+          {
+            duration: 3000,
+            panelClass: ['error-snackbar']
+          }
+        );
+      }
+    );
   }
 }

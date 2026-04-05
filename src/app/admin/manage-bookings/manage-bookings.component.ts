@@ -28,6 +28,7 @@ export class ManageBookingsComponent implements OnInit, AfterViewInit, OnDestroy
     'service',
     'technician',
     'techTracking',
+    'payment',
     'actions'
   ];
 

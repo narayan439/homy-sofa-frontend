@@ -1,0 +1,380 @@
+<section class="edit-profile-page">
+  <div class="profile-container">
+    
+    <!-- Page Header -->
+    <div class="page-header">
+      <button mat-icon-button (click)="goBack()" class="back-btn">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-content">
+        <h1>Edit Profile</h1>
+        <p>Update your personal information and account settings</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-section">
+      <button 
+        *ngFor="let tab of ['profile', 'address', 'password', 'account']"
+        [class.active]="activeTab === tab"
+        class="tab-button"
+        (click)="switchTab(tab)">
+        <mat-icon>{{ getTabIcon(tab) }}</mat-icon>
+        <span>{{ getTabLabel(tab) }}</span>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="profile-content">
+
+      <!-- Profile Tab - Edit Name, Email, Phone -->
+      <div *ngIf="activeTab === 'profile'" class="tab-content">
+        <div class="section-header">
+          <h2><mat-icon>person</mat-icon> Personal Information</h2>
+          <p>Update your basic profile details</p>
+        </div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
+          
+          <!-- Name Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Full Name</mat-label>
+            <input 
+              matInput 
+              formControlName="name"
+              placeholder="Enter your full name"
+            >
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="profileForm.get('name')?.hasError('required')">
+              Name is required
+            </mat-error>
+            <mat-error *ngIf="profileForm.get('name')?.hasError('minlength')">
+              Name must be at least 3 characters
+            </mat-error>
+            <mat-error *ngIf="profileForm.get('name')?.hasError('pattern')">
+              Name can only contain letters and spaces
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Email Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email Address</mat-label>
+            <input 
+              matInput 
+              formControlName="email"
+              type="email"
+              placeholder="your.email@example.com"
+              (focus)="clearEmailError()"
+            >
+            <mat-icon matPrefix>email</mat-icon>
+            <mat-error *ngIf="profileForm.get('email')?.hasError('required')">
+              Email is required
+            </mat-error>
+            <mat-error *ngIf="profileForm.get('email')?.hasError('email')">
+              Please enter a valid email
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Email Error Message -->
+          <div *ngIf="emailError" class="error-message">
+            <mat-icon>error</mat-icon>
+            <span>{{ emailError }}</span>
+          </div>
+
+          <!-- Phone Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Phone Number</mat-label>
+            <input 
+              matInput 
+              formControlName="phone"
+              placeholder="10-digit phone number"
+              maxlength="10"
+              (focus)="clearPhoneError()"
+            >
+            <mat-icon matPrefix>phone</mat-icon>
+            <mat-error *ngIf="profileForm.get('phone')?.hasError('required')">
+              Phone number is required
+            </mat-error>
+            <mat-error *ngIf="profileForm.get('phone')?.hasError('pattern')">
+              Please enter a valid 10-digit phone number
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Phone Error Message -->
+          <div *ngIf="phoneError" class="error-message">
+            <mat-icon>error</mat-icon>
+            <span>{{ phoneError }}</span>
+          </div>
+
+          <!-- Save Button -->
+          <button 
+            mat-raised-button 
+            color="primary"
+            type="submit"
+            [disabled]="profileForm.invalid || isSavingProfile"
+            class="save-btn">
+            <mat-icon *ngIf="!isSavingProfile">save</mat-icon>
+            <mat-icon *ngIf="isSavingProfile">hourglass_empty</mat-icon>
+            <span>{{ isSavingProfile ? 'Saving...' : 'Save Changes' }}</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Address Tab -->
+      <div *ngIf="activeTab === 'address'" class="tab-content">
+        <div class="section-header">
+          <h2><mat-icon>location_on</mat-icon> Address Information</h2>
+          <p>Update your service address details</p>
+        </div>
+
+        <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="address-form">
+          
+          <!-- House / Flat -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>House / Flat / Building</mat-label>
+            <input 
+              matInput 
+              formControlName="house"
+              placeholder="House number, building name"
+            >
+            <mat-icon matPrefix>home</mat-icon>
+          </mat-form-field>
+
+          <!-- Area / Locality -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Area / Locality</mat-label>
+            <input 
+              matInput 
+              formControlName="area"
+              placeholder="Locality, area name"
+            >
+            <mat-icon matPrefix>place</mat-icon>
+          </mat-form-field>
+
+          <!-- City -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>City</mat-label>
+            <input 
+              matInput 
+              formControlName="city"
+              placeholder="City name"
+            >
+            <mat-icon matPrefix>location_city</mat-icon>
+          </mat-form-field>
+
+          <!-- Pincode -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Pincode</mat-label>
+            <input 
+              matInput 
+              formControlName="pincode"
+              placeholder="6-digit pincode"
+              maxlength="6"
+            >
+            <mat-icon matPrefix>pin</mat-icon>
+            <mat-error *ngIf="addressForm.get('pincode')?.hasError('pattern')">
+              Please enter a valid 6-digit pincode
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Landmark -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nearby Landmark (Optional)</mat-label>
+            <input 
+              matInput 
+              formControlName="landmark"
+              placeholder="Near metro station, park, etc."
+            >
+            <mat-icon matPrefix>flag</mat-icon>
+          </mat-form-field>
+
+          <!-- Save Button -->
+          <button 
+            mat-raised-button 
+            color="primary"
+            type="submit"
+            [disabled]="addressForm.invalid || isSavingProfile"
+            class="save-btn">
+            <mat-icon *ngIf="!isSavingProfile">save</mat-icon>
+            <mat-icon *ngIf="isSavingProfile">hourglass_empty</mat-icon>
+            <span>{{ isSavingProfile ? 'Saving...' : 'Save Address' }}</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Password Tab -->
+      <div *ngIf="activeTab === 'password'" class="tab-content">
+        <div class="section-header">
+          <h2><mat-icon>lock</mat-icon> Change Password</h2>
+          <p>Make sure to use a strong password with uppercase, lowercase, numbers, and special characters</p>
+        </div>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="password-form">
+          
+          <!-- Current Password -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Current Password</mat-label>
+            <input 
+              matInput 
+              [type]="hideCurrentPassword ? 'password' : 'text'"
+              formControlName="currentPassword"
+              placeholder="Enter current password"
+            >
+            <button 
+              mat-icon-button 
+              matSuffix 
+              (click)="hideCurrentPassword = !hideCurrentPassword"
+              type="button">
+              <mat-icon>{{ hideCurrentPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-icon matPrefix>lock</mat-icon>
+            <mat-error *ngIf="passwordForm.get('currentPassword')?.hasError('required')">
+              Current password is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- New Password -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>New Password</mat-label>
+            <input 
+              matInput 
+              [type]="hideNewPassword ? 'password' : 'text'"
+              formControlName="newPassword"
+              placeholder="Enter new password (8+ characters)"
+            >
+            <button 
+              mat-icon-button 
+              matSuffix 
+              (click)="hideNewPassword = !hideNewPassword"
+              type="button">
+              <mat-icon>{{ hideNewPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-icon matPrefix>lock_outline</mat-icon>
+            <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">
+              New password is required
+            </mat-error>
+            <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">
+              Password must be at least 8 characters
+            </mat-error>
+            <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('passwordStrength')">
+              Password must contain uppercase, lowercase, number, and special character
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password Strength Indicator -->
+          <div *ngIf="passwordForm.get('newPassword')?.value" class="password-strength">
+            <div class="strength-bar" [ngClass]="getPasswordStrengthClass()"></div>
+            <span class="strength-text">{{ getPasswordStrengthText() }}</span>
+          </div>
+
+          <!-- Confirm Password -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Confirm Password</mat-label>
+            <input 
+              matInput 
+              [type]="hideConfirmPassword ? 'password' : 'text'"
+              formControlName="confirmPassword"
+              placeholder="Confirm new password"
+            >
+            <button 
+              mat-icon-button 
+              matSuffix 
+              (click)="hideConfirmPassword = !hideConfirmPassword"
+              type="button">
+              <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-icon matPrefix>lock_outline</mat-icon>
+            <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">
+              Please confirm your password
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password Mismatch Error -->
+          <div *ngIf="passwordForm.hasError('passwordMismatch') && passwordForm.touched" class="error-message">
+            <mat-icon>error</mat-icon>
+            <span>Passwords do not match</span>
+          </div>
+
+          <!-- Change Password Button -->
+          <button 
+            mat-raised-button 
+            color="primary"
+            type="submit"
+            [disabled]="passwordForm.invalid || isSavingPassword"
+            class="save-btn">
+            <mat-icon *ngIf="!isSavingPassword">vpn_key</mat-icon>
+            <mat-icon *ngIf="isSavingPassword">hourglass_empty</mat-icon>
+            <span>{{ isSavingPassword ? 'Changing...' : 'Change Password' }}</span>
+          </button>
+        </form>
+
+        <!-- Password Requirements -->
+        <div class="password-requirements">
+          <h4>Password Requirements:</h4>
+          <ul>
+            <li>✓ At least 8 characters long</li>
+            <li>✓ Contains uppercase letters (A-Z)</li>
+            <li>✓ Contains lowercase letters (a-z)</li>
+            <li>✓ Contains numbers (0-9)</li>
+            <li>✓ Contains special characters (!@#$%^&*)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Account Tab - Delete Account -->
+      <div *ngIf="activeTab === 'account'" class="tab-content">
+        <div class="section-header">
+          <h2><mat-icon>security</mat-icon> Account Settings</h2>
+          <p>Manage your account and privacy settings</p>
+        </div>
+
+        <div class="account-settings">
+          
+          <!-- Account Info -->
+          <div class="account-info-card">
+            <h3><mat-icon>info</mat-icon> Account Information</h3>
+            <div class="info-item">
+              <label>User ID:</label>
+              <span>{{ currentUser?.id || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Email:</label>
+              <span>{{ currentUser?.email || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Phone:</label>
+              <span>{{ currentUser?.phone || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Joined:</label>
+              <span>{{ (currentUser?.createdAt | date: 'MMM dd, yyyy') || 'N/A' }}</span>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="danger-zone">
+            <h3><mat-icon>warning</mat-icon> Danger Zone</h3>
+            <p>These actions are permanent and cannot be undone.</p>
+
+            <!-- Delete Account Button -->
+            <button 
+              mat-stroked-button 
+              color="warn"
+              (click)="deleteAccount()"
+              [disabled]="isDeletingAccount"
+              class="delete-btn">
+              <mat-icon *ngIf="!isDeletingAccount">delete</mat-icon>
+              <mat-icon *ngIf="isDeletingAccount">hourglass_empty</mat-icon>
+              <span>{{ isDeletingAccount ? 'Deleting...' : 'Delete Account Permanently' }}</span>
+            </button>
+
+            <p class="warning-text">
+              ⚠️ This will permanently delete your account and all associated data. This action cannot be reversed.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

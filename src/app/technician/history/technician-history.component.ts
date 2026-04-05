@@ -21,9 +21,7 @@ export class TechnicianHistoryComponent implements OnInit {
 
   statusOptions = [
     { value: 'all', label: 'All Jobs' },
-    { value: 'assigned', label: 'Assigned' },
-    { value: 'accepted', label: 'Accepted' },
-    { value: 'in_progress', label: 'In Progress' },
+  
     { value: 'completed', label: 'Completed' },
     { value: 'cancelled', label: 'Cancelled' }
   ];
@@ -45,19 +43,59 @@ export class TechnicianHistoryComponent implements OnInit {
         const tech = JSON.parse(techData);
         this.technicianId = tech.id;
         
-        // Load all jobs for this technician
-        this.techService.getTechnicianJobs(this.technicianId).subscribe(
-          (response: any) => {
-            this.allJobs = response.data || response || [];
-            this.applyFilters();
-            this.isLoading = false;
-          },
-          (error: any) => {
-            console.error('Error loading job history:', error);
-            this.errorMessage = 'Failed to load job history';
-            this.isLoading = false;
-          }
-        );
+        // Load all jobs (including completed/cancelled) using paginated endpoint
+        // Fetch multiple pages to ensure we get all historical data
+        const pages: any[] = [];
+        let currentPage = 0;
+        const pageSize = 50;
+        let totalPages = 1;
+
+        const loadPage = (pageNum: number) => {
+          this.techService.getBookingsForTechnician(this.technicianId, pageNum, pageSize).subscribe({
+            next: (response: any) => {
+              if (response.bookings && response.bookings.length > 0) {
+                pages.push(...response.bookings);
+              }
+              
+              // Calculate total pages if not already known
+              if (pageNum === 0 && response.total) {
+                totalPages = Math.ceil(response.total / pageSize);
+              }
+
+              // Load next page if available
+              if (pageNum + 1 < totalPages && pageNum < 5) { // Limit to 5 pages to avoid too many requests
+                loadPage(pageNum + 1);
+              } else {
+                // All pages loaded - filter for history (COMPLETED, CANCELLED)
+                this.allJobs = pages.filter((job: any) => {
+                  const status = String(job.technicianStatus || '').toUpperCase();
+                  return status === 'COMPLETED' || status === 'CANCELLED';
+                });
+                
+                this.applyFilters();
+                this.isLoading = false;
+                console.log('History loaded:', this.allJobs.length, 'jobs');
+              }
+            },
+            error: (error: any) => {
+              console.error('Error loading job history page', pageNum, ':', error);
+              if (pageNum === 0) {
+                this.errorMessage = 'Failed to load job history';
+                this.isLoading = false;
+              } else {
+                // Continue with what we have
+                this.allJobs = pages.filter((job: any) => {
+                  const status = String(job.technicianStatus || '').toUpperCase();
+                  return status === 'COMPLETED' || status === 'CANCELLED';
+                });
+                this.applyFilters();
+                this.isLoading = false;
+              }
+            }
+          });
+        };
+
+        loadPage(0);
       } else {
         this.router.navigate(['/technician/login']);
       }

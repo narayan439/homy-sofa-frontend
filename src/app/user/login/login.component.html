@@ -1,0 +1,118 @@
+<div class="login-container">
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <mat-spinner diameter="50" strokeWidth="4"></mat-spinner>
+    <p>Redirecting to dashboard...</p>
+  </div>
+
+  <!-- Page Header -->
+  <div class="login-header">
+    <div class="header-content">
+      <h1>Welcome Back</h1>
+      <p>Login to your Homy Sofa account</p>
+    </div>
+  </div>
+
+  <!-- Login Card -->
+  <div class="login-card" [style.opacity]="isLoading ? 0.5 : 1" [style.pointer-events]="isLoading ? 'none' : 'auto'">
+    <div class="card-header">
+      <mat-icon>login</mat-icon>
+      <h2>User Login</h2>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Email Input -->
+      <mat-form-field class="full-width" appearance="outline">
+        <mat-label>Email Address</mat-label>
+        <input 
+          matInput 
+          formControlName="email"
+          type="email"
+          placeholder="your.email@example.com"
+        />
+        <mat-icon matPrefix>email</mat-icon>
+        <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+          Email is required
+        </mat-error>
+        <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+          Please enter a valid email
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Password Input -->
+      <mat-form-field class="full-width" appearance="outline">
+        <mat-label>Password</mat-label>
+        <input 
+          matInput 
+          formControlName="password"
+          [type]="hidePassword ? 'password' : 'text'"
+          placeholder="••••••••"
+        />
+        <mat-icon matPrefix>lock</mat-icon>
+        <button 
+          mat-icon-button 
+          matSuffix 
+          type="button"
+          (click)="togglePasswordVisibility()"
+          [attr.aria-label]="'Hide password'"
+          [attr.aria-pressed]="hidePassword">
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+          Password is required
+        </mat-error>
+        <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+          Password must be at least 6 characters
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Login Button -->
+      <button 
+        type="submit" 
+        mat-raised-button 
+        color="primary" 
+        class="login-btn"
+        [disabled]="isLoading || loginForm.invalid">
+        <mat-icon *ngIf="!isLoading">login</mat-icon>
+        <mat-spinner *ngIf="isLoading" diameter="20" strokeWidth="2"></mat-spinner>
+        {{ isLoading ? 'Logging in...' : 'Login' }}
+      </button>
+
+      <!-- Sign Up Link -->
+      <div class="signup-link">
+        <span>Don't have an account?</span>
+        <button type="button" mat-button color="primary" (click)="goToSignup()">
+          Sign Up Here
+        </button>
+      </div>
+    </form>
+
+    <!-- Additional Options -->
+    <div class="additional-options">
+      <mat-divider></mat-divider>
+      <p class="text-center">Or continue with</p>
+      <div class="option-links">
+        <button mat-stroked-button class="full-width" disabled>
+          <mat-icon>pageview</mat-icon>
+          Track Without Login
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Section -->
+  <div class="info-section">
+    <div class="info-card">
+      <mat-icon>check_circle</mat-icon>
+      <h3>Benefits of Login</h3>
+      <ul>
+        <li>View all your booking history</li>
+        <li>Track real-time service updates</li>
+        <li>Manage your bookings</li>
+        <li>Add or cancel services</li>
+        <li>Receive email notifications</li>
+        <li>Save your preferences</li>
+      </ul>
+    </div>
+  </div>
+</div>

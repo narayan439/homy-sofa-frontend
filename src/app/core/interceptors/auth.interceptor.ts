@@ -4,13 +4,40 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { UserAuthService } from '../services/user-auth.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private userAuth: UserAuthService,
+    private router: Router,
+    private snackBar: MatSnackBar
+  ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.auth.getToken();
+    // Determine which token to use based on URL and current user type
+    let token = null;
+    
+    // Check if user is logged in and this is a user-related endpoint
+    const userToken = this.userAuth.getToken();
+    const isUserLoggedIn = userToken && this.userAuth.isUserLoggedIn();
+    
+    // Prioritize user token for user-related endpoints: auth, bookings, profile updates
+    if (isUserLoggedIn && (req.url.includes('/users/') || req.url.includes('/bookings'))) {
+      token = userToken;
+      console.log('[AuthInterceptor] Using user token for request to:', req.url);
+    } 
+    // Otherwise use admin/technician token if available
+    else {
+      const adminToken = this.auth.getToken();
+      if (adminToken) {
+        token = adminToken;
+        console.log('[AuthInterceptor] Using admin token for request to:', req.url);
+      }
+    }
+
     const cloned = token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
 
     return next.handle(cloned).pipe(
@@ -20,20 +47,23 @@ export class AuthInterceptor implements HttpInterceptor {
           // Don't redirect on login/register endpoints - let components handle their errors
           const isLoginEndpoint = req.url.includes('/auth/login') || 
                                   req.url.includes('/auth/register') ||
+                                  req.url.includes('/users/login') ||
+                                  req.url.includes('/users/register') ||
                                   req.url.includes('/technician/login');
           
           if (!isLoginEndpoint) {
-            this.auth.logout();
-            
-            // Determine which login page to redirect to based on current URL
-            const currentUrl = this.router.url;
-            const isTechnicianRoute = currentUrl.includes('/technician');
-            
-            if (isTechnicianRoute) {
-              // Technician route → redirect to technician login
+            // Determine which type of user to logout
+            const isUserRoute = req.url.includes('/users/') || req.url.includes('/bookings') || this.router.url.includes('/user/');
+            const isTechnicianRoute = this.router.url.includes('/technician');
+
+            if (isUserRoute) {
+              this.userAuth.logout();
+              this.router.navigate(['/login']);
+            } else if (isTechnicianRoute) {
+              this.auth.logout();
               this.router.navigate(['/technician/login']);
             } else {
-              // Admin/default route → redirect to admin login
+              this.auth.logout();
               this.router.navigate(['/admin/login']);
             }
           }

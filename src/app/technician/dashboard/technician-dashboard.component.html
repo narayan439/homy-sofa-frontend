@@ -194,18 +194,6 @@
                   <span class="job-address">{{ job.address | slice:0:40 }}{{ job.address?.length > 40 ? '...' : '' }}</span>
                 </div>
               </div>
-
-              <!-- Action Button -->
-              <div class="item-action">
-                <button 
-                  mat-icon-button 
-                  [color]="(job.technicianStatus || job.status) === 'ASSIGNED' ? 'accent' : 'primary'" 
-                  (click)="viewJobDetails(job.id)"
-                  matTooltip="View Details"
-                >
-                  <mat-icon>arrow_forward</mat-icon>
-                </button>
-              </div>
             </div>
           </div>
           <ng-template #noTodayJobs>
@@ -243,7 +231,6 @@
                 <th>Date & Time</th>
                 <th>Address</th>
                 <th>Status</th>
-                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -267,26 +254,13 @@
                   </div>
                 </td>
                 <td>
-                  <div class="truncate">{{ job.address || 'No address' }}</div>
+                  <div class="truncate" [matTooltip]="formatAddressTooltip(job.address)">{{ job.address || 'No address' }}</div>
                 </td>
                 <td>
                   <span [class]="'status-badge ' + getStatusClass(job.technicianStatus || job.status)">
                     <mat-icon>{{ getStatusIcon(job.technicianStatus || job.status) }}</mat-icon>
                     {{ (job.technicianStatus || job.status || 'PENDING') }}
                   </span>
-                </td>
-                <td>
-                  <button mat-icon-button color="primary" (click)="viewJobDetails(job.id)" matTooltip="View Details">
-                    <mat-icon>visibility</mat-icon>
-                  </button>
-                  <button *ngIf="(job.technicianStatus || job.status) === 'ASSIGNED'" 
-                          mat-icon-button color="accent" (click)="startJob(job.id)" matTooltip="Start Job">
-                    <mat-icon>play_arrow</mat-icon>
-                  </button>
-                  <button *ngIf="(job.technicianStatus || job.status) === 'IN_PROGRESS'" 
-                          mat-icon-button color="primary" (click)="completeJob(job.id)" matTooltip="Complete Job">
-                    <mat-icon>check_circle</mat-icon>
-                  </button>
                 </td>
               </tr>
             </tbody>
