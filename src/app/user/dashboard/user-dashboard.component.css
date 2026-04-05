@@ -358,6 +358,17 @@
   color: #cbd5e1;
 }
 
+.tech-phone-number {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #f0f4ff;
+  color: #304ffe;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
 /* Payment Info */
 .payment-info {
   display: flex;

@@ -16,7 +16,6 @@ import { of } from 'rxjs';
 export class EditProfileComponent implements OnInit, OnDestroy {
   // Forms
   profileForm: FormGroup;
-  addressForm: FormGroup;
   passwordForm: FormGroup;
 
   // State
@@ -72,14 +71,6 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       ]
     });
 
-    this.addressForm = this.fb.group({
-      house: [''],
-      area: [''],
-      city: [''],
-      pincode: ['', [Validators.pattern(/^[0-9]{6}$|^$/)]],
-      landmark: ['']
-    });
-
     this.passwordForm = this.fb.group({
       currentPassword: ['', Validators.required],
       newPassword: ['', [
@@ -106,33 +97,55 @@ export class EditProfileComponent implements OnInit, OnDestroy {
    * Load current user profile
    */
   loadUserProfile(): void {
-    const user = this.userAuthService.getCurrentUser();
+    let user = this.userAuthService.getCurrentUser();
     if (!user) {
       this.snackBar.open('❌ User not found', 'Close', { duration: 3000 });
       this.router.navigate(['/login']);
       return;
     }
 
-    this.currentUser = user;
-    this.profileForm.patchValue({
-      name: user.name || '',
-      email: user.email || '',
-      phone: user.phone || ''
-    });
-
-    // Parse address if available
-    if (user.address) {
-      const addressParts = user.address.split(',').map((p: string) => p.trim());
-      if (addressParts.length >= 4) {
-        this.addressForm.patchValue({
-          house: addressParts[0] || '',
-          area: addressParts[1] || '',
-          city: addressParts[2] || '',
-          pincode: addressParts[3] || '',
-          landmark: addressParts[4] || ''
-        });
-      }
-    }
+    // Fetch full profile from backend to get createdAt and other details
+    this.isLoadingProfile = true;
+    this.userAuthService.getUserProfile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.success) {
+            // Merge backend profile with local user data
+            this.currentUser = { ...user, ...response.data };
+            
+            // Update localStorage with complete user data
+            localStorage.setItem('userData', JSON.stringify(this.currentUser));
+            this.userAuthService['currentUser'].next(this.currentUser);
+            
+            this.profileForm.patchValue({
+              name: this.currentUser.name || '',
+              email: this.currentUser.email || '',
+              phone: this.currentUser.phone || ''
+            });
+          } else {
+            // Fallback to local user data if backend call fails
+            this.currentUser = user;
+            this.profileForm.patchValue({
+              name: user.name || '',
+              email: user.email || '',
+              phone: user.phone || ''
+            });
+          }
+          this.isLoadingProfile = false;
+        },
+        error: (err) => {
+          console.error('Error loading profile:', err);
+          // Fallback to local user data
+          this.currentUser = user;
+          this.profileForm.patchValue({
+            name: user.name || '',
+            email: user.email || '',
+            phone: user.phone || ''
+          });
+          this.isLoadingProfile = false;
+        }
+      });
   }
 
   /**
@@ -242,21 +255,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
     const formData = this.profileForm.value;
 
-    // Build address string from form
-    const addressParts = [
-      this.addressForm.get('house')?.value || '',
-      this.addressForm.get('area')?.value || '',
-      this.addressForm.get('city')?.value || '',
-      this.addressForm.get('pincode')?.value || '',
-      this.addressForm.get('landmark')?.value || ''
-    ];
-    const address = addressParts.filter(p => p).join(', ');
-
     const updateData = {
       name: formData.name,
       email: formData.email,
-      phone: formData.phone,
-      address: address
+      phone: formData.phone
     };
 
     this.userAuthService.updateUserProfile(updateData)
@@ -292,51 +294,6 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     } else {
       this.snackBar.open(`❌ ${error}`, 'Close', { duration: 3000 });
     }
-  }
-
-  /**
-   * Save address changes
-   */
-  saveAddress(): void {
-    if (this.addressForm.invalid) {
-      this.snackBar.open('❌ Please fix address errors', 'Close', { duration: 3000 });
-      return;
-    }
-
-    const addressParts = [
-      this.addressForm.get('house')?.value || '',
-      this.addressForm.get('area')?.value || '',
-      this.addressForm.get('city')?.value || '',
-      this.addressForm.get('pincode')?.value || '',
-      this.addressForm.get('landmark')?.value || ''
-    ];
-    const address = addressParts.filter(p => p).join(', ');
-
-    this.isSavingProfile = true;
-
-    const updateData = {
-      name: this.currentUser.name,
-      email: this.currentUser.email,
-      phone: this.currentUser.phone,
-      address: address
-    };
-
-    this.userAuthService.updateUserProfile(updateData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          if (response && response.success) {
-            this.currentUser.address = address;
-            this.snackBar.open('✅ Address updated successfully!', 'Close', { duration: 3000 });
-          }
-        },
-        error: (err: any) => {
-          this.snackBar.open('❌ Failed to update address', 'Close', { duration: 3000 });
-        },
-        complete: () => {
-          this.isSavingProfile = false;
-        }
-      });
   }
 
   /**

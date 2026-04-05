@@ -70,7 +70,8 @@ export class UserAuthService {
       id: response.userId,
       email: response.email,
       name: response.name,
-      phone: response.phone
+      phone: response.phone,
+      createdAt: response.createdAt || null
     };
     console.log('[UserAuthService] Storing userData:', userData);
     localStorage.setItem('userData', JSON.stringify(userData));
@@ -179,6 +180,10 @@ export class UserAuthService {
           // Update local storage with new user data
           const currentUser = this.getCurrentUser();
           const updatedUser = { ...currentUser, ...profileData };
+          // Preserve createdAt if it exists
+          if (response.data && response.data.createdAt) {
+            updatedUser.createdAt = response.data.createdAt;
+          }
           localStorage.setItem('userData', JSON.stringify(updatedUser));
           localStorage.setItem('userName', updatedUser.name || '');
           localStorage.setItem('userEmail', updatedUser.email || '');

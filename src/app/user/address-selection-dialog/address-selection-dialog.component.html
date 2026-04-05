@@ -1,0 +1,56 @@
+<h2 mat-dialog-title>
+  <mat-icon>location_on</mat-icon>
+  Select Delivery Address
+</h2>
+
+<mat-dialog-content>
+  <div class="addresses-options">
+    <mat-radio-group [(ngModel)]="selectedAddressId" class="radio-group">
+      <mat-radio-button 
+        *ngFor="let address of data.addresses"
+        [value]="address.id"
+        class="address-option"
+      >
+        <div class="address-contents">
+          <div class="address-header">
+            <strong class="label">{{ address.label }}</strong>
+            <span class="type">{{ address.addressType }}</span>
+            <mat-chip 
+              *ngIf="address.isDefault"
+              size="small"
+              class="default-badge"
+            >
+              DEFAULT
+            </mat-chip>
+          </div>
+          
+          <div class="address-details">
+            <p class="full-address">{{ address.house }}, {{ address.area }}</p>
+            <p class="city-pincode">{{ address.city }} - {{ address.pincode }}</p>
+            <p class="landmark" *ngIf="address.landmark">
+              <mat-icon>flag</mat-icon>
+              {{ address.landmark }}
+            </p>
+          </div>
+        </div>
+      </mat-radio-button>
+    </mat-radio-group>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button 
+    mat-button
+    (click)="cancel()"
+  >
+    Cancel
+  </button>
+  <button 
+    mat-raised-button
+    color="primary"
+    (click)="selectAddress()"
+    [disabled]="!selectedAddressId"
+  >
+    Confirm Address
+  </button>
+</mat-dialog-actions>

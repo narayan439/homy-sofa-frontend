@@ -115,6 +115,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Navigate to manage addresses
+   */
+  goToAddresses(): void {
+    this.router.navigate(['/addresses']);
+    this.closeMobileSidebar();
+  }
+
+  /**
    * Logout user
    */
   logout(): void {

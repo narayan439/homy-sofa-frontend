@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { GoogleMapsModule } from '@angular/google-maps';
 
 // Update the import path if the actual location is different; for example:
 import { MaterialModule } from '../shared/material/material/material.module';
@@ -9,6 +10,8 @@ import { AboutComponent } from './about/about.component';
 import { CancelBookingDialogComponent } from './cancel-booking-dialog/cancel-booking-dialog.component';
 import { AddServiceDialogComponent } from './add-service-dialog/add-service-dialog.component';
 import { ConfirmDeleteDialogComponent } from './edit-profile/edit-profile.component';
+import { ManageAddressesComponent } from './manage-addresses/manage-addresses.component';
+import { AddressSelectionDialogComponent } from './address-selection-dialog/address-selection-dialog.component';
 import { UserGuard } from '../core/guards/user.guard';
 
 @NgModule({
@@ -17,12 +20,15 @@ import { UserGuard } from '../core/guards/user.guard';
     AboutComponent,
     CancelBookingDialogComponent,
     AddServiceDialogComponent,
-    ConfirmDeleteDialogComponent
+    ConfirmDeleteDialogComponent,
+    ManageAddressesComponent,
+    AddressSelectionDialogComponent
   ],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    GoogleMapsModule,
     MaterialModule,
     UserRoutingModule
   ],

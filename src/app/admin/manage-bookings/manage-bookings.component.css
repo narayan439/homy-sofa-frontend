@@ -510,6 +510,25 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* Address Cell */
+.address-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.address-text {
+  color: #4a5568;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+  cursor: help;
+}
+
 .cleaning-badge {
   background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
   color: #2e7d32;
