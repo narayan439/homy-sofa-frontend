@@ -1,0 +1,325 @@
+<div class="dashboard-container">
+  <!-- Header Section -->
+  
+
+  <!-- User Info Card -->
+  <div class="user-info-card">
+    <div class="user-avatar">
+      <mat-icon>account_circle</mat-icon>
+    </div>
+    <div class="user-details">
+      <h2>Welcome, {{ userName }}!</h2>
+      <p>Total Bookings: <strong>{{ bookings.length }}</strong></p>
+    </div>
+  </div>
+
+  <!-- Statistics Cards Section -->
+  <div class="stats-section" *ngIf="!isLoading && bookings.length > 0">
+    <div class="stat-card">
+      <div class="stat-icon total">
+        <mat-icon>shopping_cart</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>Total Bookings</h3>
+        <p class="stat-value">{{ totalBookings }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon completed">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>Completed</h3>
+        <p class="stat-value">{{ completedBookings }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon pending">
+        <mat-icon>schedule</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>Pending</h3>
+        <p class="stat-value">{{ pendingBookings }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon spent">
+        <mat-icon>account_balance_wallet</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>Total Spent</h3>
+        <p class="stat-value">{{ totalAmountSpent | number: '1.2-2' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40" strokeWidth="4"></mat-spinner>
+    <p>Loading your bookings...</p>
+  </div>
+
+  <!-- No Bookings Message -->
+  <div *ngIf="!isLoading && bookings.length === 0" class="no-bookings">
+    <mat-icon>inbox</mat-icon>
+    <h3>No Bookings Found</h3>
+    <p>You haven't made any bookings yet.</p>
+    <div class="no-bookings-actions">
+      <button 
+        mat-raised-button 
+        color="primary"
+        (click)="goToNewBooking()">
+        <mat-icon>add</mat-icon>
+        Browse Services
+      </button>
+    </div>
+  </div>
+
+  <!-- Bookings Section -->
+  <div *ngIf="!isLoading && bookings.length > 0" class="bookings-section">
+    <!-- Status Filter Tabs -->
+    <div class="filter-tabs">
+      <button 
+        *ngFor="let status of statusOptions"
+        [class.active]="selectedStatus === status"
+        class="filter-tab"
+        (click)="onStatusFilterChange(status)"
+        mat-button>
+        {{ status }}
+        <span class="tab-badge" *ngIf="status !== 'All'">
+          {{ getBookingCountByStatus(status) }}
+        </span>
+      </button>
+    </div>
+
+    <div class="table-header">
+      <h2>Your Service Bookings</h2>
+      <div class="header-buttons">
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="goToNewBooking()">
+          <mat-icon>add</mat-icon>
+          New Booking
+        </button>
+      </div>
+      <table mat-table [dataSource]="filteredBookings" class="bookings-table">
+        
+        <!-- Reference Column -->
+        <ng-container matColumnDef="reference">
+          <th mat-header-cell *matHeaderCellDef>Reference</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="booking-reference">{{ element.reference }}</span>
+           </td>
+        </ng-container>
+
+        <!-- Service Name Column -->
+        <ng-container matColumnDef="serviceName">
+          <th mat-header-cell *matHeaderCellDef>Service</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="service-name">{{ element.serviceName }}</span>
+           </td>
+        </ng-container>
+
+        <!-- Service Date Column -->
+        <ng-container matColumnDef="serviceDate">
+          <th mat-header-cell *matHeaderCellDef>Service Date</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="service-date">{{ element.serviceDate }}</span>
+            <span class="service-time" *ngIf="element.serviceTime">{{ element.serviceTime }}</span>
+           </td>
+        </ng-container>
+
+        <!-- Technician Status Column -->
+        <ng-container matColumnDef="technicianStatus">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let element">
+            <div *ngIf="element.technicianStatus" class="tech-status-badge" [ngClass]="'tech-status-' + (element.technicianStatus | lowercase)">
+              <mat-icon class="tech-icon">{{ getTechStatusIcon(element.technicianStatus) }}</mat-icon>
+              <span class="tech-status-text">{{ element.technicianStatus | titlecase }}</span>
+            </div>
+            <span *ngIf="!element.technicianStatus" class="no-tech">—</span>
+           </td>
+        </ng-container>
+
+        <!-- Technician Info Column -->
+        <ng-container matColumnDef="technicianInfo">
+          <th mat-header-cell *matHeaderCellDef>Technician</th>
+          <td mat-cell *matCellDef="let element">
+            <div class="technician-info">
+              <span class="tech-name" *ngIf="element.technicianName">{{ element.technicianName }}</span>
+              <span class="tech-name-placeholder" *ngIf="!element.technicianName">Not Assigned</span>
+              <span *ngIf="element.technicianPhone" class="tech-phone-text">{{ element.technicianPhone }}</span>
+              <span class="tech-phone-placeholder" *ngIf="!element.technicianPhone">—</span>
+            </div>
+           </td>
+        </ng-container>
+
+        <!-- Amount Column -->
+        <ng-container matColumnDef="totalAmount">
+          <th mat-header-cell *matHeaderCellDef>Amount</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="amount">{{ element.totalAmount | number: '1.2-2' }}</span>
+           </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let element" class="actions-cell">
+            <!-- View Details Button -->
+            <button 
+              mat-icon-button 
+              matTooltip="View Details"
+              (click)="viewBookingDetails(element)"
+              color="primary">
+              <mat-icon>info</mat-icon>
+            </button>
+
+            <!-- Book Again Button (for completed) -->
+            <button 
+              mat-icon-button 
+              matTooltip="Book Again"
+              (click)="bookAgain(element)"
+              *ngIf="element.status?.toUpperCase() === 'COMPLETED'"
+              color="accent">
+              <mat-icon>refresh</mat-icon>
+            </button>
+
+            <!-- Rate Button (for completed) -->
+            <button 
+              mat-icon-button 
+              matTooltip="Rate & Review"
+              (click)="openRateDialog(element)"
+              *ngIf="element.status?.toUpperCase() === 'COMPLETED'"
+              color="accent">
+              <mat-icon>star</mat-icon>
+            </button>
+
+            <!-- Reschedule Button (for pending/assigned) -->
+            <button 
+              mat-icon-button 
+              matTooltip="Reschedule"
+              (click)="openRescheduleDialog(element)"
+              *ngIf="element.status?.toUpperCase() === 'PENDING' || element.status?.toUpperCase() === 'ASSIGNED'"
+              color="primary">
+              <mat-icon>edit_calendar</mat-icon>
+            </button>
+
+            <!-- Cancel Button -->
+            <button 
+              mat-icon-button 
+              matTooltip="Cancel Booking"
+              (click)="openCancelDialog(element)"
+              [disabled]="!canCancelBooking(element)"
+              color="warn">
+              <mat-icon>cancel</mat-icon>
+            </button>
+           </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"> </tr>
+        <tr 
+          mat-row 
+          *matRowDef="let row; columns: displayedColumns;"
+          class="booking-row"
+          [class.cancelled]="row.status === 'CANCELLED'">
+        </tr>
+
+      </table>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div class="mobile-cards">
+      <mat-card *ngFor="let booking of bookings" class="booking-card" [class.cancelled]="booking.status === 'CANCELLED'">
+        
+        <!-- Booking Timeline -->
+        <div class="booking-timeline">
+          <div class="timeline-header">
+            <h3>{{ booking.reference || ('Booking #' + booking.id) }}</h3>
+            <div *ngIf="booking.technicianStatus" class="tech-status-badge" [ngClass]="'tech-status-' + (booking.technicianStatus | lowercase)">
+              <mat-icon class="tech-icon">{{ getTechStatusIcon(booking.technicianStatus) }}</mat-icon>
+              {{ booking.technicianStatus | titlecase }}
+            </div>
+            <span *ngIf="!booking.technicianStatus" class="no-tech">Pending</span>
+          </div>
+        </div>
+
+        <mat-card-content>
+          <div class="card-field">
+            <span class="card-label">Service:</span>
+            <span class="card-value">{{ booking.serviceName }}</span>
+          </div>
+          <div class="card-field">
+            <span class="card-label">Service Date:</span>
+            <span class="card-value">{{ booking.serviceDate }}</span>
+            <span class="card-value-small" *ngIf="booking.serviceTime">({{ booking.serviceTime }})</span>
+          </div>
+          <div class="card-field">
+            <span class="card-label">Booked On:</span>
+            <span class="card-value">{{ formatDate(booking.bookingDate) }}</span>
+          </div>
+
+          <!-- Technician Details -->
+          <div class="card-section-divider"></div>
+          <div class="card-section-title">
+            <mat-icon>engineering</mat-icon>
+            Technician
+          </div>
+          <div class="card-field">
+            <span class="card-label">Name:</span>
+            <span class="card-value">{{ booking.technicianName || 'Not Assigned' }}</span>
+          </div>
+          <div class="card-field">
+            <span class="card-label">Phone:</span>
+            <span class="card-value">{{ booking.technicianPhone || '-' }}</span>
+          </div>
+
+          <!-- Payment Details -->
+          <div class="card-section-divider"></div>
+          <div class="card-section-title">
+            <mat-icon>payment</mat-icon>
+            Payment
+          </div>
+          <div class="card-field">
+            <span class="card-label">Amount:</span>
+            <span class="card-value amount">{{ booking.totalAmount | number: '1.2-2' }}</span>
+          </div>
+          <div class="card-field" *ngIf="booking.paymentStatus">
+            <span class="card-label">Status:</span>
+            <span [class]="'payment-status-badge payment-' + (booking.paymentStatus | lowercase)">
+              <mat-icon>{{ getPaymentStatusIcon(booking.paymentStatus) }}</mat-icon>
+              {{ booking.paymentStatus | titlecase }}
+            </span>
+          </div>
+          <div class="card-field" *ngIf="booking.paymentMethod">
+            <span class="card-label">Method:</span>
+            <span class="card-value">{{ booking.paymentMethod | titlecase }}</span>
+          </div>
+          
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button 
+            mat-button 
+            color="primary"
+            (click)="viewBookingDetails(booking)">
+            <mat-icon>info</mat-icon>
+            Details
+          </button>
+          <button 
+            mat-button 
+            color="warn"
+            (click)="openCancelDialog(booking)"
+            [disabled]="!canCancelBooking(booking)">
+            <mat-icon>cancel</mat-icon>
+            Cancel
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>

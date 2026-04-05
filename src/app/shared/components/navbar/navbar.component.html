@@ -17,21 +17,61 @@
     <a mat-button routerLink="/services" routerLinkActive="active">
       Services
     </a>
-    <a mat-button routerLink="/tracking" routerLinkActive="active">
+    <a mat-button routerLink="/tracking" routerLinkActive="active" *ngIf="!isUserLoggedIn">
       <mat-icon class="menu-icon-small">location_on</mat-icon>
       Track Booking
     </a>
     <a mat-button routerLink="/about" routerLinkActive="active">
       About
     </a>
-    <a mat-button routerLink="/contact" routerLinkActive="active">
+    <a mat-button routerLink="/contact" routerLinkActive="active" *ngIf="!isUserLoggedIn">
       Contact
     </a>
 
-    <!-- Book Now Button on right -->
-    <a mat-raised-button routerLink="/booking" class="desktop-book-btn">
-      Book Now
-    </a>
+    <!-- Auth Buttons / User Menu -->
+    <div class="auth-section">
+      <!-- Unauthorized User: Sign Up / Sign In -->
+      <ng-container *ngIf="!isUserLoggedIn">
+        <button mat-button color="primary" (click)="goToSignup()" class="signup-btn">
+          <mat-icon>person_add</mat-icon>
+          Sign Up
+        </button>
+        <button mat-button color="primary" (click)="goToLogin()" class="signin-btn">
+          <mat-icon>login</mat-icon>
+          Sign In
+        </button>
+      </ng-container>
+
+      <!-- Authorized User: Dashboard / Logout -->
+      <ng-container *ngIf="isUserLoggedIn">
+        <button mat-button color="primary" (click)="goToDashboard()" class="dashboard-btn">
+          <mat-icon>dashboard</mat-icon>
+          Dashboard
+        </button>
+        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-menu-btn">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <div mat-menu-item disabled class="user-info">
+            <span class="user-name">{{ currentUserName }}</span>
+          </div>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="goToDashboard()">
+            <mat-icon>dashboard</mat-icon>
+            <span>My Dashboard</span>
+          </button>
+          <button mat-menu-item (click)="goToEditProfile()">
+            <mat-icon>edit</mat-icon>
+            <span>Edit Profile</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
+      </ng-container>
+    </div>
   </nav>
 
   <!-- Mobile Menu Button -->
@@ -86,13 +126,13 @@
       </a>
     </li>
     
-    <li>
+    <li *ngIf="!isUserLoggedIn">
       <a routerLink="/contact" routerLinkActive="active" (click)="closeMobileSidebar()">
         Contact
       </a>
     </li>
 
-    <li>
+    <li *ngIf="!isUserLoggedIn">
       <a routerLink="/tracking" routerLinkActive="active" (click)="closeMobileSidebar()">
         <mat-icon class="menu-icon-small">location_on</mat-icon>
         Track Booking
@@ -103,9 +143,29 @@
 
   <!-- Sidebar Footer -->
   <div class="mobile-sidebar-footer">
-    <a routerLink="/booking" class="book-now-btn" (click)="closeMobileSidebar()">
-      Book Now
-    </a>
+    <!-- Unauthorized User: Sign Up / Sign In -->
+    <ng-container *ngIf="!isUserLoggedIn">
+      <button mat-raised-button color="primary" (click)="goToSignup()" class="mobile-auth-btn">
+        <mat-icon>person_add</mat-icon>
+        Sign Up
+      </button>
+      <button mat-raised-button color="accent" (click)="goToLogin()" class="mobile-auth-btn">
+        <mat-icon>login</mat-icon>
+        Sign In
+      </button>
+    </ng-container>
+
+    <!-- Authorized User: Dashboard / Logout -->
+    <ng-container *ngIf="isUserLoggedIn">
+      <button mat-button color="primary" (click)="goToDashboard()" class="mobile-dashboard-btn">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </button>
+      <button mat-button color="warn" (click)="logout()" class="mobile-logout-btn">
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    </ng-container>
   </div>
   
 </div>

@@ -109,16 +109,28 @@
         <span class="label">Booking Reference</span>
         <h2>{{ bookingDetails.bookingReference }}</h2>
       </div>
-      <div class="booking-date">
-        <span class="label">Booking Date</span>
-        <p>{{ formatDate(bookingDetails.createdAt) }}</p>
-      </div>
       <div class="booking-status">
-        <span class="label">Current Status</span>
-        <span [class]="'status-badge ' + getStatusClass(bookingDetails.technicianStatus)">
-          <mat-icon>{{ getStatusIcon(bookingDetails.technicianStatus) }}</mat-icon>
+        <span class="label">Booking Status</span>
+        <span [class]="'status-badge status-' + (bookingDetails.status?.toLowerCase() || 'pending')">
+          <mat-icon>{{ getBookingStatusIcon(bookingDetails.status) }}</mat-icon>
+          {{ bookingDetails.status | titlecase }}
+        </span>
+      </div>
+      <div class="booking-date">
+        <span class="label">Service Date</span>
+        <p>{{ formatDate(bookingDetails.date) }}</p>
+      </div>
+      <div class="tech-status">
+        <span class="label">Technician Status</span>
+        <span *ngIf="bookingDetails.technicianStatus" [class]="'tech-status-badge tech-status-' + (bookingDetails.technicianStatus?.toLowerCase() || 'pending')">
+          <mat-icon>{{ getTechStatusIcon(bookingDetails.technicianStatus) }}</mat-icon>
           {{ bookingDetails.technicianStatus }}
         </span>
+        <span *ngIf="!bookingDetails.technicianStatus" class="no-tech">Pending Assignment</span>
+      </div>
+      <div class="complete-date">
+        <span class="label">Completion Date</span>
+        <p class="detail-value">{{ bookingDetails.completionDate ? formatDate(bookingDetails.completionDate) : '-' }}</p>
       </div>
     </div>
 
@@ -138,6 +150,7 @@
             <p *ngIf="step.completed && step.status === bookingDetails.technicianStatus">
               Current Status
             </p>
+            <small class="timeline-date">{{ step.date ? formatDate(step.date) : '-' }}</small>
           </div>
           <div class="timeline-connector" *ngIf="!last"></div>
         </div>
@@ -161,13 +174,10 @@
           <span class="detail-label">Service Date</span>
           <p class="detail-value">{{ formatDate(bookingDetails.date) }}</p>
         </div>
-        <div class="detail-item">
-          <span class="detail-label">Service Time</span>
-          <p class="detail-value">{{ bookingDetails.time }}</p>
-        </div>
+      
         <div class="detail-item">
           <span class="detail-label">Service Price</span>
-          <p class="detail-value">{{ bookingDetails.price ? 'PKR ' + bookingDetails.price : 'N/A' }}</p>
+          <p class="detail-value">{{ bookingDetails.price ? + bookingDetails.price : 'N/A' }}</p>
         </div>
       </div>
 
@@ -199,7 +209,7 @@
             <span *ngIf="bookingDetails.email === '-'">{{ bookingDetails.email }}</span>
           </p>
         </div>
-        <div class="detail-item">
+        <div class="detail-item" *ngIf="bookingDetails.address && bookingDetails.address !== '-'">
           <span class="detail-label">Address</span>
           <p class="detail-value">{{ bookingDetails.address }}</p>
         </div>
@@ -245,15 +255,31 @@
         </h3>
         <div class="detail-item">
           <span class="detail-label">Total Amount</span>
-          <p class="detail-value">{{ bookingDetails.price ? 'PKR ' + bookingDetails.price : 'N/A' }}</p>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Payment Status</span>
-          <p class="detail-value">{{ bookingDetails.paymentStatus }}</p>
+          <p class="detail-value">{{ bookingDetails.price ? + bookingDetails.price : 'N/A' }}</p>
         </div>
         <div class="detail-item">
           <span class="detail-label">Payment Method</span>
-          <p class="detail-value">{{ bookingDetails.paymentMethod }}</p>
+          <p>
+            <span [class]="'payment-badge payment-' + (bookingDetails.paymentMethod?.toLowerCase() || '')"
+                  [ngClass]="bookingDetails.paymentMethod?.toUpperCase() === 'ONLINE' ? 'method-online' : 'method-cash'">
+              <mat-icon>{{ bookingDetails.paymentMethod?.toUpperCase() === 'ONLINE' ? 'credit_card' : 'payments' }}</mat-icon>
+              {{ (bookingDetails.paymentMethod && bookingDetails.paymentMethod !== '-') ? (bookingDetails.paymentMethod | titlecase) : 'Not Yet Done' }}
+            </span>
+          </p>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Payment Status</span>
+          <p>
+            <span [class]="'status-badge-payment status-' + (bookingDetails.paymentStatus?.toLowerCase() || 'pending')"
+                  [ngClass]="'status-' + bookingDetails.paymentStatus?.toLowerCase()">
+              <mat-icon>{{ bookingDetails.paymentStatus?.toUpperCase() === 'SUCCESS' ? 'check_circle' : bookingDetails.paymentStatus?.toUpperCase() === 'COMPLETED' ? 'check_circle' : bookingDetails.paymentStatus?.toUpperCase() === 'FAILED' ? 'cancel' : 'pending_actions' }}</mat-icon>
+              {{ (bookingDetails.paymentStatus && bookingDetails.paymentStatus.toUpperCase() !== 'PENDING') ? (bookingDetails.paymentStatus | titlecase) : 'Not Yet Done' }}
+            </span>
+          </p>
+        </div>
+        <div class="detail-item" *ngIf="bookingDetails.paymentTimestamp">
+          <span class="detail-label">Payment Date & Time</span>
+          <p class="detail-value">{{ formatDate(bookingDetails.paymentTimestamp) }}</p>
         </div>
       </div>
     </div>

@@ -4,11 +4,12 @@ import { AdminLoginComponent } from './login/login.component';
 import { DashboardLayoutComponent } from './dashboard-layout/dashboard-layout.component';
 import { DashboardHomeComponent } from './dashboard-home/dashboard-home.component';
 import { ManageBookingsComponent } from './manage-bookings/manage-bookings.component';
-import { ManageCustomersComponent } from './manage-customers/manage-customers.component';
+import { ManageUsersComponent } from './manage-users/manage-users.component';
 import { ManageServicesComponent } from './manage-services/manage-services.component';
 import { ManageTechniciansComponent } from './manage-technicians/manage-technicians.component';
 import { SettingsComponent } from './settings/settings.component';
 import { AdminGuard } from '../core/guards/admin.guard';
+import { AdminNoAuthGuard } from '../core/guards/admin-no-auth.guard';
 
 // Export all components for module
 export const adminRoutingComponents = [
@@ -16,13 +17,14 @@ export const adminRoutingComponents = [
   DashboardLayoutComponent,
   DashboardHomeComponent,
   ManageBookingsComponent,
-  // Removed student, teacher, subject, recheck, add/edit, marks, profile components
+  ManageUsersComponent,
 ];
 
 const routes: Routes = [
   { 
     path: 'login', 
-    component: AdminLoginComponent 
+    component: AdminLoginComponent,
+    canActivate: [AdminNoAuthGuard]
   },
   {
     path: '',
@@ -44,8 +46,8 @@ const routes: Routes = [
         component: ManageBookingsComponent 
       },
       {
-        path: 'manage-customers',
-        component: ManageCustomersComponent
+        path: 'manage-users',
+        component: ManageUsersComponent
       },
       {
         path: 'manage-services',

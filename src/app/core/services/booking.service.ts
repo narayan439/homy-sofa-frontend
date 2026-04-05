@@ -28,7 +28,14 @@ export class BookingService {
   constructor(private http: HttpClient) {
     this.loadBookings();
     // Try to sync from backend on startup
-    this.getAllBookings().subscribe({ next: () => {}, error: () => {} });
+    this.getAllBookings().subscribe({
+      next: () => {},
+      error: () => {
+        // If backend is unreachable or returns error, clear any cached bookings
+        this.bookingsSubject.next([]);
+        this.saveToLocalStorage();
+      }
+    });
   }
 
   private normalizeBooking(b: any): Booking {
@@ -190,5 +197,50 @@ export class BookingService {
 
   getLocalAllBookings(): Booking[] {
     return this.bookingsSubject.value;
+  }
+
+  /**
+   * Get all bookings for a specific user
+   */
+  getUserBookings(userId: number): Observable<any> {
+    return this.http.get<any>(`${API_URL}/bookings/user/${userId}`);
+  }
+
+  /**
+   * Cancel a booking with reason
+   */
+  cancelBooking(bookingId: number, reason: string): Observable<any> {
+    const payload = { status: 'CANCELLED', cancelReason: reason };
+    return this.http.put<any>(`${API_URL}/bookings/${bookingId}`, payload)
+      .pipe(
+        tap(updatedBooking => {
+          const current = this.bookingsSubject.value;
+          const normalized = this.normalizeBooking(updatedBooking as any);
+          const updated = current.map(b => String(b.id) === String(bookingId) ? normalized : b);
+          this.bookingsSubject.next(updated);
+          this.saveToLocalStorage();
+        })
+      );
+  }
+
+  /**
+   * Add an additional service to a booking
+   */
+  addServiceToBooking(bookingId: number, serviceName: string, price: number): Observable<any> {
+    const payload = { 
+      serviceName, 
+      price,
+      action: 'ADD_SERVICE' 
+    };
+    return this.http.put<any>(`${API_URL}/bookings/${bookingId}/add-service`, payload)
+      .pipe(
+        tap(updatedBooking => {
+          const current = this.bookingsSubject.value;
+          const normalized = this.normalizeBooking(updatedBooking as any);
+          const updated = current.map(b => String(b.id) === String(bookingId) ? normalized : b);
+          this.bookingsSubject.next(updated);
+          this.saveToLocalStorage();
+        })
+      );
   }
 }

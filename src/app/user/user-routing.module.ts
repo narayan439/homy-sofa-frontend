@@ -6,14 +6,24 @@ import { BookingComponent } from './booking/booking.component';
 import { ContactComponent } from './contact/contact.component';
 import { AboutComponent } from './about/about.component';
 import { TrackingComponent } from './tracking/tracking.component';
+import { LoginComponent } from './login/login.component';
+import { SignupComponent } from './signup/signup.component';
+import { UserDashboardComponent } from './dashboard/user-dashboard.component';
+import { EditProfileComponent } from './edit-profile/edit-profile.component';
+import { UserGuard } from '../core/guards/user.guard';
+import { NoAuthGuard } from '../core/guards/no-auth.guard';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'services', component: ServicesComponent },
-  { path: 'booking', component: BookingComponent },
+  { path: 'booking', component: BookingComponent, canActivate: [UserGuard] },
   { path: 'tracking', component: TrackingComponent },
   { path: 'contact', component: ContactComponent },
-  { path: 'about', component: AboutComponent }
+  { path: 'about', component: AboutComponent },
+  { path: 'login', component: LoginComponent, canActivate: [NoAuthGuard] },
+  { path: 'signup', component: SignupComponent, canActivate: [NoAuthGuard] },
+  { path: 'dashboard', component: UserDashboardComponent, canActivate: [UserGuard] },
+  { path: 'edit-profile', component: EditProfileComponent, canActivate: [UserGuard] }
 ];
 
 @NgModule({
@@ -28,5 +38,9 @@ export const userRoutingComponents = [
   BookingComponent,
   TrackingComponent,
   ContactComponent,
-  AboutComponent
+  AboutComponent,
+  LoginComponent,
+  SignupComponent,
+  UserDashboardComponent,
+  EditProfileComponent
 ];

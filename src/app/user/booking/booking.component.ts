@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BookingService } from '../../core/services/booking.service';
 import { ServiceService, Service } from '../../core/services/service.service';
+import { UserAuthService } from '../../core/services/user-auth.service';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -30,23 +31,18 @@ export class BookingComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private bookingService: BookingService,
     private snackBar: MatSnackBar,
-    private serviceService: ServiceService
+    private serviceService: ServiceService,
+    public userAuthService: UserAuthService
   ) {
     this.minDate = new Date();
 
     // Initialize the booking form
+    // Note: fullName, email, phone are NOT included - user is already logged in with these details
     this.bookingForm = this.fb.group({
-      fullName: ['', [
-        Validators.required,
-        Validators.minLength(3),
-        Validators.pattern(/^[A-Za-z ]+$/)
-      ]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+      serviceType: ['', Validators.required],
       serviceDate: ['', Validators.required],
       timeSlot: [''],
       details: ['', [Validators.maxLength(500)]],
-      serviceType: ['', Validators.required],
       // Address fields
       house: ['', Validators.required],
       area: ['', Validators.required],
@@ -66,6 +62,9 @@ export class BookingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Auto-fill user data from profile if logged in
+    this.autoFillUserData();
+
     this.serviceService.services$.subscribe(list => {
       // Filter to only active services for booking
       this.services = (list || []).filter(s => s.isActive !== false);
@@ -91,6 +90,37 @@ export class BookingComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopLocationTracking();
+  }
+
+  /**
+   * Auto-fill address data from user profile if available
+   */
+  private autoFillUserData(): void {
+    if (!this.userAuthService.isUserLoggedIn()) {
+      return; // User not logged in, skip auto-fill
+    }
+
+    const currentUser = this.userAuthService.getCurrentUser();
+    if (!currentUser) return;
+
+    // Auto-fill address fields if available from user profile
+    if (currentUser.address) {
+      this.bookingForm.patchValue({
+        fullAddress: currentUser.address
+      });
+      
+      // Try to parse structured address if it follows a pattern
+      const addressParts = currentUser.address.split(',').map((p: string) => p.trim());
+      if (addressParts.length === 4) {
+        // Assume format: house, area, city, pincode
+        this.bookingForm.patchValue({
+          house: addressParts[0] || '',
+          area: addressParts[1] || '',
+          city: addressParts[2] || '',
+          pincode: addressParts[3] || ''
+        });
+      }
+    }
   }
 
   // Location Methods

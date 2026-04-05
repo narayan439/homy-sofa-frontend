@@ -1,0 +1,19 @@
+<div class="address-display">
+  <mat-icon class="address-icon">location_on</mat-icon>
+  <span class="address-text">{{ getAddress() }}</span>
+  <button mat-icon-button 
+    (click)="viewAddress()" 
+    matTooltip="Click to view full address" 
+    class="view-btn"
+    type="button">
+    <mat-icon>visibility</mat-icon>
+  </button>
+  <button *ngIf="hasCoordinates()" 
+    mat-icon-button 
+    (click)="openMap()" 
+    matTooltip="Open in Google Maps" 
+    class="map-btn"
+    type="button">
+    <mat-icon>map</mat-icon>
+  </button>
+</div>

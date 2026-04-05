@@ -658,6 +658,86 @@
   box-shadow: 0 4px 15px rgba(48, 79, 254, 0.3);
 }
 
+/* ============ PAYMENT COLUMN STYLES ============ */
+.payment-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.no-payment {
+  color: #a0aec0;
+  font-style: italic;
+}
+
+.payment-method {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 12px;
+  width: fit-content;
+}
+
+.payment-method.method-cash {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.payment-method.method-online {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.payment-status {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  width: fit-content;
+}
+
+.payment-status.status-success {
+  color: #22c55e;
+}
+
+.payment-status.status-failed {
+  color: #ef4444;
+}
+
+.payment-status.status-not_required {
+  color: #94a3b8;
+}
+
+.payment-ids {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payment-id,
+.transaction-id {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  background: #f0f4ff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #304ffe;
+  word-break: break-all;
+  display: inline-block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+}
+
+.payment-time {
+  color: #718096;
+  font-size: 11px;
+}
+
 /* ============ MOBILE SPECIFIC STYLES ============ */
 
 /* Mobile Cards */

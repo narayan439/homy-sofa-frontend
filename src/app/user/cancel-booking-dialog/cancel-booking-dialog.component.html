@@ -1,0 +1,83 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon class="title-icon">cancel</mat-icon>
+  Cancel Booking
+</h2>
+
+<mat-dialog-content>
+  <!-- Booking Details -->
+  <div class="booking-details-box">
+    <div class="detail-item">
+      <span class="detail-label">Booking ID:</span>
+      <span class="detail-value">#{{ data.booking.id }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Service:</span>
+      <span class="detail-value">{{ data.booking.serviceName }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Booking Date:</span>
+      <span class="detail-value">{{ formatDate(data.booking.bookingDate) }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Amount:</span>
+      <span class="detail-value amount">PKR {{ data.booking.totalAmount | number: '1.2-2' }}</span>
+    </div>
+  </div>
+
+  <!-- Warning Message -->
+  <div class="warning-message">
+    <mat-icon>warning</mat-icon>
+    <span>Are you sure you want to cancel this booking? This action cannot be undone.</span>
+  </div>
+
+  <!-- Cancellation Form -->
+  <form [formGroup]="cancelForm" (ngSubmit)="onSubmit()">
+    <!-- Reason Dropdown -->
+    <mat-form-field class="full-width" appearance="outline">
+      <mat-label>Reason for Cancellation</mat-label>
+      <mat-select formControlName="reason">
+        <mat-select-trigger>{{ cancelForm.get('reason')?.value }}</mat-select-trigger>
+        <mat-option *ngFor="let reason of cancelReasons" [value]="reason">
+          {{ reason }}
+        </mat-option>
+      </mat-select>
+      <mat-icon matPrefix>reason</mat-icon>
+      <mat-error *ngIf="getReasonErrorMessage()">
+        {{ getReasonErrorMessage() }}
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Feedback Textarea -->
+    <mat-form-field class="full-width" appearance="outline">
+      <mat-label>Additional Feedback (Optional)</mat-label>
+      <textarea 
+        matInput 
+        formControlName="feedback"
+        placeholder="Please share your feedback to help us improve our services"
+        rows="3">
+      </textarea>
+      <mat-icon matPrefix>feedback</mat-icon>
+      <mat-hint align="end">
+        {{ cancelForm.get('feedback')?.value?.length || 0 }}/500
+      </mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button 
+    mat-button 
+    (click)="onCancel()"
+    [disabled]="isSubmitting">
+    Keep Booking
+  </button>
+  <button 
+    mat-raised-button 
+    color="warn"
+    (click)="onSubmit()"
+    [disabled]="isSubmitting || cancelForm.invalid">
+    <mat-icon *ngIf="!isSubmitting">delete</mat-icon>
+    <mat-spinner *ngIf="isSubmitting" diameter="16" strokeWidth="2"></mat-spinner>
+    {{ isSubmitting ? 'Cancelling...' : 'Confirm Cancellation' }}
+  </button>
+</mat-dialog-actions>

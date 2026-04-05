@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { BookingService } from '../../core/services/booking.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -17,20 +18,40 @@ export class TrackingComponent implements OnInit {
 
   // Status timeline
   statusTimeline = [
-    { status: 'PENDING', label: 'Booking Confirmed', icon: 'check_circle', completed: false },
-    { status: 'ASSIGNED', label: 'Technician Assigned', icon: 'person', completed: false },
-    { status: 'IN_PROGRESS', label: 'Service In Progress', icon: 'build', completed: false },
-    { status: 'COMPLETED', label: 'Service Completed', icon: 'task_alt', completed: false }
+    { status: 'PENDING', label: 'Booking Confirmed', icon: 'check_circle', completed: false, date: null },
+    { status: 'ASSIGNED', label: 'Technician Assigned', icon: 'person', completed: false, date: null },
+    { status: 'IN_PROGRESS', label: 'Service In Progress', icon: 'build', completed: false, date: null },
+    { status: 'COMPLETED', label: 'Service Completed', icon: 'task_alt', completed: false, date: null }
   ];
 
   constructor(
     private formBuilder: FormBuilder,
     private bookingService: BookingService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.initializeForm();
+    
+    // Check if booking data was passed from navigation using history state
+    const state = (history as any).state;
+    
+    if (state && state['bookingData']) {
+      // Pre-fill form with booking data
+      const booking = state['bookingData'];
+      this.trackingForm.patchValue({
+        trackingId: booking.reference || '',
+        phoneNumber: state['phone'] || ''
+      });
+      
+      // Auto-search with pre-filled data
+      if (booking.reference && state['phone']) {
+        this.searchAttempted = true;
+        this.bookingDetails = this.mapBookingDetails(booking);
+        this.updateStatusTimeline();
+      }
+    }
   }
 
   initializeForm(): void {
@@ -137,21 +158,29 @@ export class TrackingComponent implements OnInit {
     // Map backend response to our display format
     return {
       id: data.id,
-      bookingReference: data.bookingReference || data.referenceNumber || data.booking_reference || `BKG-${data.id}`,
-      name: data.name || data.customerName || data.customer_name || '-',
-      phone: data.phone || data.phoneNumber || data.phone_number || '-',
-      email: data.email || '-',
+      bookingReference: data.bookingReference || data.referenceNumber || data.booking_reference || data.reference || `HOMY2026${data.id}`,
+      // Customer Details - priority: customerName from dashboard, then name from backend
+      name: data.customerName || data.name || data.customerName || data.customer_name || '-',
+      phone: data.customerPhone || data.phone || data.phoneNumber || data.phone_number || '-',
+      email: data.customerEmail || data.email || '-',
       address: data.address || '-',
+      // Service Details
       service: data.service || data.serviceName || data.service_name || '-',
       date: data.date || data.bookingDate || data.booking_date || data.serviceDate || '-',
-      time: data.timeSlot || data.time || data.time_slot || '-',
+      time: data.timeSlot || data.time || data.time_slot || data.serviceTime || '-',
       price: data.price || data.amount || data.totalAmount || data.total_amount || '-',
+      // Booking Status
       status: data.status || data.bookingStatus || data.booking_status || 'PENDING',
       technicianStatus: data.technicianStatus || data.technician_status || data.status || 'PENDING',
+      // Technician Details
       technicianName: data.technicianName || data.technician_name || '-',
       technicianPhone: data.technicianPhone || data.technician_phone || data.technicianMobile || data.technician_mobile || '-',
-      paymentStatus: data.paymentStatus || data.payment_status || 'Pending',
-      paymentMethod: data.paymentMethod || data.payment_method || 'Cash on Delivery',
+      completionDate: data.completionDate || data.completedAt || data.completed_at || null,
+      // Payment Details
+      paymentStatus: data.paymentStatus || data.payment_status || 'PENDING',
+      paymentMethod: data.paymentMethod || data.payment_method || 'NOT  YET DONE',
+      paymentTimestamp: data.paymentTimestamp || data.payment_timestamp || null,
+      // Additional Details
       estimatedCompletionTime: data.estimatedCompletionTime || data.estimated_completion_time || null,
       completedAt: data.completedAt || data.completed_at || null,
       createdAt: data.createdAt || data.created_at || new Date().toISOString()
@@ -171,8 +200,19 @@ export class TrackingComponent implements OnInit {
     };
 
     const currentIndex = statusOrder[currentStatus] || 0;
+    const created = this.bookingDetails.createdAt;
+    const completed = this.bookingDetails.completionDate || this.bookingDetails.completedAt || null;
+
     this.statusTimeline.forEach((item, index) => {
       item.completed = index <= currentIndex;
+      // Attach date when available
+      if (item.status === 'PENDING') {
+        item.date = created || '-';
+      } else if (item.status === 'COMPLETED') {
+        item.date = completed || '-';
+      } else {
+        item.date = item.completed ? (this.bookingDetails.estimatedCompletionTime || '-') : '-';
+      }
     });
   }
 
@@ -185,6 +225,26 @@ export class TrackingComponent implements OnInit {
       'CANCELLED': 'cancel'
     };
     return iconMap[status] || 'help_outline';
+  }
+
+  getTechStatusIcon(status: string): string {
+    switch (status?.toUpperCase()) {
+      case 'ASSIGNED': return 'person_check';
+      case 'IN_PROGRESS': return 'engineering';
+      case 'COMPLETED': return 'done_circle';
+      default: return 'hourglass_empty';
+    }
+  }
+
+  getBookingStatusIcon(status: string): string {
+    switch (status?.toUpperCase()) {
+      case 'PENDING': return 'schedule';
+      case 'CONFIRMED': return 'check_circle';
+      case 'IN_PROGRESS': return 'build';
+      case 'COMPLETED': return 'task_alt';
+      case 'CANCELLED': return 'cancel';
+      default: return 'info';
+    }
   }
 
   getStatusClass(status: string): string {

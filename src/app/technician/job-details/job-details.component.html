@@ -166,6 +166,10 @@
             <span class="label">Payment Method</span>
             <span class="value">{{ job.paymentMethod || 'Not specified' }}</span>
           </div>
+          <div class="detail-item" *ngIf="job.paymentId || job.razorpayPaymentId || job.payment_reference || job.paymentRef">
+            <span class="label">Payment ID</span>
+            <span class="value">{{ job.paymentId || job.razorpayPaymentId || job.payment_reference || job.paymentRef }}</span>
+          </div>
         </div>
       </div>
 

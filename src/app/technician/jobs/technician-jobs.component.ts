@@ -2,7 +2,9 @@ import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { TechnicianService } from '../../core/services/technician.service';
 import { BookingService } from '../../core/services/booking.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServiceService } from '../../core/services/service.service';
+import { environment } from '../../../environments/environment';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, take, takeUntil } from 'rxjs/operators';
 
@@ -30,6 +32,7 @@ export class TechnicianJobsComponent implements OnInit {
   additionalServicePrice: number | null = null;
   totalAmount: number | null = null;
   completionNotes = '';
+  selectedPaymentMethod: 'CASH' | 'ONLINE' = 'CASH';
   searchQuery: string = '';
   statusFilter: string = 'all';
   dateFilter: string = 'all';
@@ -57,7 +60,8 @@ bookingCountMap: Map<string, number> = new Map();
     private techService: TechnicianService,
     private dialog: MatDialog,
     private serviceService: ServiceService,
-    private bookingService: BookingService
+    private bookingService: BookingService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -112,9 +116,14 @@ bookingCountMap: Map<string, number> = new Map();
 
         let jobs: any[] = tryExtractArray(res) || tryExtractArray(res?.data) || tryExtractArray(res?.payload) || [];
 
-        // If the response looks like a Spring Page object (has content) but tryExtract missed it, use content
+        // Check for Spring Page object (content field)
         if ((!jobs || jobs.length === 0) && res && res.content && Array.isArray(res.content)) {
           jobs = res.content;
+        }
+
+        // Check for paginated response with bookings field (custom format from backend)
+        if ((!jobs || jobs.length === 0) && res && res.bookings && Array.isArray(res.bookings)) {
+          jobs = res.bookings;
         }
 
         // If still empty but the response looks like a single booking object, wrap it
@@ -182,9 +191,15 @@ bookingCountMap: Map<string, number> = new Map();
       if (!raw && raw !== 0) return null;
       // primitives
       if (typeof raw === 'string' || typeof raw === 'number') {
-        const d = new Date(raw);
-        if (!isNaN(d.getTime())) return d.toISOString();
         const s = String(raw).trim();
+        // Handle dd/mm/yyyy or dd-mm-yyyy (common non-US formats)
+        const dm = s.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/);
+        if (dm) {
+          try { return new Date(Number(dm[3]), Number(dm[2]) - 1, Number(dm[1])).toISOString(); } catch (e) { /* fallthrough */ }
+        }
+        // Try native Date parsing next (ISO, long formats, etc.)
+        const d = new Date(s);
+        if (!isNaN(d.getTime())) return d.toISOString();
         // try yyyy-MM-dd
         const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
         if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).toISOString();
@@ -211,7 +226,8 @@ bookingCountMap: Map<string, number> = new Map();
     return (jobs || []).map(job => {
       const rawDate = job.date ?? job.bookingDate ?? job.created_at ?? job.createdAt;
       const parsed = parseDate(rawDate) || parseDate(job.date) || parseDate(job.bookingDate) || parseDate(job.created_at) || parseDate(job.createdAt) || null;
-      const bookingDate = parsed || new Date().toISOString();
+      // Prefer null when date is missing or unparsable so UI shows 'Not Set' instead of a wrong default
+      const bookingDate = parsed || null;
 
       // Normalize status to uppercase for consistent comparison (check multiple possible fields)
       const rawStatus = job.technicianStatus ?? job.technician_status ?? job.status ?? job.bookingStatus ?? job.state ?? job.technician_status_text;
@@ -230,20 +246,70 @@ bookingCountMap: Map<string, number> = new Map();
       // Time slot alternatives
       const timeSlot = job.timeSlot ?? job.time ?? job.time_slot ?? job.slot ?? 'Flexible';
 
+      // Address may be returned in multiple shapes/keys; normalize to a single string when possible
+      const extractAddr = (j: any): string | null => {
+        if (!j) return null;
+        if (typeof j === 'string' && j.trim()) return j.trim();
+        if (typeof j === 'object') {
+          if (j.addressText && String(j.addressText).trim()) return String(j.addressText).trim();
+          if (j.address && String(j.address).trim()) return String(j.address).trim();
+          if (j.address_text && String(j.address_text).trim()) return String(j.address_text).trim();
+          // fallback: try common address parts
+          const parts = [];
+          if (j.street) parts.push(String(j.street).trim());
+          if (j.city) parts.push(String(j.city).trim());
+          if (j.state) parts.push(String(j.state).trim());
+          if (j.postcode) parts.push(String(j.postcode).trim());
+          if (parts.length > 0) return parts.join(', ');
+        }
+        return null;
+      };
+
+      const resolvedAddress = extractAddr(job.address) || extractAddr(job.serviceAddress) || extractAddr(job.customerAddress) || extractAddr(job.address_text) || extractAddr(job.addressText) || null;
+
+      // Fallback: reconstruct address from individual fields if main address is missing
+      let finalAddress = resolvedAddress;
+      if (!finalAddress) {
+        const parts = [];
+        if (job.house) parts.push(String(job.house).trim());
+        if (job.area) parts.push(String(job.area).trim());
+        if (job.city) parts.push(String(job.city).trim());
+        if (job.landmark) parts.push(String(job.landmark).trim());
+        if (job.pincode) parts.push(String(job.pincode).trim());
+        if (parts.length > 0) finalAddress = parts.filter(Boolean).join(', ');
+      }
+
+      // Debug logging to diagnose missing addresses
+      if (!finalAddress && job.name === 'Narayan Sahu') {
+        console.warn('DEBUG: Missing address for booking', {
+          jobName: job.name,
+          jobPhone: job.phone,
+          jobId: job.id,
+          addressFromBackend: job.address,
+          serviceAddress: job.serviceAddress,
+          customerAddress: job.customerAddress,
+          address_text: job.address_text,
+          addressText: job.addressText,
+          individualFields: { house: job.house, area: job.area, city: job.city, landmark: job.landmark, pincode: job.pincode },
+          allKeys: Object.keys(job)
+        });
+      }
+
       return {
         ...job,
         technicianStatus: status,
         customerName: job.name || job.customerName || job.customer?.name || 'Unknown',
         customerPhone: job.phone || job.customerPhone || job.customer?.phone || '',
         customerEmail: job.email || job.customerEmail || job.customer?.email || '',
-        address: job.address || job.serviceAddress || job.address_text || job.customerAddress || 'No address',
-        specialAddress: job.specialAddress || job.address || job.address_text,
+        address: finalAddress || 'No address',
+        specialAddress: job.specialAddress || finalAddress || job.address || job.address_text,
         serviceType: serviceName,
         bookingDate,
         timeSlot,
         totalAmount: job.totalAmount ?? job.amount ?? job.price ?? job.total_amount ?? 0,
         reference: job.reference ?? job.bookingId ?? job.id ?? job.reference_no
       };
+      
     });
   }
 
@@ -299,6 +365,20 @@ bookingCountMap: Map<string, number> = new Map();
     });
   }
 
+  viewAddress(address: string) {
+    if (!address || address === 'Address not available') {
+      this.snackBar.open('No address available for this job', 'Close', { duration: 3000 });
+      return;
+    }
+    // Show address in snackbar with longer duration
+    this.snackBar.open(`📍 ${address}`, 'Close', {
+      duration: 6000,
+      panelClass: ['address-snackbar'],
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom'
+    });
+  }
+
   openDetails(job: any, resetModes: boolean = true) {
     console.log('openDetails called for job:', job);
     try { this.currentJob = this.enrichJobs([job])[0]; } catch { this.currentJob = job; }
@@ -326,6 +406,8 @@ bookingCountMap: Map<string, number> = new Map();
           console.log('Fetched fresh booking:', fresh);
           try { this.currentJob = this.enrichJobs([fresh])[0]; } catch (e) { console.warn('enrichJobs failed', e); this.currentJob = fresh; }
           console.log('Enriched currentJob for dialog:', this.currentJob);
+          // pre-fill computed totalAmount for completion flow
+          try { this.totalAmount = this.computeTotalForJob(this.currentJob); } catch { this.totalAmount = this.currentJob?.totalAmount ?? this.currentJob?.price ?? 0; }
           this.dialogRef = this.dialog.open(this.jobDialog, { width: '520px' });
           console.log('Dialog opened with booking id:', this.currentJob.id);
           this.dialogRef.afterClosed().subscribe(result => {
@@ -352,6 +434,7 @@ bookingCountMap: Map<string, number> = new Map();
     } else {
       console.log('No booking id available; opening dialog with current data');
       try { this.currentJob = this.enrichJobs([this.currentJob])[0]; } catch {};
+      try { this.totalAmount = this.computeTotalForJob(this.currentJob); } catch { this.totalAmount = this.currentJob?.totalAmount ?? this.currentJob?.price ?? 0; }
       this.dialogRef = this.dialog.open(this.jobDialog, { width: '520px' });
       this.dialogRef.afterClosed().subscribe(result => {
         if (result && (result.action === 'started' || result.action === 'completed' || result.action === 'accepted' || result.action === 'cancelled')) {
@@ -408,13 +491,13 @@ bookingCountMap: Map<string, number> = new Map();
 
   submitAddService() {
     if (!this.additionalServiceName || this.additionalServicePrice == null) {
-      alert('Please select a service');
+      this.snackBar.open('⚠️ Please select a service', 'Close', { duration: 3000 });
       return;
     }
     // Prevent adding the same service as the booking's main service
     const mainService = (this.currentJob?.serviceType || this.currentJob?.service || '').toString().trim().toLowerCase();
     if (mainService && this.additionalServiceName.toString().trim().toLowerCase() === mainService) {
-      alert('Cannot add the same service as the main booking');
+      this.snackBar.open('❌ Cannot add the same service as the main booking', 'Close', { duration: 3000 });
       return;
     }
     // prevent duplicates
@@ -423,7 +506,7 @@ bookingCountMap: Map<string, number> = new Map();
       if (Array.isArray(existing)) {
         const dup = existing.find((s: any) => (s.name || '').toLowerCase() === (this.additionalServiceName || '').toLowerCase());
         if (dup) {
-          alert('This additional service has already been added');
+          this.snackBar.open('❌ This additional service has already been added', 'Close', { duration: 3000 });
           return;
         }
       }
@@ -433,8 +516,8 @@ bookingCountMap: Map<string, number> = new Map();
     const id = tech ? JSON.parse(tech).id : null;
     this.techService.addAdditionalService(this.currentJob.id, this.additionalServiceName, this.additionalServicePrice, id).subscribe({
       next: () => {
-        alert('Service added');
-        this.addServiceMode = false;
+        this.snackBar.open('✅ Service added successfully', 'Close', { duration: 2000 });
+        
         // update local job
         try {
           const arr = this.currentJob.additionalServicesJson ? JSON.parse(this.currentJob.additionalServicesJson) : [];
@@ -443,9 +526,25 @@ bookingCountMap: Map<string, number> = new Map();
         } catch (e) {
           this.currentJob.additionalServicesJson = JSON.stringify([{ id: this.selectedServiceId, name: this.additionalServiceName, price: this.additionalServicePrice }]);
         }
+        
+        // Reset form for adding another service (don't close mode)
+        this.selectedServiceId = null;
+        this.additionalServiceName = '';
+        this.additionalServicePrice = null;
       },
-      error: () => alert('Failed to add service')
+      error: () => this.snackBar.open('❌ Failed to add service', 'Close', { duration: 3000 })
     });
+  }
+
+  // Helper method to get parsed additional services for display
+  getAdditionalServices(): any[] {
+    if (!this.currentJob?.additionalServicesJson) return [];
+    try {
+      const parsed = JSON.parse(this.currentJob.additionalServicesJson);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
   }
 
   getAdditionalServiceNames(job: any): string {
@@ -458,17 +557,119 @@ bookingCountMap: Map<string, number> = new Map();
     }
   }
 
-  enterCompleteMode() { this.completeMode = true; }
+  enterCompleteMode() {
+    this.completeMode = true;
+    this.selectedPaymentMethod = 'CASH'; // Default to CASH
+  }
 
   submitComplete() {
-    if (this.totalAmount == null || this.totalAmount === 0) { alert('Please enter total amount collected'); return; }
-    if (!this.completionNotes || this.completionNotes.trim().length === 0) { alert('Please enter completion notes'); return; }
+    if (this.totalAmount == null || this.totalAmount === 0) { alert('Please provide the total amount (auto-calculated)'); return; }
+    
+    if (this.selectedPaymentMethod === 'ONLINE') {
+      // Initiate Razorpay payment
+      this.initiateRazorpayPayment();
+    } else {
+      // Complete with CASH payment
+      this.completeJobWithPayment('CASH', null);
+    }
+  }
+
+  initiateRazorpayPayment() {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => {
+      const options: any = {
+        key: environment.razorpay.keyId,
+        amount: Math.round(this.totalAmount! * 100), // Amount in paise
+        currency: 'INR',
+        name: 'Booking Service',
+        description: `Service: ${this.currentJob?.serviceType || 'Service'} - Booking #${this.currentJob?.id}`,
+        handler: (response: any) => {
+          console.log('Razorpay Payment Response:', response);
+          // Store all payment details from Razorpay
+          const paymentDetails = {
+            paymentId: response.razorpay_payment_id,
+            transactionId: response.razorpay_order_id,
+            signature: response.razorpay_signature
+          };
+          // Auto-complete job after payment succeeds
+          this.completeJobWithPayment('ONLINE', paymentDetails);
+        },
+        prefill: {
+          name: this.currentJob?.customerName || '',
+          email: this.currentJob?.customerEmail || '',
+          contact: this.currentJob?.customerPhone || ''
+        },
+        theme: {
+          color: '#FF6B6B'
+        },
+        modal: {
+          ondismiss: () => {
+            console.log('Razorpay checkout closed by user');
+            alert('Payment cancelled. Please try again.');
+          }
+        }
+      };
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.open();
+    };
+    document.body.appendChild(script);
+  }
+
+  completeJobWithPayment(method: string, paymentDetails: any) {
     const tech = localStorage.getItem('technician');
     const id = tech ? JSON.parse(tech).id : null;
-    const payload: any = { technicianNotes: this.completionNotes, totalAmount: this.totalAmount };
-    this.techService.completeJob(this.currentJob.id, id, payload).subscribe({ next: () => {
-      this.dialogRef?.close({ action: 'completed' });
-    }, error: () => alert('Failed to complete') });
+    const payload: any = {
+      totalAmount: this.totalAmount,
+      paymentMethod: method,
+      paymentStatus: 'SUCCESS' // Payment succeeded if we're here
+    };
+    
+    // Handle both Razorpay object and legacy string paymentId
+    if (paymentDetails) {
+      if (typeof paymentDetails === 'string') {
+        // Legacy: just payment ID (for backward compatibility)
+        payload.paymentId = paymentDetails;
+      } else if (typeof paymentDetails === 'object') {
+        // New: full Razorpay response
+        payload.paymentId = paymentDetails.paymentId || paymentDetails.razorpay_payment_id;
+        payload.transactionId = paymentDetails.transactionId || paymentDetails.razorpay_order_id;
+      }
+    } else if (method === 'CASH') {
+      // For cash payments, set status to NOT_REQUIRED
+      payload.paymentStatus = 'NOT_REQUIRED';
+    }
+    
+    this.techService.completeJob(this.currentJob.id, id, payload).subscribe({
+      next: () => {
+        let successMsg = `✅ Job completed successfully! Payment: ${method}`;
+        if (paymentDetails && typeof paymentDetails === 'object' && paymentDetails.paymentId) {
+          successMsg += ` (ID: ${paymentDetails.paymentId})`;
+        } else if (typeof paymentDetails === 'string') {
+          successMsg += ` (ID: ${paymentDetails})`;
+        }
+        this.snackBar.open(successMsg, 'Close', { duration: 6000, panelClass: ['success-snackbar'] });
+        // Close dialog after showing message
+        setTimeout(() => {
+          this.dialogRef?.close({ action: 'completed' });
+        }, 1500);
+      },
+      error: () => this.snackBar.open('❌ Failed to complete job', 'Close', { duration: 3000 })
+    });
+  }
+
+  computeTotalForJob(job: any): number {
+    if (!job) return 0;
+    const base = Number(job.totalAmount ?? job.amount ?? job.price ?? job.total_amount ?? 0) || 0;
+    let extras = 0;
+    try {
+      const arr = job.additionalServicesJson ? JSON.parse(job.additionalServicesJson) : [];
+      if (Array.isArray(arr)) extras = arr.reduce((s: number, it: any) => s + (Number(it.price) || 0), 0);
+    } catch {
+      extras = 0;
+    }
+    return Math.round((base + extras) * 100) / 100;
   }
 
   cancelByTechnician() {
@@ -529,8 +730,15 @@ bookingCountMap: Map<string, number> = new Map();
         }
       }
       
-      // Status filter (case-insensitive)
-      if (this.statusFilter !== 'all') {
+      // Default behavior: exclude COMPLETED and CANCELLED jobs from main list (when statusFilter is 'all')
+      // Only show ASSIGNED, ACCEPTED, IN_PROGRESS in the main view
+      if (this.statusFilter === 'all') {
+        const jobStatus = String(job.technicianStatus || '').toUpperCase();
+        if (jobStatus === 'COMPLETED' || jobStatus === 'CANCELLED') {
+          return false; // Exclude completed/cancelled jobs from default view
+        }
+      } else {
+        // Status filter (case-insensitive) - when a specific status is selected
         const jobStatus = String(job.technicianStatus || '').toUpperCase();
         const filterStatus = String(this.statusFilter).toUpperCase();
         if (jobStatus !== filterStatus) {

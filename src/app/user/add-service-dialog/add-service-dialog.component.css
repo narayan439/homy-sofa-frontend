@@ -1,0 +1,210 @@
+.dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #667eea;
+  font-weight: 600;
+  margin: 0;
+}
+
+.title-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+/* Booking Details Box */
+.booking-details-box {
+  background: #f5f5f5;
+  border-left: 4px solid #667eea;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 13px;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #ddd;
+  }
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #666;
+}
+
+.detail-value {
+  color: #333;
+  font-weight: 500;
+
+  &.amount {
+    color: #22c55e;
+    font-weight: 600;
+  }
+}
+
+/* Info Message */
+.info-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #1565c0;
+}
+
+.info-message mat-icon {
+  flex-shrink: 0;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #2196f3;
+  margin-top: 2px;
+}
+
+/* Form Fields */
+.full-width {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+mat-form-field {
+  display: block;
+}
+
+.service-option {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+}
+
+.service-price {
+  color: #22c55e;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+mat-hint {
+  font-size: 12px;
+  color: #999;
+}
+
+/* Price Summary */
+.price-summary {
+  background: #f0f9ff;
+  border: 2px solid #e0e7ff;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 20px 0;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #d4d4d8;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.total {
+    background: #f9fafb;
+    margin: 8px -16px -16px -16px;
+    padding: 12px 16px;
+    border-radius: 0 0 6px 6px;
+  }
+}
+
+.summary-label {
+  font-weight: 500;
+  color: #666;
+}
+
+.summary-value {
+  font-weight: 600;
+  color: #333;
+
+  &.total-amount {
+    color: #22c55e;
+    font-size: 16px;
+  }
+}
+
+/* Dialog Actions */
+mat-dialog-actions {
+  padding: 16px 0;
+  gap: 8px;
+}
+
+mat-dialog-actions button {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  min-width: 120px;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+mat-dialog-actions button mat-icon {
+  margin-right: 6px;
+}
+
+/* Spinner */
+mat-spinner {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  mat-dialog-container {
+    max-width: 90vw !important;
+  }
+
+  mat-dialog-actions {
+    flex-direction: column;
+  }
+
+  mat-dialog-actions button {
+    width: 100%;
+    margin: 4px 0;
+  }
+
+  .booking-details-box {
+    padding: 12px;
+  }
+
+  .detail-item {
+    font-size: 12px;
+    padding: 6px 0;
+  }
+
+  .info-message {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .price-summary {
+    padding: 12px;
+  }
+
+  .summary-row {
+    font-size: 13px;
+  }
+}

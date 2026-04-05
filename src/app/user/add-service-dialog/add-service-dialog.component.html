@@ -1,0 +1,116 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon class="title-icon">add_circle</mat-icon>
+  Add Additional Service
+</h2>
+
+<mat-dialog-content>
+  <!-- Booking Details -->
+  <div class="booking-details-box">
+    <div class="detail-item">
+      <span class="detail-label">Booking ID:</span>
+      <span class="detail-value">#{{ data.booking.id }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Current Service:</span>
+      <span class="detail-value">{{ data.booking.serviceName }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Booking Date:</span>
+      <span class="detail-value">{{ formatDate(data.booking.bookingDate) }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="detail-label">Current Amount:</span>
+      <span class="detail-value amount">PKR {{ data.booking.totalAmount | number: '1.2-2' }}</span>
+    </div>
+  </div>
+
+  <!-- Info Message -->
+  <div class="info-message">
+    <mat-icon>info</mat-icon>
+    <span>Add a new service to your current booking. The new total will be calculated automatically.</span>
+  </div>
+
+  <!-- Add Service Form -->
+  <form [formGroup]="addServiceForm" (ngSubmit)="onSubmit()">
+    <!-- Service Selection -->
+    <mat-form-field class="full-width" appearance="outline">
+      <mat-label>Select Service</mat-label>
+      <mat-select 
+        formControlName="serviceName"
+        (selectionChange)="onServiceChange($event.value)">
+        <mat-select-trigger>{{ addServiceForm.get('serviceName')?.value }}</mat-select-trigger>
+        <mat-optgroup *ngIf="isLoadingServices" label="Loading services...">
+          <mat-option disabled>
+            <mat-spinner diameter="20" strokeWidth="1"></mat-spinner>
+          </mat-option>
+        </mat-optgroup>
+        <mat-optgroup *ngIf="!isLoadingServices && services.length > 0" label="Available Services">
+          <mat-option *ngFor="let service of services" [value]="service.name">
+            <div class="service-option">
+              <strong>{{ service.name }}</strong>
+              <span class="service-price">PKR {{ service.price | number: '1.2-2' }}</span>
+            </div>
+          </mat-option>
+        </mat-optgroup>
+        <mat-optgroup *ngIf="!isLoadingServices && services.length === 0" label="No services available">
+          <mat-option disabled>No services found</mat-option>
+        </mat-optgroup>
+      </mat-select>
+      <mat-icon matPrefix>build</mat-icon>
+      <mat-error *ngIf="addServiceForm.get('serviceName')?.hasError('required')">
+        Please select a service
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Price Input -->
+    <mat-form-field class="full-width" appearance="outline">
+      <mat-label>Service Price (PKR)</mat-label>
+      <input 
+        matInput 
+        formControlName="price"
+        type="number"
+        placeholder="0.00"
+        min="100"
+        step="50">
+      <mat-icon matPrefix>paid</mat-icon>
+      <mat-hint align="end">Minimum: 100 PKR</mat-hint>
+      <mat-error *ngIf="getPriceErrorMessage()">
+        {{ getPriceErrorMessage() }}
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Price Summary -->
+    <div class="price-summary">
+      <div class="summary-row">
+        <span class="summary-label">Current Amount:</span>
+        <span class="summary-value">PKR {{ data.booking.totalAmount | number: '1.2-2' }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Additional Service:</span>
+        <span class="summary-value">+ PKR {{ (addServiceForm.get('price')?.value || 0) | number: '1.2-2' }}</span>
+      </div>
+      <div class="summary-row total">
+        <span class="summary-label">New Total Amount:</span>
+        <span class="summary-value total-amount">PKR {{ getNewTotal() | number: '1.2-2' }}</span>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button 
+    mat-button 
+    (click)="onCancel()"
+    [disabled]="isSubmitting">
+    Cancel
+  </button>
+  <button 
+    mat-raised-button 
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="isSubmitting || addServiceForm.invalid">
+    <mat-icon *ngIf="!isSubmitting">check_circle</mat-icon>
+    <mat-spinner *ngIf="isSubmitting" diameter="16" strokeWidth="2"></mat-spinner>
+    {{ isSubmitting ? 'Adding Service...' : 'Confirm & Add' }}
+  </button>
+</mat-dialog-actions>

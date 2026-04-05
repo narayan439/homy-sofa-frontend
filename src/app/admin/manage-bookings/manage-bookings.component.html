@@ -319,6 +319,42 @@
           </td>
         </ng-container>
 
+        <!-- Payment Column -->
+        <ng-container matColumnDef="payment">
+          <th mat-header-cell *matHeaderCellDef>Payment</th>
+          <td mat-cell *matCellDef="let booking">
+            <div class="payment-cell" *ngIf="booking.paymentMethod">
+              <!-- Payment Method Badge -->
+              <div class="payment-method" [ngClass]="'method-' + booking.paymentMethod?.toLowerCase()">
+                {{ booking.paymentMethod === 'CASH' ? '💵 Cash' : '🌐 Online' }}
+              </div>
+              
+              <!-- Payment Status -->
+              <div class="payment-status" [ngClass]="'status-' + (booking.paymentStatus || 'unknown')?.toLowerCase()" *ngIf="booking.paymentStatus">
+                {{ booking.paymentStatus }}
+              </div>
+              
+              <!-- Payment ID (Truncated) -->
+              <div class="payment-ids" *ngIf="booking.paymentId || booking.transactionId">
+                <small class="payment-id" [title]="booking.paymentId" *ngIf="booking.paymentId">
+                  {{ booking.paymentId | slice:0:12 }}...
+                </small>
+                <small class="transaction-id" [title]="booking.transactionId" *ngIf="booking.transactionId">
+                  {{ booking.transactionId | slice:0:12 }}...
+                </small>
+              </div>
+              
+              <!-- Payment Time -->
+              <small class="payment-time" *ngIf="booking.paymentTimestamp">
+                {{ booking.paymentTimestamp | date:'dd MMM, HH:mm' }}
+              </small>
+            </div>
+            <div class="no-payment" *ngIf="!booking.paymentMethod">
+              <small>Not completed</small>
+            </div>
+          </td>
+        </ng-container>
+
         <!-- Status column removed: admin uses dialog; technician lifecycle is tracked separately -->
 
         <!-- Actions Column -->

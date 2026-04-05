@@ -886,4 +886,63 @@
   .customer-cell {
     flex-wrap: wrap;
   }
+
+  /* Additional CSS for address display */
+.job-address {
+  color: #4a5568;
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.address-value {
+  flex: 1;
+  min-width: 0;
+  color: #4a5568;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Fix for truncated address in table */
+.truncate {
+  max-width: 250px;
+  white-space: normal;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+/* Better address cell styling */
+td .truncate {
+  min-width: 180px;
+}
+
+/* Address row in schedule items */
+.details-bottom {
+  margin-top: 8px;
+  padding-top: 4px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+/* Map link button */
+.map-link {
+  margin-left: 8px;
+  color: #304ffe;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.map-link:hover {
+  transform: scale(1.1);
+  color: #ff5252;
+}
+
+.map-link mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
 }

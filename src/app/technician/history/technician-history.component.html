@@ -4,7 +4,7 @@
   <div class="page-header">
     <div class="header-content">
       <h1>Job History</h1>
-      <p>View complete history of all your assigned and completed jobs</p>
+      <p>View all completed and cancelled service jobs</p>
     </div>
   </div>
 
@@ -66,28 +66,39 @@
       <div *ngIf="filteredJobs.length > 0; else noJobs" class="jobs-list">
         
         <!-- Job Card -->
-        <div *ngFor="let job of filteredJobs" class="job-card">
+        <div *ngFor="let job of filteredJobs" class="job-card" [ngClass]="(job.technicianStatus || job.status || '').toLowerCase()">
           
-          <!-- Card Header -->
+          <!-- Card Header with Status Badge -->
           <div class="card-header">
             <div class="header-left">
-              <h3>{{ job.service || job.serviceName || 'Service' }}</h3>
-              <p class="customer-info">{{ job.name || job.customerName || 'Customer' }}</p>
+              <div class="service-icon" [ngClass]="(job.technicianStatus || job.status || '').toLowerCase()">
+                <mat-icon>
+                  {{ (job.technicianStatus === 'COMPLETED' ? 'check_circle' : 
+                      job.technicianStatus === 'CANCELLED' ? 'cancel' : 'assignment') }}
+                </mat-icon>
+              </div>
+              <div>
+                <h3>{{ job.serviceType || job.service || 'Service' }}</h3>
+                <p class="customer-info">
+                  <mat-icon class="inline-icon">person</mat-icon>
+                  {{ job.customerName || job.name || 'Customer' }}
+                </p>
+              </div>
             </div>
             <span [class]="'status-badge ' + getStatusClass(job.technicianStatus || job.status)">
-              <mat-icon>{{ getStatusIcon(job.technicianStatus || job.status) }}</mat-icon>
               {{ (job.technicianStatus || job.status || 'PENDING') }}
             </span>
           </div>
 
           <!-- Card Body -->
           <div class="card-body">
+            <!-- Main info row -->
             <div class="info-row">
               <div class="info-item">
                 <mat-icon>calendar_today</mat-icon>
                 <div class="info-content">
-                  <span class="label">Date</span>
-                  <span class="value">{{ formatDate(job.date || job.bookingDate) }}</span>
+                  <span class="label">Service Date</span>
+                  <span class="value">{{ job.bookingDate ? (job.bookingDate | date:'dd MMM yyyy') : 'Not Set' }}</span>
                 </div>
               </div>
 
@@ -95,42 +106,108 @@
                 <mat-icon>schedule</mat-icon>
                 <div class="info-content">
                   <span class="label">Time Slot</span>
-                  <span class="value">{{ formatTime(job.timeSlot || job.time) }}</span>
+                  <span class="value">{{ job.timeSlot || 'Flexible' }}</span>
                 </div>
               </div>
 
-              <div class="info-item">
-                <mat-icon>location_on</mat-icon>
+              <div class="info-item" *ngIf="job.totalAmount || job.price">
+                <mat-icon>payments</mat-icon>
                 <div class="info-content">
-                  <span class="label">Address</span>
-                  <span class="value truncate">{{ job.address || 'Not provided' }}</span>
+                  <span class="label">Amount</span>
+                  <span class="value amount">₹{{ job.totalAmount || job.price || 0 }}</span>
                 </div>
               </div>
             </div>
 
-            <div class="info-row" *ngIf="job.amount || job.price">
-              <div class="info-item">
-                <mat-icon>payment</mat-icon>
-                <div class="info-content">
-                  <span class="label">Amount</span>
-                  <span class="value">₹{{ job.amount || job.price | number:'1.0-0' }}</span>
-                </div>
-              </div>
+            <!-- Address row -->
+            <div class="address-section">
+              <app-address-display [booking]="job"></app-address-display>
+            </div>
 
+            <!-- Additional info row -->
+            <div class="info-row" *ngIf="job.customerPhone || job.phone">
               <div class="info-item">
                 <mat-icon>phone</mat-icon>
                 <div class="info-content">
                   <span class="label">Phone</span>
-                  <span class="value">{{ job.phone || 'Not provided' }}</span>
+                  <span class="value">{{ job.customerPhone || job.phone }}</span>
                 </div>
               </div>
 
-              <div class="info-item">
-                <mat-icon>description</mat-icon>
+              <div class="info-item" *ngIf="job.completionDate">
+                <mat-icon>check_circle</mat-icon>
                 <div class="info-content">
-                  <span class="label">Notes</span>
-                  <span class="value">{{ job.notes || 'None' }}</span>
+                  <span class="label">Completed On</span>
+                  <span class="value">{{ job.completionDate | date:'dd MMM yyyy' }}</span>
                 </div>
+              </div>
+
+              <div class="info-item" *ngIf="job.cancelReason">
+                <mat-icon>info</mat-icon>
+                <div class="info-content">
+                  <span class="label">Cancellation Reason</span>
+                  <span class="value">{{ job.cancelReason }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Information Row -->
+            <div class="info-row payment-info-row" *ngIf="job.paymentMethod">
+              <div class="info-item">
+                <mat-icon [ngClass]="job.paymentMethod === 'CASH' ? 'cash-icon' : 'online-icon'">
+                  {{ job.paymentMethod === 'CASH' ? 'payment-cash' : 'credit_card' }}
+                </mat-icon>
+                <div class="info-content">
+                  <span class="label">Payment Method</span>
+                  <span class="value payment-badge" [ngClass]="'payment-' + job.paymentMethod?.toLowerCase()">
+                    {{ job.paymentMethod === 'CASH' ? '💵 Cash' : '🌐 Online' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="info-item" *ngIf="job.paymentStatus">
+                <mat-icon>verified</mat-icon>
+                <div class="info-content">
+                  <span class="label">Payment Status</span>
+                  <span class="value" [ngClass]="'status-' + job.paymentStatus?.toLowerCase()">
+                    {{ job.paymentStatus }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="info-item" *ngIf="job.paymentTimestamp">
+                <mat-icon>access_time</mat-icon>
+                <div class="info-content">
+                  <span class="label">Payment Time</span>
+                  <span class="value">{{ job.paymentTimestamp | date:'dd MMM yyyy, HH:mm' }}</span>
+                </div>
+              </div>
+
+              <div class="info-item" *ngIf="job.paymentId">
+                <mat-icon>confirm_number</mat-icon>
+                <div class="info-content">
+                  <span class="label">Payment ID</span>
+                  <span class="value payment-id" [title]="job.paymentId">{{ job.paymentId | slice:0:15 }}...</span>
+                </div>
+              </div>
+
+              <div class="info-item" *ngIf="job.transactionId">
+                <mat-icon>receipt</mat-icon>
+                <div class="info-content">
+                  <span class="label">Transaction ID</span>
+                  <span class="value transaction-id" [title]="job.transactionId">{{ job.transactionId | slice:0:15 }}...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Extra services -->
+            <div class="extra-services" *ngIf="job.additionalServices && job.additionalServices.length > 0">
+              <mat-icon>add_circle</mat-icon>
+              <span class="label">Extra Services:</span>
+              <div class="services-list">
+                <span *ngFor="let extra of job.additionalServices" class="service-tag">
+                  {{ extra.serviceName || extra.name }} (₹{{ extra.price || 0 }})
+                </span>
               </div>
             </div>
           </div>
@@ -139,7 +216,7 @@
           <div class="card-footer">
             <button mat-button color="primary" (click)="viewJobDetails(job.id)">
               <mat-icon>visibility</mat-icon>
-              View Full Details
+              View Details
             </button>
           </div>
 

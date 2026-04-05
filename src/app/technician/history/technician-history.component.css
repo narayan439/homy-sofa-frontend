@@ -226,6 +226,64 @@
   color: #2d3748;
 }
 
+/* ===== PAYMENT INFO STYLING ===== */
+.payment-info-row {
+  background: linear-gradient(135deg, rgba(48, 79, 254, 0.05) 0%, rgba(48, 79, 254, 0.02) 100%);
+  padding: 16px;
+  border-radius: 12px;
+  border-left: 4px solid #304ffe;
+  margin-top: 16px;
+}
+
+.payment-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.payment-badge.payment-cash {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.payment-badge.payment-online {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.info-content .status-success {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.info-content .status-failed {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.info-content .status-not_required {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.payment-id,
+.transaction-id {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  background: #f0f4ff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #304ffe;
+  word-break: break-all;
+}
+
+.payment-id:hover,
+.transaction-id:hover {
+  background: #e0e7ff;
+}
+
 .truncate {
   white-space: nowrap;
   overflow: hidden;
@@ -245,6 +303,122 @@
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.3px;
+}
+
+/* Status-specific card styling */
+.job-card.completed {
+  border-left: 4px solid #4caf50;
+}
+
+.job-card.completed .card-header {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+}
+
+.job-card.cancelled {
+  border-left: 4px solid #f44336;
+}
+
+.job-card.cancelled .card-header {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+}
+
+/* Service icon styling */
+.service-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.service-icon.completed {
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  color: white;
+}
+
+.service-icon.cancelled {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+}
+
+.service-icon mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+/* Inline icon styling */
+.inline-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* Address section styling */
+.address-section {
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin: 16px 0;
+  border-left: 3px solid #4CAF50;
+}
+
+/* Extra services styling */
+.extra-services {
+  padding: 12px;
+  background: #f3e5f5;
+  border-radius: 8px;
+  border-left: 3px solid #7b1fa2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.extra-services mat-icon {
+  color: #7b1fa2;
+  flex-shrink: 0;
+}
+
+.extra-services .label {
+  font-weight: 600;
+  color: #7b1fa2;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.services-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+
+.service-tag {
+  display: inline-block;
+  background: white;
+  color: #7b1fa2;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #e1bee7;
+}
+
+.amount {
+  color: #388e3c;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .empty-state {
