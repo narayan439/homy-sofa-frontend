@@ -152,9 +152,16 @@
             <div class="technician-info">
               <span class="tech-name" *ngIf="element.technicianName">{{ element.technicianName }}</span>
               <span class="tech-name-placeholder" *ngIf="!element.technicianName">Not Assigned</span>
-              <span *ngIf="element.technicianPhone" class="tech-phone-text">{{ element.technicianPhone }}</span>
-              <span class="tech-phone-placeholder" *ngIf="!element.technicianPhone">—</span>
             </div>
+           </td>
+        </ng-container>
+
+        <!-- Technician Phone Column -->
+        <ng-container matColumnDef="technicianPhone">
+          <th mat-header-cell *matHeaderCellDef>Phone</th>
+          <td mat-cell *matCellDef="let element">
+            <span *ngIf="element.technicianPhone" class="tech-phone-number">{{ element.technicianPhone }}</span>
+            <span *ngIf="!element.technicianPhone" class="tech-phone-placeholder">—</span>
            </td>
         </ng-container>
 

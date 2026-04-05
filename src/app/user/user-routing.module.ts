@@ -10,6 +10,7 @@ import { LoginComponent } from './login/login.component';
 import { SignupComponent } from './signup/signup.component';
 import { UserDashboardComponent } from './dashboard/user-dashboard.component';
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
+import { ManageAddressesComponent } from './manage-addresses/manage-addresses.component';
 import { UserGuard } from '../core/guards/user.guard';
 import { NoAuthGuard } from '../core/guards/no-auth.guard';
 
@@ -23,7 +24,8 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent, canActivate: [NoAuthGuard] },
   { path: 'signup', component: SignupComponent, canActivate: [NoAuthGuard] },
   { path: 'dashboard', component: UserDashboardComponent, canActivate: [UserGuard] },
-  { path: 'edit-profile', component: EditProfileComponent, canActivate: [UserGuard] }
+  { path: 'edit-profile', component: EditProfileComponent, canActivate: [UserGuard] },
+  { path: 'addresses', component: ManageAddressesComponent, canActivate: [UserGuard] }
 ];
 
 @NgModule({
@@ -42,5 +44,6 @@ export const userRoutingComponents = [
   LoginComponent,
   SignupComponent,
   UserDashboardComponent,
-  EditProfileComponent
+  EditProfileComponent,
+  ManageAddressesComponent
 ];

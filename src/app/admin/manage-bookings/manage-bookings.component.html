@@ -273,6 +273,22 @@
           </td>
         </ng-container>
 
+        <!-- Address Column -->
+        <ng-container matColumnDef="address">
+          <th mat-header-cell *matHeaderCellDef>Delivery Address</th>
+          <td mat-cell *matCellDef="let booking">
+            <div class="address-cell">
+              <span class="address-text" 
+                [title]="booking.address || 'No address'"
+                matTooltip="{{ booking.address || 'No address specified' }}"
+              >
+                {{ (booking.address | slice:0:35) || 'No address' }}
+                <span *ngIf="booking.address && booking.address.length > 35">...</span>
+              </span>
+            </div>
+          </td>
+        </ng-container>
+
         <!-- Assigned Technician (show name with serial and status) -->
         <ng-container matColumnDef="technician">
           <th mat-header-cell *matHeaderCellDef>Technician</th>

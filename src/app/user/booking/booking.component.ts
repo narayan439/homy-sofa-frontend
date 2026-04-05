@@ -1,9 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { BookingService } from '../../core/services/booking.service';
 import { ServiceService, Service } from '../../core/services/service.service';
 import { UserAuthService } from '../../core/services/user-auth.service';
+import { AddressService, UserAddress } from '../../core/services/address.service';
+import { AddressSelectionDialogComponent } from '../address-selection-dialog/address-selection-dialog.component';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -14,17 +17,10 @@ import { environment } from 'src/environments/environment';
 export class BookingComponent implements OnInit, OnDestroy {
   bookingForm: FormGroup;
   selectedService: string | null = null;
+  selectedAddress: UserAddress | null = null;
   minDate: Date;
   services: Service[] = [];
   selectedServicePrice: number | null = null;
-  
-  // Location properties
-  isGettingLocation: boolean = false;
-  locationPermission: string = 'unknown'; // 'granted', 'denied', 'unknown'
-  userLocation: { lat: number, lng: number, address: string } | null = null;
-  locationError: string = '';
-  isServiceable: boolean = true;
-  private watchId: number | null = null;
   isSubmitting: boolean = false;
 
   constructor(
@@ -32,39 +28,23 @@ export class BookingComponent implements OnInit, OnDestroy {
     private bookingService: BookingService,
     private snackBar: MatSnackBar,
     private serviceService: ServiceService,
-    public userAuthService: UserAuthService
+    public userAuthService: UserAuthService,
+    private addressService: AddressService,
+    private dialog: MatDialog
   ) {
     this.minDate = new Date();
 
     // Initialize the booking form
-    // Note: fullName, email, phone are NOT included - user is already logged in with these details
+    // Note: Address is now selected separately from manage-addresses
     this.bookingForm = this.fb.group({
       serviceType: ['', Validators.required],
       serviceDate: ['', Validators.required],
       timeSlot: [''],
-      details: ['', [Validators.maxLength(500)]],
-      // Address fields
-      house: ['', Validators.required],
-      area: ['', Validators.required],
-      city: ['', Validators.required],
-      pincode: ['', [
-        Validators.required,
-        Validators.pattern(/^[0-9]{6}$/)
-      ]],
-      landmark: [''],
-      // Location fields
-      latitude: [''],
-      longitude: [''],
-      fullAddress: [''],
-      // Google Maps link
-      mapLink: ['']
+      details: ['', [Validators.maxLength(500)]]
     });
   }
 
   ngOnInit(): void {
-    // Auto-fill user data from profile if logged in
-    this.autoFillUserData();
-
     this.serviceService.services$.subscribe(list => {
       // Filter to only active services for booking
       this.services = (list || []).filter(s => s.isActive !== false);
@@ -80,411 +60,9 @@ export class BookingComponent implements OnInit, OnDestroy {
       const svc = this.services.find(s => s.id === val || s.name === val);
       this.selectedServicePrice = svc?.price ?? null;
     });
-
-    // Note: automatic pincode -> district lookup removed.
-    // City detection will be performed only when user clicks 'Detect City' button next to the pincode field.
-
-    // Try to get location on page load
-    this.checkLocationPermission();
   }
 
   ngOnDestroy(): void {
-    this.stopLocationTracking();
-  }
-
-  /**
-   * Auto-fill address data from user profile if available
-   */
-  private autoFillUserData(): void {
-    if (!this.userAuthService.isUserLoggedIn()) {
-      return; // User not logged in, skip auto-fill
-    }
-
-    const currentUser = this.userAuthService.getCurrentUser();
-    if (!currentUser) return;
-
-    // Auto-fill address fields if available from user profile
-    if (currentUser.address) {
-      this.bookingForm.patchValue({
-        fullAddress: currentUser.address
-      });
-      
-      // Try to parse structured address if it follows a pattern
-      const addressParts = currentUser.address.split(',').map((p: string) => p.trim());
-      if (addressParts.length === 4) {
-        // Assume format: house, area, city, pincode
-        this.bookingForm.patchValue({
-          house: addressParts[0] || '',
-          area: addressParts[1] || '',
-          city: addressParts[2] || '',
-          pincode: addressParts[3] || ''
-        });
-      }
-    }
-  }
-
-  // Location Methods
-  async checkLocationPermission() {
-    if (!navigator.permissions) {
-      this.locationPermission = 'unknown';
-      return;
-    }
-    
-    try {
-      const permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-      this.locationPermission = permissionStatus.state;
-      
-      permissionStatus.onchange = () => {
-        this.locationPermission = permissionStatus.state;
-        if (permissionStatus.state === 'granted') {
-          this.getUserLocation();
-        }
-      };
-    } catch (error) {
-      console.warn('Permission query not supported:', error);
-      this.locationPermission = 'unknown';
-    }
-  }
-
-  async getUserLocation() {
-    if (!navigator.geolocation) {
-      this.locationError = 'Geolocation is not supported by your browser';
-      return;
-    }
-
-    this.isGettingLocation = true;
-    this.locationError = '';
-
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0
-    };
-
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, options);
-      });
-
-      const { latitude, longitude } = position.coords;
-      
-      // Update form fields
-      this.bookingForm.patchValue({
-        latitude: latitude,
-        longitude: longitude
-      });
-
-      // Get address from coordinates
-      await this.reverseGeocode(latitude, longitude);
-
-      this.userLocation = {
-        lat: latitude,
-        lng: longitude,
-        address: this.bookingForm.get('fullAddress')?.value || ''
-      };
-
-      this.startLocationTracking();
-
-    } catch (error: any) {
-      console.error('Error getting location:', error);
-      this.handleLocationError(error);
-    } finally {
-      this.isGettingLocation = false;
-    }
-  }
-
-  async reverseGeocode(lat: number, lng: number) {
-    try {
-      // First try BigDataCloud reverse geocode (no key required for the free reverse endpoint)
-      const base = environment.bigDataCloudUrl || 'https://api.bigdatacloud.net/data';
-      const key = environment.bigDataCloudApiKey || '';
-      let bdUrl = `${base}/reverse-geocode-client?latitude=${encodeURIComponent(String(lat))}&longitude=${encodeURIComponent(String(lng))}&localityLanguage=en`;
-      if (key) bdUrl += `&key=${encodeURIComponent(key)}`;
-
-      let usedData: any = null;
-      try {
-        const bdResp = await fetch(bdUrl);
-        if (bdResp.ok) {
-          const bdJson = await bdResp.json();
-          // bigdatacloud returns fields like locality, city, principalSubdivision, postcode
-          if (bdJson) {
-            usedData = { type: 'bigdatacloud', data: bdJson };
-          }
-        }
-      } catch (bdErr) {
-        console.warn('BigDataCloud reverse lookup failed, falling back to Nominatim', bdErr);
-      }
-
-      // If BigDataCloud didn't provide usable data, fallback to Nominatim
-      if (!usedData) {
-        const nomUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
-        const nomResp = await fetch(nomUrl);
-        if (nomResp.ok) {
-          const nomJson = await nomResp.json();
-          if (nomJson) usedData = { type: 'nominatim', data: nomJson };
-        }
-      }
-
-      if (!usedData) {
-        this.bookingForm.patchValue({ fullAddress: `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}` });
-        this.isServiceable = false;
-        return;
-      }
-
-      if (usedData.type === 'bigdatacloud') {
-        const d = usedData.data;
-        const house = '';
-        const road = d.locality || d.city || '';
-        const area = d.locality || (d.localityInfo && d.localityInfo.administrative && d.localityInfo.administrative[1] ? d.localityInfo.administrative[1].name : '') || '';
-        const city = d.city || d.locality || d.principalSubdivision || '';
-        const state = d.principalSubdivision || '';
-        const pincode = d.postcode || d.postalCode || d.postal || '';
-
-        const fullAddress = [road, area, city, state, pincode].filter(Boolean).join(', ');
-
-        this.bookingForm.patchValue({
-          house: '',
-          area: area || '',
-          city: city || '',
-          pincode: pincode || '',
-          fullAddress: fullAddress || ''
-        });
-
-        this.isServiceable = this.checkServiceable(city || '', fullAddress || '');
-      } else if (usedData.type === 'nominatim') {
-        const data = usedData.data;
-        if (data && data.address) {
-          const address = data.address;
-          let house = address.house_number || address.building || '';
-          let road = address.road || address.street || address.street_address || '';
-          let area = address.suburb || address.neighbourhood || address.locality || '';
-          let city = address.city || address.town || address.village || address.county || '';
-          let state = address.state || '';
-          let pincode = address.postcode || '';
-
-          if (!house && !road && data.display_name) {
-            const parts = data.display_name.split(',');
-            if (parts.length > 0) road = parts[0].trim();
-            if (parts.length > 1) area = parts[1].trim();
-          }
-
-          const fullAddress = [house && road ? house + ', ' + road : (house || road), area, city, state, pincode].filter(Boolean).join(', ');
-
-          this.bookingForm.patchValue({
-            house: (house && road) ? house : (house || road),
-            area: area || '',
-            city: city || '',
-            pincode: pincode || '',
-            fullAddress: fullAddress || data.display_name || ''
-          });
-
-          this.isServiceable = this.checkServiceable(city || '', fullAddress || data.display_name || '');
-
-          if (!this.bookingForm.get('landmark')?.value) {
-            const landmark = address.amenity || address.shop || address.cafe || address.restaurant || '';
-            if (landmark) this.bookingForm.patchValue({ landmark: landmark });
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('Reverse geocoding failed:', error);
-      this.bookingForm.patchValue({ fullAddress: `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}` });
-      this.isServiceable = false;
-    }
-  }
-
-  // Use BigDataCloud postal-code lookup to detect only the city when user requests it
-  async detectCityFromPincode() {
-    const raw = this.bookingForm.get('pincode')?.value;
-    if (!raw) {
-      this.snackBar.open('Please enter a valid 6-digit pincode before detecting city', 'Close', { duration: 3000 });
-      return;
-    }
-    const pincode = raw.toString().trim();
-    if (!/^[0-9]{6}$/.test(pincode)) {
-      this.snackBar.open('Please enter a 6-digit pincode', 'Close', { duration: 3000 });
-      return;
-    }
-
-    try {
-      const key = environment.bigDataCloudApiKey || '';
-      const base = environment.bigDataCloudUrl || 'https://api.bigdatacloud.net/data';
-      // BigDataCloud postal-code endpoint. If your plan uses a different path, update environment.bigDataCloudUrl accordingly.
-      const url = `${base}/postal-code?postalCode=${encodeURIComponent(pincode)}&localityLanguage=en&key=${encodeURIComponent(key)}`;
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error('Lookup failed');
-      const data = await resp.json();
-
-      // Try multiple possible fields for city
-      let city = '';
-      if (data.locality) city = data.locality;
-      else if (data.city) city = data.city;
-      else if (data.localityName) city = data.localityName;
-      else if (data.principalSubdivision) city = data.principalSubdivision;
-      else if (data.localityInfo && data.localityInfo.administrative && data.localityInfo.administrative.length > 0) {
-        city = data.localityInfo.administrative[0].name || '';
-      }
-
-      if (city) {
-        // Only set the `city` field — do not auto-fill district or other fields
-        this.bookingForm.patchValue({ city });
-        this.snackBar.open(`City detected: ${city}`, 'Close', { duration: 3000 });
-      } else {
-        this.snackBar.open('Could not determine city from pincode. Please enter city manually.', 'Close', { duration: 4000, panelClass: ['warning-snackbar'] });
-      }
-    } catch (e) {
-      console.warn('BigDataCloud pincode lookup failed', e);
-      this.snackBar.open('Pincode lookup failed. Please enter city manually.', 'Close', { duration: 4000 });
-    }
-  }
-
-  extractCoordinatesFromMapLink(link: string): { lat: number, lng: number } | null {
-    try {
-      let lat: number | null = null;
-      let lng: number | null = null;
-      
-      // Format 1: https://maps.google.com/?q=lat,lng
-      const qMatch = link.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-      if (qMatch) {
-        lat = parseFloat(qMatch[1]);
-        lng = parseFloat(qMatch[2]);
-      }
-      
-      // Format 2: https://www.google.com/maps/@lat,lng
-      const mapsMatch = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-      if (mapsMatch) {
-        lat = parseFloat(mapsMatch[1]);
-        lng = parseFloat(mapsMatch[2]);
-      }
-      
-      // Format 3: https://www.google.com/maps/place/.../@lat,lng
-      const placeMatch = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-      if (placeMatch) {
-        lat = parseFloat(placeMatch[1]);
-        lng = parseFloat(placeMatch[2]);
-      }
-      
-      // Format 4: Decimal coordinates in the URL
-      const coordMatch = link.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
-      if (coordMatch) {
-        lat = parseFloat(coordMatch[1]);
-        lng = parseFloat(coordMatch[2]);
-      }
-      
-      if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
-        return { lat, lng };
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Error extracting coordinates:', error);
-      return null;
-    }
-  }
-
-  onMapLinkChange() {
-    const link = this.bookingForm.get('mapLink')?.value;
-    
-    if (!link || link.trim() === '') {
-      return;
-    }
-    
-    const coordinates = this.extractCoordinatesFromMapLink(link);
-    
-    if (coordinates) {
-      this.bookingForm.patchValue({
-        latitude: coordinates.lat,
-        longitude: coordinates.lng
-      });
-      
-      // Get address from coordinates
-      this.reverseGeocode(coordinates.lat, coordinates.lng);
-      
-      // Show success message
-      this.snackBar.open('Location extracted from Google Maps link!', 'Close', {
-        duration: 3000
-      });
-    } else {
-      this.snackBar.open('Could not extract location from the link. Please check the format.', 'Close', {
-        duration: 5000,
-        panelClass: ['warning-snackbar']
-      });
-    }
-  }
-
-  startLocationTracking() {
-    if (this.watchId !== null) return;
-    
-    if (navigator.geolocation) {
-      this.watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          
-          // Update location in form
-          this.bookingForm.patchValue({
-            latitude: latitude,
-            longitude: longitude
-          });
-
-          // Update user location object
-          if (this.userLocation) {
-            this.userLocation.lat = latitude;
-            this.userLocation.lng = longitude;
-          }
-        },
-        (error) => {
-          console.warn('Location tracking error:', error);
-        },
-        {
-          enableHighAccuracy: true,
-          maximumAge: 30000,
-          timeout: 10000
-        }
-      );
-    }
-  }
-
-  stopLocationTracking() {
-    if (this.watchId !== null && navigator.geolocation) {
-      navigator.geolocation.clearWatch(this.watchId);
-      this.watchId = null;
-
-
-
-      
-    }
-  }
-
-  handleLocationError(error: GeolocationPositionError) {
-    switch (error.code) {
-      case error.PERMISSION_DENIED:
-        this.locationError = 'Location access was denied. Please enable location services in your browser settings.';
-        this.locationPermission = 'denied';
-        break;
-      case error.POSITION_UNAVAILABLE:
-        this.locationError = 'Location information is unavailable.';
-        break;
-      case error.TIMEOUT:
-        this.locationError = 'Location request timed out. Please try again.';
-        break;
-      default:
-        this.locationError = 'An unknown error occurred while getting location.';
-        break;
-    }
-  }
-
-  onUseCurrentLocation() {
-    this.getUserLocation();
-  }
-
-  onManualAddress() {
-    this.stopLocationTracking();
-    this.userLocation = null;
-    this.bookingForm.patchValue({
-      latitude: '',
-      longitude: '',
-      fullAddress: ''
-    });
   }
 
   selectService(service: string) {
@@ -494,67 +72,108 @@ export class BookingComponent implements OnInit, OnDestroy {
     this.selectedServicePrice = svc?.price ?? null;
   }
 
-  submit() {
-    if (this.bookingForm.valid) {
-      // Ensure address is within service area (Bhubaneswar or Cuttack)
-      const cityVal = this.bookingForm.get('city')?.value || '';
-      const fullVal = this.bookingForm.get('fullAddress')?.value || '';
-      if (!this.checkServiceable(cityVal, fullVal)) {
-        this.snackBar.open('Address not serviceable. We currently only serve Bhubaneswar and Cuttack.', 'Close', {
-          duration: 6000,
-          panelClass: ['warning-snackbar']
+  /**
+   * Open address selection dialog
+   */
+  selectAddressForBooking(): void {
+    this.addressService.getAddresses().subscribe({
+      next: (response) => {
+        const addresses = response?.data || [];
+        
+        if (addresses.length === 0) {
+          this.snackBar.open('❌ Please add an address first', 'Go to Addresses', { 
+            duration: 4000 
+          })
+            .onAction()
+            .subscribe(() => {
+              window.location.href = '/user/addresses';
+            });
+          return;
+        }
+
+        // Open address selection dialog
+        const dialogRef = this.dialog.open(AddressSelectionDialogComponent, {
+          width: '500px',
+          maxWidth: '90vw',
+          disableClose: false,
+          data: { addresses }
         });
-        return;
-      }
-      // Format date to dd/mm/yyyy
-      const rawDate = this.bookingForm.get('serviceDate')?.value;
-      let formattedDate = '';
-      
-      if (rawDate) {
-        const date = new Date(rawDate);
-        const dd = String(date.getDate()).padStart(2, '0');
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const yyyy = date.getFullYear();
-        formattedDate = `${dd}/${mm}/${yyyy}`;
-      }
 
-      // Build full address
-      const house = this.bookingForm.get('house')?.value;
-      const area = this.bookingForm.get('area')?.value;
-      const city = this.bookingForm.get('city')?.value;
-      const pincode = this.bookingForm.get('pincode')?.value;
-      const landmark = this.bookingForm.get('landmark')?.value;
-      const mapLink = this.bookingForm.get('mapLink')?.value;
-      
-      const addressParts = [house, area, city, landmark].filter(Boolean);
-      const fullAddress = addressParts.join(', ') + (pincode ? ` - ${pincode}` : '');
-      
-      const bookingData: any = {
-        name: this.bookingForm.get('fullName')?.value,
-        email: this.bookingForm.get('email')?.value,
-        phone: this.bookingForm.get('phone')?.value,
-        service: this.bookingForm.get('serviceType')?.value,
-        date: formattedDate,
-        message: this.bookingForm.get('details')?.value,
-        timeSlot: this.bookingForm.get('timeSlot')?.value,
-        address: fullAddress,
-        latitude: this.bookingForm.get('latitude')?.value || null,
-        longitude: this.bookingForm.get('longitude')?.value || null,
-        // combine lat/long into a single field expected by backend (format: "lat,lon")
-        latLong: (this.bookingForm.get('latitude')?.value && this.bookingForm.get('longitude')?.value)
-          ? `${this.bookingForm.get('latitude')?.value},${this.bookingForm.get('longitude')?.value}`
-          : null,
-        mapLink: mapLink || null,
-        status: 'PENDING',
-        price: this.selectedServicePrice ?? undefined,
-        totalBookings: 1
-      };
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.selectedAddress = result;
+            this.snackBar.open('✅ Address selected', 'Close', { duration: 2000 });
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error loading addresses:', err);
+        this.snackBar.open('❌ Failed to load addresses', 'Close', { duration: 3000 });
+      }
+    });
+  }
 
-      // Call the booking service
-      this.isSubmitting = true;
-      this.bookingService.addBooking(bookingData).subscribe({
-        next: (response: any) => {
-          const bookingId = response.id || response.bookingId;
+  submit() {
+    // Validate form and address selection
+    if (this.bookingForm.invalid) {
+      this.snackBar.open('❌ Please fill all required fields', 'Close', { duration: 3000 });
+      return;
+    }
+
+    if (!this.selectedAddress) {
+      this.snackBar.open('❌ Please select a delivery address first', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Format date to dd/mm/yyyy
+    const rawDate = this.bookingForm.get('serviceDate')?.value;
+    let formattedDate = '';
+    
+    if (rawDate) {
+      const date = new Date(rawDate);
+      const dd = String(date.getDate()).padStart(2, '0');
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const yyyy = date.getFullYear();
+      formattedDate = `${dd}/${mm}/${yyyy}`;
+    }
+
+    // Build full address from selected address
+    const addressParts = [
+      this.selectedAddress.house,
+      this.selectedAddress.area,
+      this.selectedAddress.city,
+      this.selectedAddress.landmark
+    ].filter(Boolean);
+    const fullAddress = addressParts.join(', ') + (this.selectedAddress.pincode ? ` - ${this.selectedAddress.pincode}` : '');
+
+    // Get current user info
+    const user = this.userAuthService.getCurrentUser();
+    
+    const bookingData: any = {
+      name: user?.name || 'N/A',
+      email: user?.email || 'N/A',
+      phone: user?.phone || 'N/A',
+      service: this.bookingForm.get('serviceType')?.value,
+      date: formattedDate,
+      message: this.bookingForm.get('details')?.value,
+      timeSlot: this.bookingForm.get('timeSlot')?.value,
+      address: fullAddress,
+      addressId: this.selectedAddress.id,
+      latitude: this.selectedAddress.latitude || null,
+      longitude: this.selectedAddress.longitude || null,
+      latLong: (this.selectedAddress.latitude && this.selectedAddress.longitude)
+        ? `${this.selectedAddress.latitude},${this.selectedAddress.longitude}`
+        : null,
+      status: 'PENDING',
+      price: this.selectedServicePrice ?? undefined,
+      totalBookings: 1
+    };
+
+    // Call the booking service
+    this.isSubmitting = true;
+    this.bookingService.addBooking(bookingData).subscribe({
+      next: (response: any) => {
+        const bookingId = response.id || response.bookingId;
           const bookingRef = this.generateBookingRef(bookingId);
           
           this.snackBar.open(
@@ -569,8 +188,7 @@ export class BookingComponent implements OnInit, OnDestroy {
           // Reset form
           this.bookingForm.reset({});
           this.selectedService = null;
-          this.stopLocationTracking();
-          this.userLocation = null;
+          this.selectedAddress = null;
           this.selectedServicePrice = null;
           this.isSubmitting = false;
         },
@@ -597,12 +215,6 @@ export class BookingComponent implements OnInit, OnDestroy {
           this.isSubmitting = false;
         }
       });
-    } else {
-      // Mark all fields as touched to show validation errors
-      Object.keys(this.bookingForm.controls).forEach(key => {
-        this.bookingForm.get(key)?.markAsTouched();
-      });
-    }
   }
 
   generateBookingRef(bookingId?: number | string): string {

@@ -1,0 +1,317 @@
+<div class="addresses-container">
+  <div class="header">
+    <h2>
+      <mat-icon>location_on</mat-icon>
+      Saved Addresses
+    </h2>
+    <button 
+      mat-raised-button 
+      color="primary"
+      (click)="toggleAddForm()"
+      class="add-btn"
+    >
+      <mat-icon>add</mat-icon>
+      Add New Address
+    </button>
+  </div>
+
+  <!-- Add/Edit Address Form -->
+  <mat-card *ngIf="showAddForm" class="form-card">
+    <mat-card-header>
+      <mat-card-title>{{ editingId ? 'Edit Address' : 'Add New Address' }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="addressForm">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Label (e.g., "My Home")</mat-label>
+            <input matInput formControlName="label" placeholder="My Home">
+            <mat-error *ngIf="addressForm.get('label')?.hasError('required')">Label is required</mat-error>
+            <mat-error *ngIf="addressForm.get('label')?.hasError('minlength')">Minimum 2 characters</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Address Type</mat-label>
+            <mat-select formControlName="addressType">
+              <mat-option *ngFor="let type of addressTypes" [value]="type">{{ type }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Location Detection Section -->
+        <div class="location-detection-section">
+          <p class="section-title">
+            <mat-icon>my_location</mat-icon>
+            Pin Your Location
+          </p>
+          
+          <div class="location-buttons">
+            <button 
+              type="button"
+              mat-stroked-button 
+              (click)="detectCurrentLocation()"
+              [disabled]="isGettingLocation || !isLocationDetectionSupported"
+              class="location-btn"
+            >
+              <mat-icon *ngIf="!isGettingLocation">my_location</mat-icon>
+              <mat-spinner *ngIf="isGettingLocation" diameter="20" class="spinner"></mat-spinner>
+              {{ isGettingLocation ? 'Detecting...' : 'Detect My Location' }}
+            </button>
+
+            <button 
+              type="button"
+              mat-stroked-button 
+              (click)="openMapForPinLocation()"
+              class="map-btn"
+            >
+              <mat-icon>map</mat-icon>
+              {{ selectedLocation ? 'Change Location on Map' : 'Pin Location on Map' }}
+            </button>
+          </div>
+
+          <!-- Current Location Display -->
+          <div class="location-info" *ngIf="currentLocation">
+            <p class="info-text">
+              <mat-icon>my_location</mat-icon>
+              Current: {{ currentLocation.latitude.toFixed(4) }}°N, {{ currentLocation.longitude.toFixed(4) }}°E
+            </p>
+          </div>
+
+          <!-- Selected Location Display -->
+          <div class="location-info" *ngIf="selectedLocation">
+            <p class="info-text success">
+              <mat-icon>location_on</mat-icon>
+              Selected: {{ selectedLocation.latitude.toFixed(4) }}°N, {{ selectedLocation.longitude.toFixed(4) }}°E
+            </p>
+          </div>
+
+          <!-- Location Error -->
+          <div class="location-error" *ngIf="locationError">
+            <mat-icon>error</mat-icon>
+            <p>{{ locationError }}</p>
+          </div>
+        </div>
+
+        <!-- Map Modal -->
+        <div class="map-modal" *ngIf="showMap" @slowFadeIn>
+          <div class="map-container">
+            <div class="map-header">
+              <h3>Pin Your Address Location</h3>
+              <button 
+                mat-icon-button 
+                (click)="closeMap()"
+                class="close-btn"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div class="map-wrapper">
+              <google-map 
+                #map
+                [center]="mapCenter"
+                [zoom]="mapZoom"
+                (mapClick)="onMapClick($event)"
+              >
+                <map-marker 
+                  *ngIf="mapMarker"
+                  [position]="mapMarker"
+                  [title]="'Your selected location'"
+                ></map-marker>
+
+                <map-marker 
+                  *ngIf="currentLocation && !mapMarker"
+                  [position]="{ lat: currentLocation.latitude, lng: currentLocation.longitude }"
+                  [title]="'Current location'"
+                  opacity="0.6"
+                ></map-marker>
+              </google-map>
+            </div>
+
+            <div class="map-footer">
+              <div class="map-controls">
+                <button 
+                  type="button"
+                  mat-stroked-button
+                  (click)="useCurrentLocationAsPin()"
+                  [disabled]="!currentLocation"
+                  class="use-current-btn"
+                >
+                  <mat-icon>my_location</mat-icon>
+                  Use Current Location
+                </button>
+              </div>
+
+              <div class="map-actions">
+                <button 
+                  type="button"
+                  mat-stroked-button
+                  (click)="closeMap()"
+                  class="cancel-btn"
+                >
+                  Cancel
+                </button>
+
+                <button 
+                  type="button"
+                  mat-raised-button
+                  color="primary"
+                  (click)="confirmMapLocation()"
+                  [disabled]="!mapMarker"
+                  class="confirm-btn"
+                >
+                  <mat-icon>check</mat-icon>
+                  Confirm Location
+                </button>
+              </div>
+            </div>
+
+            <p class="map-instruction">
+              <mat-icon>info</mat-icon>
+              Click on the map to pin your address location
+            </p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>House No. / Building Name</mat-label>
+            <input matInput formControlName="house" placeholder="123, Main Street">
+            <mat-error *ngIf="addressForm.get('house')?.hasError('required')">Required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Area / Street</mat-label>
+            <input matInput formControlName="area" placeholder="Downtown">
+            <mat-error *ngIf="addressForm.get('area')?.hasError('required')">Required</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>City</mat-label>
+            <input matInput formControlName="city" placeholder="New York">
+            <mat-error *ngIf="addressForm.get('city')?.hasError('required')">Required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Pincode</mat-label>
+            <input matInput formControlName="pincode" placeholder="10001">
+            <mat-error *ngIf="addressForm.get('pincode')?.hasError('required')">Required</mat-error>
+            <mat-error *ngIf="addressForm.get('pincode')?.hasError('pattern')">Must be 6 digits</mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Landmark (Optional)</mat-label>
+          <input matInput formControlName="landmark" placeholder="Near Park, etc.">
+        </mat-form-field>
+
+        <!-- Latitude and Longitude Fields (Read-only) -->
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Latitude</mat-label>
+            <input matInput formControlName="latitude" readonly placeholder="Auto-populated">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Longitude</mat-label>
+            <input matInput formControlName="longitude" readonly placeholder="Auto-populated">
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            mat-raised-button 
+            color="primary"
+            (click)="saveAddress()"
+            [disabled]="addressForm.invalid || isSaving"
+            class="save-btn"
+          >
+            <mat-icon *ngIf="!isSaving">save</mat-icon>
+            <mat-spinner *ngIf="isSaving" diameter="20" class="spinner"></mat-spinner>
+            {{ editingId ? 'Update Address' : 'Save Address' }}
+          </button>
+
+          <button 
+            mat-stroked-button
+            (click)="cancelEdit()"
+            class="cancel-btn"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Addresses List -->
+  <div *ngIf="!isLoading" class="addresses-list">
+    <div *ngIf="addresses.length === 0" class="empty-state">
+      <mat-icon>location_off</mat-icon>
+      <p>No addresses saved yet. Add one to get started!</p>
+    </div>
+
+    <div *ngFor="let address of addresses" class="address-card">
+      <div class="address-header">
+        <div class="address-info">
+          <h3>{{ address.label }}</h3>
+          <p class="address-type">{{ address.addressType }}</p>
+          <p class="full-address">{{ address.fullAddress }}</p>
+          <p class="landmark" *ngIf="address.landmark">
+            <mat-icon>flag</mat-icon>
+            {{ address.landmark }}
+          </p>
+        </div>
+
+        <div class="address-badge">
+          <mat-chip 
+            *ngIf="address.isDefault"
+            color="primary"
+            selected
+          >
+            DEFAULT
+          </mat-chip>
+        </div>
+      </div>
+
+      <div class="address-actions">
+        <button 
+          mat-icon-button
+          [title]="address.isDefault ? 'Default Address' : 'Set as Default'"
+          (click)="setDefault(address.id)"
+          [disabled]="address.isDefault"
+          matTooltip="Set as Default"
+        >
+          <mat-icon [color]="address.isDefault ? 'primary' : ''">
+            {{ address.isDefault ? 'check_circle' : 'radio_button_unchecked' }}
+          </mat-icon>
+        </button>
+
+        <button 
+          mat-icon-button
+          (click)="editAddress(address)"
+          matTooltip="Edit"
+        >
+          <mat-icon>edit</mat-icon>
+        </button>
+
+        <button 
+          mat-icon-button
+          color="warn"
+          (click)="deleteAddress(address.id)"
+          matTooltip="Delete"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading addresses...</p>
+  </div>
+</div>

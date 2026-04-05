@@ -15,7 +15,7 @@
     <!-- Tabs -->
     <div class="tabs-section">
       <button 
-        *ngFor="let tab of ['profile', 'address', 'password', 'account']"
+        *ngFor="let tab of ['profile', 'password', 'account']"
         [class.active]="activeTab === tab"
         class="tab-button"
         (click)="switchTab(tab)">
@@ -116,88 +116,6 @@
             <mat-icon *ngIf="!isSavingProfile">save</mat-icon>
             <mat-icon *ngIf="isSavingProfile">hourglass_empty</mat-icon>
             <span>{{ isSavingProfile ? 'Saving...' : 'Save Changes' }}</span>
-          </button>
-        </form>
-      </div>
-
-      <!-- Address Tab -->
-      <div *ngIf="activeTab === 'address'" class="tab-content">
-        <div class="section-header">
-          <h2><mat-icon>location_on</mat-icon> Address Information</h2>
-          <p>Update your service address details</p>
-        </div>
-
-        <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="address-form">
-          
-          <!-- House / Flat -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>House / Flat / Building</mat-label>
-            <input 
-              matInput 
-              formControlName="house"
-              placeholder="House number, building name"
-            >
-            <mat-icon matPrefix>home</mat-icon>
-          </mat-form-field>
-
-          <!-- Area / Locality -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Area / Locality</mat-label>
-            <input 
-              matInput 
-              formControlName="area"
-              placeholder="Locality, area name"
-            >
-            <mat-icon matPrefix>place</mat-icon>
-          </mat-form-field>
-
-          <!-- City -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>City</mat-label>
-            <input 
-              matInput 
-              formControlName="city"
-              placeholder="City name"
-            >
-            <mat-icon matPrefix>location_city</mat-icon>
-          </mat-form-field>
-
-          <!-- Pincode -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Pincode</mat-label>
-            <input 
-              matInput 
-              formControlName="pincode"
-              placeholder="6-digit pincode"
-              maxlength="6"
-            >
-            <mat-icon matPrefix>pin</mat-icon>
-            <mat-error *ngIf="addressForm.get('pincode')?.hasError('pattern')">
-              Please enter a valid 6-digit pincode
-            </mat-error>
-          </mat-form-field>
-
-          <!-- Landmark -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Nearby Landmark (Optional)</mat-label>
-            <input 
-              matInput 
-              formControlName="landmark"
-              placeholder="Near metro station, park, etc."
-            >
-            <mat-icon matPrefix>flag</mat-icon>
-          </mat-form-field>
-
-          <!-- Save Button -->
-          <button 
-            mat-raised-button 
-            color="primary"
-            type="submit"
-            [disabled]="addressForm.invalid || isSavingProfile"
-            class="save-btn">
-            <mat-icon *ngIf="!isSavingProfile">save</mat-icon>
-            <mat-icon *ngIf="isSavingProfile">hourglass_empty</mat-icon>
-            <span>{{ isSavingProfile ? 'Saving...' : 'Save Address' }}</span>
           </button>
         </form>
       </div>
@@ -333,10 +251,7 @@
           <!-- Account Info -->
           <div class="account-info-card">
             <h3><mat-icon>info</mat-icon> Account Information</h3>
-            <div class="info-item">
-              <label>User ID:</label>
-              <span>{{ currentUser?.id || 'N/A' }}</span>
-            </div>
+           
             <div class="info-item">
               <label>Email:</label>
               <span>{{ currentUser?.email || 'N/A' }}</span>
@@ -345,10 +260,10 @@
               <label>Phone:</label>
               <span>{{ currentUser?.phone || 'N/A' }}</span>
             </div>
-            <div class="info-item">
+            <!-- <div class="info-item">
               <label>Joined:</label>
-              <span>{{ (currentUser?.createdAt | date: 'MMM dd, yyyy') || 'N/A' }}</span>
-            </div>
+              <span>{{ (currentUser?.createdAt ? (currentUser.createdAt | date: 'MMM dd, yyyy') : 'N/A') }}</span>
+            </div> -->
           </div>
 
           <!-- Danger Zone -->

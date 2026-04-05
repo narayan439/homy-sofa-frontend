@@ -26,6 +26,9 @@ export interface Booking {
   createdAt?: string;
   updatedAt?: string;
   address?: string;
+  addressId?: number; // Reference to UserAddress selected during booking
+  latitude?: number; // Latitude of delivery address
+  longitude?: number; // Longitude of delivery address
   latLong?: string; // "lat,lon"
   additionalServiceName?: string;
   additionalServicePrice?: number;

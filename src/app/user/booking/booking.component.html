@@ -43,6 +43,68 @@
             </div>
           </div>
 
+          <!-- Address Selection Card -->
+          <div class="your-details-card">
+            <div class="details-header">
+              <mat-icon>location_on</mat-icon>
+              <span>Delivery Address</span>
+            </div>
+            <div class="details-content">
+              <!-- No Address Selected -->
+              <div *ngIf="!selectedAddress" class="address-empty">
+                <p style="margin: 0; color: #666; font-size: 14px;">Select where you need our service</p>
+                <button 
+                  mat-raised-button
+                  color="primary"
+                  type="button"
+                  (click)="selectAddressForBooking()"
+                  style="margin-top: 12px;"
+                >
+                  <mat-icon>add_location</mat-icon>
+                  Select Address
+                </button>
+              </div>
+
+              <!-- Address Selected -->
+              <div *ngIf="selectedAddress" class="address-selected">
+                <div class="address-label-badge">
+                  <mat-icon>{{ 
+                    selectedAddress.addressType === 'Home' ? 'home' : 
+                    selectedAddress.addressType === 'Office' ? 'business' : 
+                    'location_on' 
+                  }}</mat-icon>
+                  <strong>{{ selectedAddress.label }}</strong>
+                  <span style="background: #e3f2fd; color: #1a237e; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: auto;">
+                    {{ selectedAddress.addressType }}
+                  </span>
+                </div>
+
+                <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+                  <p style="margin: 0; color: #555; font-size: 14px; font-weight: 500;">
+                    {{ selectedAddress.house }}, {{ selectedAddress.area }}
+                  </p>
+                  <p style="margin: 0; color: #888; font-size: 13px;">
+                    {{ selectedAddress.city }} - {{ selectedAddress.pincode }}
+                  </p>
+                  <p style="margin: 0; color: #999; font-size: 12px;" *ngIf="selectedAddress.landmark">
+                    <mat-icon style="font-size: 12px; width: 12px; height: 12px;">flag</mat-icon>
+                    Near: {{ selectedAddress.landmark }}
+                  </p>
+                </div>
+
+                <button 
+                  mat-stroked-button
+                  type="button"
+                  (click)="selectAddressForBooking()"
+                  style="margin-top: 12px; width: 100%;"
+                >
+                  <mat-icon>edit_location</mat-icon>
+                  Change Address
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Service Selection Row -->
           <div class="form-row">
             <!-- Service Type -->
@@ -80,174 +142,13 @@
             <!-- Time Slot -->
           
           </div>
-              <!-- Location Actions -->
-              <div class="location-actions" *ngIf="locationPermission !== 'denied'">
-                <button 
-                  type="button" 
-                  mat-stroked-button 
-                  color="primary"
-                  (click)="onUseCurrentLocation()"
-                  [disabled]="isGettingLocation"
-                  class="location-btn"
-                >
-                  <mat-icon>my_location</mat-icon>
-                  {{ isGettingLocation ? 'Detecting Location...' : 'Use Current Location' }}
-                </button>
-                
-                <button 
-                  type="button" 
-                  mat-button 
-                  (click)="onManualAddress()"
-                  class="manual-btn"
-                >
-                  Enter Address Manually
-                </button>
-              </div>
-            <!-- </div> -->
 
-            <!-- Location Status -->
-            <div *ngIf="isGettingLocation" class="location-status">
-              <svg width="20" height="20" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="vertical-align:middle">
-                <circle cx="25" cy="25" r="20" fill="none" stroke="#e0e0e0" stroke-width="5"/>
-                <path d="M45 25a20 20 0 0 1-20 20" fill="none" stroke="#3f51b5" stroke-width="5" stroke-linecap="round">
-                  <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
-                </path>
-              </svg>
-              <span>Detecting your location...</span>
-            </div>
-
-            <div *ngIf="locationError" class="location-error">
-              <mat-icon>error</mat-icon>
-              <span>{{ locationError }}</span>
-            </div>
-
-            <div *ngIf="userLocation" class="location-success">
-              <mat-icon>check_circle</mat-icon>
-              <span>Location detected successfully!</span>
-              <small>Lat: {{ userLocation.lat.toFixed(6) }}, Lng: {{ userLocation.lng.toFixed(6) }}</small>
-            </div>
-
-            <!-- Auto-filled Address Preview -->
-            <div *ngIf="bookingForm.get('fullAddress')?.value" class="address-preview">
-              <div class="preview-header">
-                <mat-icon>location_searching</mat-icon>
-                <span>Detected Address:</span>
-              </div>
-              <p class="preview-address">{{ bookingForm.get('fullAddress')?.value }}</p>
-            </div>
-
-            <!-- ADDRESS FORM -->
-            <div class="address-form">
-                <!-- House / Area / Locality Detect Button (aligned like City/Pincode) -->
-                <div class="form-row">
-                  <!-- House / Flat / Building -->
-                  <mat-form-field appearance="outline">
-                    <mat-label>House / Flat / Building</mat-label>
-                    <input 
-                      matInput 
-                      formControlName="house"
-                      placeholder="House number, building name"
-                    >
-                    <mat-icon matPrefix>home</mat-icon>
-                    <mat-error *ngIf="bookingForm.get('house')?.hasError('required') && bookingForm.get('house')?.touched">
-                      Please enter house/flat/building details
-                    </mat-error>
-                  </mat-form-field>
-
-                  <!-- Area / Locality -->
-                  <mat-form-field appearance="outline">
-                    <mat-label>Area / Locality</mat-label>
-                    <input 
-                      matInput 
-                      formControlName="area"
-                      placeholder="Locality, area name"
-                    >
-                    <mat-icon matPrefix>place</mat-icon>
-                    <mat-error *ngIf="bookingForm.get('area')?.hasError('required') && bookingForm.get('area')?.touched">
-                      Please enter your area/locality
-                    </mat-error>
-                  </mat-form-field>
-
-                  <!-- Locality / Detect Location Button -->
-              
-                </div>
-
-              <div class="form-row">
-                <!-- City -->
-                <mat-form-field appearance="outline">
-                  <mat-label>City</mat-label>
-                  <input 
-                    matInput 
-                    formControlName="city"
-                    placeholder="City name"
-                  >
-                  <mat-icon matPrefix>location_city</mat-icon>
-                  <mat-error *ngIf="bookingForm.get('city')?.hasError('required') && bookingForm.get('city')?.touched">
-                    Please enter your city
-                  </mat-error>
-                </mat-form-field>
-
-                <!-- Pincode -->
-                <mat-form-field appearance="outline">
-                  <mat-label>Pincode</mat-label>
-                  <input 
-                    matInput 
-                    formControlName="pincode"
-                    placeholder="6-digit pincode"
-                    maxlength="6"
-                  >
-                  <button mat-icon-button matSuffix type="button" aria-label="Detect city" (click)="detectCityFromPincode()">
-                    <mat-icon>search</mat-icon>
-                  </button>
-                  <mat-icon matPrefix>pin</mat-icon>
-                  <mat-error *ngIf="bookingForm.get('pincode')?.hasError('required') && bookingForm.get('pincode')?.touched">
-                    Pincode is required
-                  </mat-error>
-                </mat-form-field>
-              </div>
-
-              <!-- Nearby Landmark -->
-              <mat-form-field appearance="outline" class="form-row">
-                <mat-label>Nearby Landmark</mat-label>
-                <input 
-                  matInput 
-                  formControlName="landmark"
-                  placeholder="Near metro station"
-                >
-                <mat-icon matPrefix>flag</mat-icon>
-              </mat-form-field>
-
-              <!-- Hidden location fields -->
-              <input type="hidden" formControlName="latitude">
-              <input type="hidden" formControlName="longitude">
-              <input type="hidden" formControlName="fullAddress">
-            </div>
-
-            <!-- Service area check -->
-            <div *ngIf="!isServiceable" class="location-error" style="margin-top:12px">
-              <mat-icon>error</mat-icon>
-              <span>Sorry — we currently only service Bhubaneswar and Cuttack. Your address appears outside our service area.</span>
-            </div>
-
-            <!-- Location Permission Info -->
-            <div *ngIf="locationPermission === 'denied'" class="permission-info">
-              <mat-icon>info</mat-icon>
-              <div>
-                <p><strong>Location access is denied.</strong> To use auto-location detection:</p>
-                <ol>
-                  <li>Click the lock icon in your browser's address bar</li>
-                  <li>Enable location permissions for this site</li>
-                  <li>Refresh the page</li>
-                </ol>
-              </div>
-            </div>
-          <!-- </div> -->
           <!-- Submit Button -->
           <button
             mat-raised-button
             color="primary"
             type="submit"
-            [disabled]="bookingForm.invalid || isSubmitting || !isServiceable"
+            [disabled]="bookingForm.invalid || isSubmitting || !selectedAddress"
             class="submit-btn"
           >
             <mat-icon *ngIf="!isSubmitting">send</mat-icon>

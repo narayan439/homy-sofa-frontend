@@ -59,7 +59,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   userId: number = 0;
   userName: string = '';
-  displayedColumns: string[] = ['reference', 'serviceName', 'serviceDate', 'technicianStatus', 'technicianInfo', 'totalAmount', 'actions'];
+  displayedColumns: string[] = ['reference', 'serviceName', 'serviceDate', 'technicianStatus', 'technicianInfo', 'technicianPhone', 'totalAmount', 'actions'];
   
   // Status order for timeline
   statusOrder = ['PENDING', 'CONFIRMED', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED'];

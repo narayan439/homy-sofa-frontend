@@ -24,8 +24,8 @@ export class AuthInterceptor implements HttpInterceptor {
     const userToken = this.userAuth.getToken();
     const isUserLoggedIn = userToken && this.userAuth.isUserLoggedIn();
     
-    // Prioritize user token for user-related endpoints: auth, bookings, profile updates
-    if (isUserLoggedIn && (req.url.includes('/users/') || req.url.includes('/bookings'))) {
+    // Prioritize user token for user-related endpoints: auth, bookings, profile updates, addresses
+    if (isUserLoggedIn && (req.url.includes('/users/') || req.url.includes('/bookings') || req.url.includes('/addresses'))) {
       token = userToken;
       console.log('[AuthInterceptor] Using user token for request to:', req.url);
     } 
