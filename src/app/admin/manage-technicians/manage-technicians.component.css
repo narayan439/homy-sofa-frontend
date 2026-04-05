@@ -310,6 +310,17 @@
   display: inline-block;
 }
 
+.service-category-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
 /* Performance Stats */
 .performance-stats {
   display: grid;

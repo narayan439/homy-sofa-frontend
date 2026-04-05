@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { TechnicianService } from '../../core/services/technician.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { TechnicianDetailsDialogComponent } from './technician-details-dialog/technician-details-dialog.component';
 
 @Component({
   selector: 'app-manage-technicians',
@@ -32,7 +34,7 @@ export class ManageTechniciansComponent implements OnInit {
   };
   selectedTechnician: any = null;
 
-  constructor(private techService: TechnicianService, private snack: MatSnackBar) {}
+  constructor(private techService: TechnicianService, private snack: MatSnackBar, private dialog: MatDialog) {}
 
   ngOnInit() {
     this.load();
@@ -190,8 +192,19 @@ export class ManageTechniciansComponent implements OnInit {
 
   // Action methods
   viewTechnician(tech: any) {
-    // Implement view details
-    console.log('View technician:', tech);
+    const dialogRef = this.dialog.open(TechnicianDetailsDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      data: tech
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        // Refresh the list if technician was modified
+        this.load();
+      }
+    });
   }
 
   assignJobs(tech: any) {
@@ -231,8 +244,10 @@ export class ManageTechniciansComponent implements OnInit {
           this.snack.open(`Technician ${willActivate ? 'activated' : 'deactivated'}`, 'Close', { duration: 2000 });
           tech.isActive = willActivate;
         },
-        error: () => {
-          this.snack.open('Error updating status', 'Close', { duration: 2000 });
+        error: (err) => {
+          const errorMsg = err?.error?.error || err?.error?.message || 'Error updating status';
+          console.error('Status update error:', err);
+          this.snack.open(errorMsg, 'Close', { duration: 3000 });
         }
       });
     }
