@@ -47,7 +47,7 @@
         
         <div class="profile-info">
           <h2>{{ technician.name }}</h2>
-          <p class="tech-id">ID: {{ technician.id }}</p>
+          <p class="tech-id">ID: {{ formatTechnicianId(technician.id) }}</p>
           <div class="status-badge">
             <mat-icon>check_circle</mat-icon>
             Active
@@ -93,7 +93,7 @@
         </div>
 
         <!-- Address Information -->
-        <div class="info-section">
+        <!-- <div class="info-section">
           <h3>
             <mat-icon>location_on</mat-icon>
             Address Information
@@ -115,36 +115,12 @@
               <textarea matInput rows="3" [(ngModel)]="editForm.address"></textarea>
             </mat-form-field>
           </div>
-        </div>
+        </div> -->
 
       </div>
 
       <!-- Performance Stats -->
-      <div class="performance-section">
-        <h3>
-          <mat-icon>trending_up</mat-icon>
-          Performance Stats
-        </h3>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-number">{{ technician.totalJobs || 0 }}</div>
-            <div class="stat-label">Total Jobs</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">{{ technician.completedJobs || 0 }}</div>
-            <div class="stat-label">Completed</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">{{ technician.rating || '4.5' }}</div>
-            <div class="stat-label">Rating</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">{{ technician.experience || '2' }} yrs</div>
-            <div class="stat-label">Experience</div>
-          </div>
-        </div>
-      </div>
-
+      
       <!-- Action Buttons -->
       <div class="action-buttons" *ngIf="isEditing">
         <button mat-raised-button color="primary" (click)="saveProfile()">
@@ -163,14 +139,14 @@
           <mat-icon>settings</mat-icon>
           Account Settings
         </h3>
-        <button mat-raised-button class="setting-btn">
+        <button mat-raised-button class="setting-btn" (click)="openChangePasswordDialog()">
           <mat-icon>lock</mat-icon>
           <span>Change Password</span>
         </button>
-        <button mat-raised-button class="setting-btn">
+        <!-- <button mat-raised-button class="setting-btn">
           <mat-icon>notifications</mat-icon>
           <span>Notification Settings</span>
-        </button>
+        </button> -->
         <button mat-raised-button class="setting-btn logout-btn" (click)="logout()">
           <mat-icon>logout</mat-icon>
           <span>Logout</span>

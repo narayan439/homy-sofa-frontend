@@ -10,6 +10,7 @@ import { TechnicianCompletedComponent } from './completed/technician-completed.c
 import { JobDetailsComponent } from './job-details/job-details.component';
 import { TechnicianDashboardLayoutComponent } from './dashboard-layout/technician-dashboard-layout.component';
 import { AddressDisplayComponent } from './jobs/address-display/address-display.component';
+import { ChangePasswordDialogComponent } from './profile/change-password-dialog/change-password-dialog.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -40,7 +41,8 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     TechnicianCompletedComponent,
     JobDetailsComponent,
     TechnicianDashboardLayoutComponent,
-    AddressDisplayComponent
+    AddressDisplayComponent,
+    ChangePasswordDialogComponent
   ],
   imports: [
     CommonModule,

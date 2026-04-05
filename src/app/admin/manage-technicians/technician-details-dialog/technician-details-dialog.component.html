@@ -1,0 +1,213 @@
+<div class="details-dialog-container">
+  <div class="dialog-header">
+    <div class="technician-card">
+      <div class="avatar" [style.background]="getStatusColor()">
+        {{ getInitials(technician.name) }}
+      </div>
+      <div class="technician-meta">
+        <h2>{{ technician.name }}</h2>
+        <p class="tech-id">ID: TECH{{ ('000' + technician.id).slice(-3) }}</p>
+        <div class="status-container">
+          <span class="status-badge" [ngClass]="technician.isActive ? 'active' : 'inactive'">
+            <mat-icon>{{ technician.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+            {{ technician.isActive ? 'Active' : 'Inactive' }}
+          </span>
+          <span class="joined-date" *ngIf="technician.createdAt">
+            Joined: {{ technician.createdAt | date: 'MMM dd, yyyy' }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <button class="close-btn" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="dialog-content">
+    <!-- Personal Information Section -->
+    <div class="section">
+      <h3 class="section-title">
+        <mat-icon>person</mat-icon>
+        Personal Information
+      </h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <label>Full Name</label>
+          <p>{{ technician.name }}</p>
+        </div>
+        <div class="info-item">
+          <label>Email</label>
+          <p>{{ technician.email || 'Not provided' }}</p>
+        </div>
+        <div class="info-item">
+          <label>Phone</label>
+          <p>{{ technician.phone || 'Not provided' }}</p>
+        </div>
+        <div class="info-item">
+          <label>Joined Date</label>
+          <p>{{ technician.createdAt ? (technician.createdAt | date: 'MMM dd, yyyy') : 'N/A' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service Information Section -->
+    <div class="section">
+      <h3 class="section-title">
+        <mat-icon>miscellaneous_services</mat-icon>
+        Service Details
+      </h3>
+      <div class="service-info">
+        <div class="service-item">
+          <label>Service Category</label>
+          <span class="service-badge">{{ technician.serviceCategory || 'General Services' }}</span>
+        </div>
+        <div class="service-item">
+          <label>Specialization</label>
+          <p class="specialization-text">{{ technician.specialization || 'All services' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Section -->
+    <div class="section">
+      <h3 class="section-title">
+        <mat-icon>trending_up</mat-icon>
+        Performance Metrics
+      </h3>
+      <div class="metrics-grid" *ngIf="!isLoadingJobs">
+        <div class="metric-card">
+          <div class="metric-value">{{ getCompletedJobs() }}</div>
+          <div class="metric-label">Completed Jobs</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">{{ getActiveJobs() }}</div>
+          <div class="metric-label">Active Jobs</div>
+        </div>
+      </div>
+      <div class="loading-state" *ngIf="isLoadingJobs">
+        <mat-spinner diameter="30"></mat-spinner>
+        <p>Loading jobs...</p>
+      </div>
+    </div>
+
+    <!-- Active Jobs Section -->
+    <div class="section" *ngIf="jobs.length > 0">
+      <h3 class="section-title">
+        <mat-icon>assignment</mat-icon>
+        Active Jobs ({{ getActiveJobs() }})
+      </h3>
+      <div class="jobs-list">
+        <div 
+          *ngFor="let job of jobs" 
+          class="job-item"
+          [ngClass]="job.status?.toLowerCase() === 'completed' ? 'completed' : 'active'"
+        >
+          <div class="job-header">
+            <div class="job-id">
+              <strong>Job #{{ job.id }}</strong>
+              <span class="job-ref">REF: {{ job.reference || job.bookingRef || '—' }}</span>
+            </div>
+            <span class="job-status" [ngClass]="'status-' + job.status?.toLowerCase()">
+              {{ job.status || 'Pending' }}
+            </span>
+          </div>
+          <div class="job-details">
+            <div class="detail">
+              <mat-icon>build</mat-icon>
+              <span>{{ job.serviceName || 'Service' }}</span>
+            </div>
+            <div class="detail">
+              <mat-icon>calendar_today</mat-icon>
+              <span>{{ job.serviceDate ? (job.serviceDate | date: 'MMM dd, yyyy HH:mm') : 'No date' }}</span>
+            </div>
+            <div class="detail">
+              <mat-icon>location_on</mat-icon>
+              <span>{{ job.address || 'No address' }}</span>
+            </div>
+          </div>
+          <div class="job-actions" *ngIf="job.status?.toLowerCase() !== 'completed'">
+            <button 
+              mat-raised-button 
+              color="warn" 
+              (click)="cancelJob(job)"
+              [disabled]="isCancelingJob && cancelingJobId === job.id"
+              class="cancel-btn"
+            >
+              <mat-icon *ngIf="!(isCancelingJob && cancelingJobId === job.id)">close</mat-icon>
+              <mat-spinner diameter="20" *ngIf="isCancelingJob && cancelingJobId === job.id"></mat-spinner>
+              Cancel Job
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deactivation Info (if inactive) -->
+    <div class="section alert-section" *ngIf="!technician.isActive">
+      <mat-icon class="alert-icon">info</mat-icon>
+      <div class="alert-content">
+        <h4>Account Status: INACTIVE</h4>
+        <p *ngIf="technician.deactivatedAt">
+          Deactivated on: {{ technician.deactivatedAt | date: 'MMM dd, yyyy HH:mm' }}
+        </p>
+        <p *ngIf="technician.deactivationReason">
+          Reason: {{ technician.deactivationReason }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Deactivation Confirmation Dialog -->
+    <div class="deactivation-confirm" *ngIf="showDeactivationConfirm">
+      <div class="confirm-card">
+        <div class="confirm-icon warning">
+          <mat-icon>warning</mat-icon>
+        </div>
+        <h3>Deactivate Account</h3>
+        <p>Are you sure you want to deactivate {{ technician.name }}'s account?</p>
+        <p class="confirm-subtitle">The technician will not be able to accept new jobs, but their account data will be preserved.</p>
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Reason for Deactivation (Optional)</mat-label>
+          <textarea matInput [(ngModel)]="deactivationReason" rows="3" placeholder="Enter reason..."></textarea>
+        </mat-form-field>
+
+        <div class="confirm-actions">
+          <button mat-button (click)="cancelDeactivation()" class="cancel-btn">
+            Cancel
+          </button>
+          <button mat-raised-button color="warn" (click)="confirmDeactivate()" [disabled]="isDeactivating">
+            <mat-icon *ngIf="!isDeactivating">block</mat-icon>
+            <mat-spinner diameter="20" *ngIf="isDeactivating"></mat-spinner>
+            Deactivate Account
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog Actions -->
+  <div class="dialog-actions">
+    <button mat-button (click)="close()">Cancel</button>
+    <button 
+      *ngIf="!technician.isActive" 
+      mat-raised-button 
+      color="primary" 
+      (click)="onActivateClick()"
+      [disabled]="isActivating"
+    >
+      <mat-icon *ngIf="!isActivating">check_circle</mat-icon>
+      <mat-spinner diameter="20" *ngIf="isActivating"></mat-spinner>
+      Activate Account
+    </button>
+    <button 
+      *ngIf="technician.isActive" 
+      mat-raised-button 
+      color="warn" 
+      (click)="onDeactivateClick()"
+      [disabled]="isDeactivating"
+    >
+      <mat-icon>block</mat-icon>
+      Deactivate Account
+    </button>
+  </div>
+</div>

@@ -168,10 +168,19 @@ export class TechnicianService {
     const body: any = {};
     if (technicianId) body.technicianId = technicianId;
     if (reason) body.cancelReason = reason;
-    const token = localStorage.getItem('technicianToken');
-    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : undefined;
-    const options: any = headers ? { headers } : {};
-    return this.http.put(`${API_URL}/technician/bookings/${bookingId}/cancel`, body, options);
+    
+    // Try admin token first, fallback to technician token
+    const adminToken = localStorage.getItem('adminToken');
+    const techToken = localStorage.getItem('technicianToken');
+    const authToken = localStorage.getItem('authToken');
+    const token = adminToken || authToken || techToken;
+    
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    
+    return this.http.put(`${API_URL}/technician/bookings/${bookingId}/cancel`, body, { headers });
   }
   // Admin helper endpoints for technicians
   private techApi = `${API_URL}/admin/technicians`;
@@ -193,7 +202,13 @@ export class TechnicianService {
   }
 
   updateStatus(id: string | number, status: string): Observable<any> {
-    return this.http.patch(`${this.techApi}/${id}/status`, { status });
+    const adminToken = localStorage.getItem('adminToken');
+    const token = localStorage.getItem('authToken') || adminToken;
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.patch(`${this.techApi}/${id}/status`, { status }, { headers });
   }
 
   /**
@@ -208,5 +223,64 @@ export class TechnicianService {
     }
     const options: any = { headers };
     return this.getBookingsForTechnician(technicianId, 0, 100);
+  }
+
+  /**
+   * Get all jobs/bookings for a technician using admin endpoint
+   * (called from admin view with admin token)
+   * @param technicianId The ID of the technician
+   */
+  getTechnicianJobsAsAdmin(technicianId: string | number): Observable<any> {
+    const adminToken = localStorage.getItem('adminToken');
+    const authToken = localStorage.getItem('authToken');
+    let headers = new HttpHeaders();
+    
+    if (adminToken) {
+      headers = headers.set('Authorization', `Bearer ${adminToken}`);
+    } else if (authToken) {
+      headers = headers.set('Authorization', `Bearer ${authToken}`);
+    }
+    
+    const params = { page: '0', size: '100' };
+    return this.http.get(`${API_URL}/admin/technicians/${technicianId}/bookings`, { headers, params }).pipe(
+      map((res: any) => this.normalizeBookingsResponse(res))
+    );
+  }
+
+  /**
+   * Get the current technician's profile
+   */
+  getCurrentTechnicianProfile(): Observable<Technician> {
+    const token = localStorage.getItem('technicianToken');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<Technician>(`${API_URL}/technician/profile`, { headers });
+  }
+
+  /**
+   * Update the current technician's profile
+   */
+  updateTechnicianProfile(profileData: any): Observable<Technician> {
+    const token = localStorage.getItem('technicianToken');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.put<Technician>(`${API_URL}/technician/profile`, profileData, { headers });
+  }
+
+  /**
+   * Change password for the current technician
+   */
+  changePassword(oldPassword: string, newPassword: string): Observable<any> {
+    const token = localStorage.getItem('technicianToken');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    const body = { oldPassword, newPassword };
+    return this.http.put<any>(`${API_URL}/technician/change-password`, body, { headers });
   }
 }
