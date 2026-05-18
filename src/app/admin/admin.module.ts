@@ -23,13 +23,9 @@ import { TechnicianDetailsDialogComponent } from './manage-technicians/technicia
 @NgModule({
   declarations: [
     ...adminRoutingComponents,
-    ManageServicesComponent,
     AddressDialogComponent,
     StatusUpdateDialogComponent,
-    ManageUsersComponent,
     ManagePaymentsComponent,
-    SettingsComponent,
-    ManageTechniciansComponent,
     TechnicianDetailsDialogComponent
   ],
   imports: [

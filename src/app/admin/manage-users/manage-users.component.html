@@ -218,7 +218,7 @@
             <div class="booking-item" *ngFor="let booking of selectedUserBookings">
               <div class="booking-info">
                 <strong>{{ booking.service }}</strong>
-                <span class="booking-status" [ngClass]="'status-' + (booking.status || 'pending')?.toLowerCase()">
+                <span class="booking-status" [ngClass]="'status-' + (booking.status || 'pending').toLowerCase()">
                   {{ booking.status }}
                 </span>
               </div>

@@ -325,7 +325,7 @@
                   <span class="label-count">{{ service.count }}</span>
                 </div>
                 <div class="insight-bar">
-                  <div class="progress-bar" [style.width.%]="(service.count / (getTopServices()[0]?.count || 1)) * 100"></div>
+                  <div class="progress-bar" [style.width.%]="(service.count / (getTopServices()[0].count || 1)) * 100"></div>
                 </div>
               </div>
             </div>

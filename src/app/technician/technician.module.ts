@@ -4,12 +4,12 @@ import { TechnicianRoutingModule } from './technician-routing.module';
 import { TechnicianLoginComponent } from './login/technician-login.component';
 import { TechnicianDashboardComponent } from './dashboard/technician-dashboard.component';
 import { TechnicianJobsComponent } from './jobs/technician-jobs.component';
+import { AddressDisplayComponent } from './jobs/address-display/address-display.component';
 import { TechnicianProfileComponent } from './profile/technician-profile.component';
 import { TechnicianHistoryComponent } from './history/technician-history.component';
 import { TechnicianCompletedComponent } from './completed/technician-completed.component';
 import { JobDetailsComponent } from './job-details/job-details.component';
 import { TechnicianDashboardLayoutComponent } from './dashboard-layout/technician-dashboard-layout.component';
-import { AddressDisplayComponent } from './jobs/address-display/address-display.component';
 import { ChangePasswordDialogComponent } from './profile/change-password-dialog/change-password-dialog.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -26,22 +26,18 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SharedUiModule } from '../shared/shared-ui.module';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @NgModule({
   declarations: [
     TechnicianLoginComponent,
     TechnicianDashboardComponent,
     TechnicianJobsComponent,
+    AddressDisplayComponent,
     TechnicianProfileComponent,
     TechnicianHistoryComponent,
     TechnicianCompletedComponent,
     JobDetailsComponent,
     TechnicianDashboardLayoutComponent,
-    AddressDisplayComponent,
     ChangePasswordDialogComponent
   ],
   imports: [
@@ -49,6 +45,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     SharedUiModule,
     TechnicianRoutingModule,
     ReactiveFormsModule,
+    FormsModule,
     MatCardModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -61,12 +58,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     MatSelectModule,
     MatCheckboxModule,
     MatProgressSpinnerModule,
-    MatTooltipModule,
-    MatSidenavModule,
-    MatToolbarModule,
-    MatPaginatorModule,
-    MatSnackBarModule,
-    FormsModule
-]
+    MatTooltipModule
+  ]
 })
-export class TechnicianModule {}
+export class TechnicianModule { }
