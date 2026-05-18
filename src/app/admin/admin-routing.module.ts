@@ -18,6 +18,9 @@ export const adminRoutingComponents = [
   DashboardHomeComponent,
   ManageBookingsComponent,
   ManageUsersComponent,
+  ManageServicesComponent,
+  SettingsComponent,
+  ManageTechniciansComponent
 ];
 
 const routes: Routes = [

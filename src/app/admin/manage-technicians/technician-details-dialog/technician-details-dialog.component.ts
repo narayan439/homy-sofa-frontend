@@ -62,7 +62,7 @@ export class TechnicianDetailsDialogComponent {
         
         this.isLoadingJobs = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading technician jobs:', err);
         this.isLoadingJobs = false;
         this.jobs = [];
